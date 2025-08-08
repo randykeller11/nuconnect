@@ -1,0 +1,264 @@
+## Product Requirements Document (PRD): Financial Couples Hub (Demo)
+
+---
+
+### 1. Overview & Objectives
+
+**Project Name:** Financial Couples Hub (Demo)
+**Owner:** *\[Client Name]*
+**Development Partner:** *\[Your Name] / Replit AI Service*
+
+**Purpose:**
+Build a React.js demo website to promote an e-book and workbook on financial literacy for couples. The site will allow visitors to:
+
+* Learn about and download/purchase the e-book & workbook
+* Create a secure account via email/password OAuth
+* Complete a short-answer demo questionnaire whose responses are stored for research
+* Enable financial professionals to submit their interest in a pilot program
+
+**Business Goals:**
+
+1. Validate user interest and collect early research data
+2. Showcase core functionality for a future full-stack web/app product
+3. Drive e-book/workbook downloads and subscriptions
+4. Build a database of professional pilot partners
+
+---
+
+### 2. Target Audience
+
+* **Primary:** Engaged or married couples seeking joint financial management guidance
+* **Secondary:** Financial professionals interested in piloting the workbook toolkit
+
+---
+
+### 3. Core Features
+
+| Feature                 | Description                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| **Landing Page**        | Marketing copy, e-book/workbook details, CTAs for sign-up and pro-signup       |
+| **Authentication**      | Email/password sign-up, login, logout, “Forgot password” flow                  |
+| **Dashboard**           | Overview of questionnaire progress; resume or retake demo questionnaire        |
+| **Demo Questionnaire**  | 10 short-answer prompts; responses saved to database                           |
+| **Professional Signup** | Form capturing name, firm, email, phone, specialty; stored for pilot outreach  |
+| **API Layer**           | REST endpoints for auth, questionnaire, and professional submissions           |
+| **Database**            | Simple relational or NoSQL store for users, answers, and professional contacts |
+| **Responsive UI**       | Mobile (≤480 px) and desktop (≥1024 px) friendly                               |
+
+---
+
+### 4. User Flows
+
+1. **Visitor → Landing Page**
+
+   * Reads about offering → clicks “Sign Up” or “Professional Pilot”
+2. **Sign Up → Authentication**
+
+   * Registers with email/password → redirected to Dashboard
+3. **Dashboard → Questionnaire**
+
+   * Clicks “Start Demo Questionnaire” → answers questions → submits
+4. **Data Storage → Confirmation**
+
+   * Answers saved → shown “Thank you” screen
+5. **Professional → Pilot Form**
+
+   * Completes pro signup form → data saved → confirmation message
+
+---
+
+### 5. Technical Architecture
+
+#### 5.1 Tech Stack
+
+* **Frontend:** React.js (Create React App or Vite)
+* **Styling:** Tailwind CSS or styled-components
+* **Auth:** Firebase Auth or Auth0 (demo tier) with email/password
+* **Backend:** Node.js + Express (hosted on Replit)
+* **Database:** SQLite (demo) or MongoDB Atlas (free tier)
+* **API:** RESTful JSON endpoints
+* **Deployment:** Replit auto-deploy on push
+
+#### 5.2 High-Level Structure
+
+```
+/src
+  /components
+    • LandingPage.jsx
+    • AuthForm.jsx
+    • Dashboard.jsx
+    • Questionnaire.jsx
+    • ProSignup.jsx
+  App.jsx
+  index.jsx
+
+/server
+  server.js
+  /routes
+    • auth.js
+    • questionnaire.js
+    • professionals.js
+  /models
+    • User.js
+    • Answer.js
+    • Professional.js
+  db.js
+```
+
+---
+
+### 6. Database Schema
+
+**User**
+
+| Field          | Type      | Notes           |
+| -------------- | --------- | --------------- |
+| id             | UUID/int  | PK              |
+| email          | String    | Unique, indexed |
+| password\_hash | String    | Hashed          |
+| created\_at    | Timestamp |                 |
+
+**Answer**
+
+| Field         | Type      | Notes           |
+| ------------- | --------- | --------------- |
+| id            | UUID/int  | PK              |
+| user\_id      | FK → User |                 |
+| question\_key | String    | e.g. “q1\_goal” |
+| answer\_text  | Text      |                 |
+| submitted\_at | Timestamp |                 |
+
+**Professional**
+
+| Field         | Type      | Notes |
+| ------------- | --------- | ----- |
+| id            | UUID/int  | PK    |
+| name          | String    |       |
+| firm          | String    |       |
+| email         | String    |       |
+| phone         | String    |       |
+| specialty     | String    |       |
+| submitted\_at | Timestamp |       |
+
+---
+
+### 7. API Endpoints
+
+**Auth**
+
+* `POST /api/auth/register` → `{ email, password }`
+* `POST /api/auth/login` → `{ email, password }` → JWT/session
+* `POST /api/auth/logout`
+
+**Questionnaire**
+
+* `GET /api/questionnaire/demo` → question list
+* `POST /api/questionnaire/demo` → `{ answers: [{ key, text }] }`
+
+**Professionals**
+
+* `POST /api/professionals` → `{ name, firm, email, phone, specialty }`
+
+---
+
+### 8. Non-Functional Requirements
+
+* **Security:** Hash passwords; secure JWT/session cookies
+* **Performance:** Client-side routing; fast load times
+* **Scalability:** Simple demo setup, modular for future production migration
+* **Accessibility:** Form labels, ARIA roles, keyboard navigation
+* **Testing:** Jest & React Testing Library for components; Jest for API
+
+---
+
+### 9. Acceptance Criteria
+
+1. **Landing Page** displays hero copy, feature sections, and CTAs.
+2. **Auth Flow** (register/login/logout) works, with protected Dashboard.
+3. **Questionnaire** shows all 10 prompts, validates required, and persists responses.
+4. **Professional Form** captures and stores all fields.
+5. **Database** contains sample entries for one user’s answers and one professional signup.
+6. **Responsive Design** verified on mobile and desktop breakpoints.
+
+---
+
+### 10. Landing Page Copy
+
+**Hero Section**
+
+> **Empower Your Partnership.**
+> Transform money stress into shared success with our e-book & workbook—designed to help couples master their finances, together.
+>
+> **Get Started Today:**
+> [Download the E-Book](#) [Try the Demo Questionnaire](#signup)
+
+**Why Financial Couples Hub?**
+
+* **Build a Shared Vision.**
+  “We used the budgeting exercises to set our first joint savings goal—and we actually stuck to it!”
+* **Understand Each Other’s Money Mindset.**
+  Practical worksheets reveal how you and your partner think about spending, saving, and investing.
+* **Grow Together.**
+  Step-by-step strategies to pay down debt, build an emergency fund, and plan for big life moments.
+
+> “I never knew money could bring us closer—this guide changed how we talk about every dollar.”
+> — Jordan & Taylor, married 2 years
+
+**How It Works**
+
+1. **Download the E-Book & Workbook**
+2. **Create Your Free Account**
+3. **Complete the Demo Questionnaire**
+4. **Join Our Professional Pilot**
+
+**Features**
+
+* Interactive Dashboard to track progress
+* Secure Data Storage—your info stays private
+* Tailored Resources based on your responses
+* Community Support via pilot-program Slack channels
+
+**Call to Action**
+
+> Ready to transform your finances as a couple?
+> **Sign up now** and take control—together.
+>
+> [Sign Up for Free](#signup) [Learn More](#about)
+
+---
+
+### 11. Revised Demo Questionnaire
+
+1. **What does “financial success” look like for you and your partner?**
+   *Short answer*
+
+2. **Describe a money conversation you wish you could have more easily.**
+   *Short answer*
+
+3. **What is the biggest financial goal you hope to achieve together in the next 12 months?**
+   *Short answer*
+
+4. **What worries you most about managing joint expenses?**
+   *Short answer*
+
+5. **How do you currently divide household bills?**
+   *Short answer*
+
+6. **Share one habit you’d like to build as a couple (e.g., weekly budget check-ins).**
+   *Short answer*
+
+7. **What’s one area of money management you wish you understood better?**
+   *Short answer*
+
+8. **How do you prefer to track spending (apps, spreadsheets, paper, none)?**
+   *Short answer*
+
+9. **Tell us about a past money mistake—what did you learn from it?**
+   *Short answer*
+
+10. **What would make you recommend this workbook to other couples?**
+    *Short answer*
+
+---
+
+This PRD can be handed directly to an AI coding service (e.g., Replit) to scaffold the React.js demo site—complete with authentication, data-driven questionnaire, professional signup, and all supporting architecture.
