@@ -13,12 +13,16 @@ const requireAdmin = (req: any, res: any, next: any) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
+    res.json({ 
+      status: "ok", 
+      service: "NuConnect API",
+      timestamp: new Date().toISOString() 
+    });
   });
 
   // Admin test endpoint
   app.get("/api/admin/test", requireAdmin, (req, res) => {
-    res.json({ message: "Admin access confirmed" });
+    res.json({ message: "NuConnect admin access confirmed" });
   });
 
   const httpServer = createServer(app);

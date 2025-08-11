@@ -13,7 +13,9 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "heroku-postbuild": "npm run build",
-    "seed": "node scripts/seed-data.js"
+    "seed": "node scripts/seed-data.js",
+    "test": "jest",
+    "test:phase1": "jest tests/phase1-verification.test.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
