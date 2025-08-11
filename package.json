@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:kill": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
