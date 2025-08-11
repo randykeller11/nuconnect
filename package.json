@@ -14,6 +14,7 @@
     "db:push": "drizzle-kit push",
     "heroku-postbuild": "npm run build",
     "seed": "node scripts/seed-data.js",
+    "seed:matches": "node scripts/seed-matches.js",
     "verify:phase2": "node scripts/verify-phase2.js",
     "verify:phase3": "node scripts/verify-phase3.js",
     "test": "jest",
@@ -23,9 +24,11 @@
     "test:pipeline": "jest tests/pipeline-*.test.ts",
     "test:phase3": "jest tests/phase3-verification.test.ts",
     "test:phase4": "jest tests/phase4-verification.test.ts tests/api-routes.test.ts",
-    "verify:phase4": "node scripts/verify-phase4.js"
+    "verify:phase4": "node scripts/verify-phase4.js",
+    "verify:phase6": "node scripts/verify-phase6.js"
   },
   "dependencies": {
+    "@faker-js/faker": "^9.4.0",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",

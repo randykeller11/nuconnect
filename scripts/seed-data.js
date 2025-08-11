@@ -1,206 +1,188 @@
 const { createClient } = require('@supabase/supabase-js');
+const { faker } = require('@faker-js/faker');
 
 // Supabase connection
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required');
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error('NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables are required');
 }
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Sample users data for NuConnect
-const sampleUsers = [
-  {
-    email: 'sarah.johnson@email.com',
-    password: 'hashedpassword123',
-    first_name: 'Sarah',
-    last_name: 'Johnson'
-  },
-  {
-    email: 'mike.chen@email.com',
-    password: 'hashedpassword123',
-    first_name: 'Mike',
-    last_name: 'Chen'
-  },
-  {
-    email: 'emma.davis@email.com',
-    password: 'hashedpassword123',
-    first_name: 'Emma',
-    last_name: 'Davis'
-  },
-  {
-    email: 'alex.rodriguez@email.com',
-    password: 'hashedpassword123',
-    first_name: 'Alex',
-    last_name: 'Rodriguez'
-  }
-];
+const INTERESTS = ['AI','Climate','Fintech','Education','Health','Music','Art','Gaming','Marketing','Operations','Sales','Design','Product','Engineering'];
+const GOALS = ['find-cofounder','explore-jobs','hire','learn-ai','mentor-others','find-mentor','investors','portfolio-feedback'];
+const MENTORSHIP_PREFS = ['seeking','offering','both','none'];
 
-// Sample user profiles for NuConnect
-const sampleProfiles = [
-  {
-    name: 'Sarah Johnson',
-    interests: ['AI', 'Fintech', 'Education'],
-    career_goals: 'find-cofounder',
-    mentorship_pref: 'seeking',
-    contact_prefs: {
-      linkedin: 'https://linkedin.com/in/sarahjohnson',
-      email: 'sarah.johnson@email.com'
-    }
-  },
-  {
-    name: 'Mike Chen',
-    interests: ['Climate', 'Health', 'Marketing'],
-    career_goals: 'find-mentor',
-    mentorship_pref: 'seeking',
-    contact_prefs: {
-      linkedin: 'https://linkedin.com/in/mikechen',
-      email: 'mike.chen@email.com'
-    }
-  },
-  {
-    name: 'Emma Davis',
-    interests: ['Design', 'UX', 'Product'],
-    career_goals: 'explore-jobs',
-    mentorship_pref: 'offering',
-    contact_prefs: {
-      linkedin: 'https://linkedin.com/in/emmadavis',
-      portfolio: 'https://emmadavis.design'
-    }
-  },
-  {
-    name: 'Alex Rodriguez',
-    interests: ['Blockchain', 'Gaming', 'VR'],
-    career_goals: 'find-cofounder',
-    mentorship_pref: 'both',
-    contact_prefs: {
-      linkedin: 'https://linkedin.com/in/alexrodriguez',
-      github: 'https://github.com/alexr'
-    }
-  }
-];
+function pick(arr, n = 3) { 
+  return faker.helpers.arrayElements(arr, n); 
+}
 
-// Sample events for networking
-const sampleEvents = [
-  {
-    name: 'NuConnect Demo Night',
-    description: 'Internal demo and networking event',
-    location: 'Chicago, IL',
-    date_time: new Date().toISOString()
-  },
-  {
-    name: 'Tech Networking Meetup',
-    description: 'Monthly tech professional networking',
-    location: 'San Francisco, CA',
-    date_time: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+async function ensureAuthUser(email, name) {
+  // Create user in Supabase Auth
+  const { data, error } = await supabase.auth.admin.createUser({
+    email,
+    password: 'password123', // Demo password
+    email_confirm: true,
+    user_metadata: {
+      name: name
+    }
+  });
+  
+  if (error && !error.message.includes('already registered')) {
+    throw error;
   }
-];
+  
+  return data?.user?.id || null;
+}
 
-// Sample match rooms
-const sampleMatchRooms = [
-  {
-    name: 'AI Enthusiasts',
-    description: 'Connect with fellow AI professionals and enthusiasts',
-    visibility: 'public'
-  },
-  {
-    name: 'Startup Founders',
-    description: 'Network with other entrepreneurs and startup founders',
-    visibility: 'public'
-  }
-];
+async function upsertProfile(user_id, name) {
+  const interests = pick(INTERESTS, faker.number.int({min:2,max:5}));
+  const mentorship = faker.helpers.arrayElement(MENTORSHIP_PREFS);
+  const careerGoals = faker.helpers.arrayElement(GOALS);
+  const contact = { 
+    linkedin: `https://linkedin.com/in/${faker.internet.userName()}`,
+    email: faker.internet.email()
+  };
 
-async function seedData() {
+  const { error } = await supabase.from('profiles').upsert({
+    user_id, 
+    name,
+    interests,
+    career_goals: careerGoals,
+    mentorship_pref: mentorship,
+    contact_prefs: contact
+  });
+  
+  if (error) throw error;
+  return { interests, mentorship, careerGoals };
+}
+
+async function main() {
   try {
     console.log('Starting to seed NuConnect data...');
 
-    // 1. Insert users first
-    console.log('Inserting users...');
-    const { data: users, error: usersError } = await supabase
-      .from('users')
-      .insert(sampleUsers)
-      .select();
+    // Create specific demo users first
+    const demoUsers = [
+      { name: 'Sarah Johnson', email: 'sarah.johnson@demo.com' },
+      { name: 'Mike Chen', email: 'mike.chen@demo.com' },
+      { name: 'Emma Davis', email: 'emma.davis@demo.com' },
+      { name: 'Alex Rodriguez', email: 'alex.rodriguez@demo.com' }
+    ];
 
-    if (usersError) {
-      console.error('Error inserting users:', usersError);
-      return;
+    const users = [];
+    
+    // Create demo users
+    console.log('Creating demo users...');
+    for (const demoUser of demoUsers) {
+      const id = await ensureAuthUser(demoUser.email, demoUser.name);
+      if (id) {
+        await upsertProfile(id, demoUser.name);
+        users.push(id);
+      }
     }
-    console.log(`Inserted ${users.length} users`);
 
-    // 2. Insert user profiles
-    console.log('Inserting user profiles...');
-    const profilesWithUserIds = users.map((user, index) => ({
-      user_id: user.id,
-      ...sampleProfiles[index]
-    }));
-
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .insert(profilesWithUserIds)
-      .select();
-
-    if (profilesError) {
-      console.error('Error inserting profiles:', profilesError);
-      return;
+    // Create additional random users
+    console.log('Creating additional users...');
+    for (let i = 0; i < 26; i++) {
+      const name = faker.person.fullName();
+      const email = faker.internet.email({ firstName: name.split(' ')[0] }).toLowerCase();
+      const id = await ensureAuthUser(email, name);
+      if (id) {
+        await upsertProfile(id, name);
+        users.push(id);
+      }
     }
-    console.log(`Inserted ${profiles.length} user profiles`);
 
-    // 3. Insert events
-    console.log('Inserting events...');
-    const eventsWithCreator = sampleEvents.map(event => ({
-      ...event,
-      created_by: users[0].id // First user creates events
-    }));
+    console.log(`Created ${users.length} users with profiles`);
 
-    const { data: events, error: eventsError } = await supabase
+    // Create demo events
+    console.log('Creating events...');
+    const events = [
+      {
+        name: 'NuConnect Demo Night',
+        description: 'Internal demo and networking event',
+        location: 'Chicago, IL',
+        date_time: new Date().toISOString(),
+        created_by: users[0]
+      },
+      {
+        name: 'Tech Networking Meetup',
+        description: 'Monthly tech professional networking',
+        location: 'San Francisco, CA',
+        date_time: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        created_by: users[0]
+      }
+    ];
+
+    const { data: eventData, error: eventsError } = await supabase
       .from('events')
-      .insert(eventsWithCreator)
+      .insert(events)
       .select();
 
-    if (eventsError) {
-      console.error('Error inserting events:', eventsError);
-      return;
-    }
-    console.log(`Inserted ${events.length} events`);
+    if (eventsError) throw eventsError;
+    console.log(`Created ${eventData.length} events`);
 
-    // 4. Insert match rooms
-    console.log('Inserting match rooms...');
-    const roomsWithEventIds = sampleMatchRooms.map((room, index) => ({
-      ...room,
-      event_id: events[0].id, // Associate with first event
-      created_by: users[0].id
-    }));
+    // Create match rooms
+    console.log('Creating match rooms...');
+    const rooms = [
+      {
+        name: 'AI Enthusiasts',
+        description: 'Connect with fellow AI professionals and enthusiasts',
+        event_id: eventData[0].id,
+        visibility: 'public',
+        created_by: users[0]
+      },
+      {
+        name: 'Startup Founders',
+        description: 'Network with other entrepreneurs and startup founders',
+        event_id: eventData[0].id,
+        visibility: 'public',
+        created_by: users[0]
+      },
+      {
+        name: 'Climate Tech',
+        description: 'Professionals working on climate solutions',
+        event_id: eventData[1].id,
+        visibility: 'public',
+        created_by: users[0]
+      }
+    ];
 
-    const { data: rooms, error: roomsError } = await supabase
+    const { data: roomData, error: roomsError } = await supabase
       .from('match_rooms')
-      .insert(roomsWithEventIds)
+      .insert(rooms)
       .select();
 
-    if (roomsError) {
-      console.error('Error inserting match rooms:', roomsError);
-      return;
-    }
-    console.log(`Inserted ${rooms.length} match rooms`);
+    if (roomsError) throw roomsError;
+    console.log(`Created ${roomData.length} match rooms`);
 
-    // 5. Insert room memberships (users join rooms)
+    // Add users to rooms
     console.log('Adding users to match rooms...');
     const memberships = [];
     
-    // Add all users to first room
-    users.forEach(user => {
+    // Add first 20 users to first room
+    users.slice(0, 20).forEach(userId => {
       memberships.push({
-        room_id: rooms[0].id,
-        user_id: user.id
+        room_id: roomData[0].id,
+        user_id: userId
       });
     });
 
-    // Add first 2 users to second room
-    users.slice(0, 2).forEach(user => {
+    // Add first 15 users to second room
+    users.slice(0, 15).forEach(userId => {
       memberships.push({
-        room_id: rooms[1].id,
-        user_id: user.id
+        room_id: roomData[1].id,
+        user_id: userId
+      });
+    });
+
+    // Add users 10-25 to third room
+    users.slice(10, 25).forEach(userId => {
+      memberships.push({
+        room_id: roomData[2].id,
+        user_id: userId
       });
     });
 
@@ -209,57 +191,24 @@ async function seedData() {
       .insert(memberships)
       .select();
 
-    if (membershipError) {
-      console.error('Error inserting room memberships:', membershipError);
-      return;
-    }
-    console.log(`Inserted ${membershipData.length} room memberships`);
-
-    // 6. Insert sample matches
-    console.log('Creating sample matches...');
-    const matches = [
-      {
-        room_id: rooms[0].id,
-        user_a: users[0].id,
-        user_b: users[1].id,
-        match_score: 0.85,
-        shared_topics: ['AI', 'Education'],
-        ai_explanation: 'Both users show strong interest in AI and education technology, with complementary goals of seeking mentorship and finding co-founders.'
-      },
-      {
-        room_id: rooms[0].id,
-        user_a: users[2].id,
-        user_b: users[3].id,
-        match_score: 0.72,
-        shared_topics: ['Product', 'Design'],
-        ai_explanation: 'Great match for product development collaboration - one offers mentorship in UX/Design while the other seeks co-founder opportunities.'
-      }
-    ];
-
-    const { data: matchData, error: matchError } = await supabase
-      .from('matches')
-      .insert(matches)
-      .select();
-
-    if (matchError) {
-      console.error('Error inserting matches:', matchError);
-      return;
-    }
-    console.log(`Inserted ${matchData.length} sample matches`);
+    if (membershipError) throw membershipError;
+    console.log(`Created ${membershipData.length} room memberships`);
 
     console.log('✅ All NuConnect seed data inserted successfully!');
     console.log('\nSummary:');
-    console.log(`- ${users.length} users`);
-    console.log(`- ${profiles.length} user profiles`);
-    console.log(`- ${events.length} events`);
-    console.log(`- ${rooms.length} match rooms`);
+    console.log(`- ${users.length} users with profiles`);
+    console.log(`- ${eventData.length} events`);
+    console.log(`- ${roomData.length} match rooms`);
     console.log(`- ${membershipData.length} room memberships`);
-    console.log(`- ${matchData.length} matches`);
+    console.log('\nDemo users created:');
+    demoUsers.forEach(user => {
+      console.log(`- ${user.name} (${user.email})`);
+    });
 
   } catch (error) {
     console.error('Error seeding data:', error);
+    process.exit(1);
   }
 }
 
-// Run the seed function
-seedData();
+main();
