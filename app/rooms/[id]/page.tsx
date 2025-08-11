@@ -7,7 +7,7 @@ import { PrimaryButton } from '@/components/PrimaryButton'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/lib/hooks/use-toast'
-import { ArrowLeft, Users, Sparkles } from 'lucide-react'
+import { ArrowLeft, Users, Sparkles, Network } from 'lucide-react'
 
 interface Match {
   id: string
