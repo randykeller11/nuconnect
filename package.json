@@ -14,8 +14,10 @@
     "db:push": "drizzle-kit push",
     "heroku-postbuild": "npm run build",
     "seed": "node scripts/seed-data.js",
+    "verify:phase2": "node scripts/verify-phase2.js",
     "test": "jest",
-    "test:phase1": "jest tests/phase1-verification.test.js"
+    "test:phase1": "jest tests/phase1-verification.test.js",
+    "test:phase2": "jest tests/phase2-verification.test.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
