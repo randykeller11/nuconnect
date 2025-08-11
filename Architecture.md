@@ -1,8 +1,8 @@
-# Modern Matrimoney - Architecture Documentation
+# NuConnect - Architecture Documentation
 
 ## Project Overview
 
-Modern Matrimoney is a Next.js application designed to help couples improve their financial communication and literacy. The application features a questionnaire system, professional signup functionality, and administrative dashboard for tracking engagement.
+NuConnect is a Next.js application designed to facilitate professional connections and networking through AI-powered matching. The platform helps professionals find mentors, co-founders, and meaningful business relationships through intelligent algorithms and curated networking events.
 
 ## Technology Stack
 
@@ -128,12 +128,10 @@ Modern Matrimoney is a Next.js application designed to help couples improve thei
 ## Design System
 
 ### Color Palette
-- **Brand Teal**: `#00A99D` - Primary brand color
-- **Gold Light**: `#E6B800` - Accent color for CTAs
-- **Gold Dark**: `#CC9A00` - Darker accent variant
-- **Brand Coral**: `#FF6B6B` - Secondary accent
-- **Earth Gray**: `#F2F2F2` - Background color
-- **Neutral Dark**: `#2E2E2E` - Text color
+- **Inkwell**: `#2C3639` - Primary dark color for text and CTAs
+- **Lunar Eclipse**: `#3F4E4F` - Secondary dark color for accents
+- **Crème Brûlée**: `#A27B5B` - Warm accent color
+- **Au Lait**: `#DCD7C9` - Light background color
 
 ### Typography
 - **Headings**: Playfair Display (serif)
@@ -163,11 +161,11 @@ Modern Matrimoney is a Next.js application designed to help couples improve thei
 ## User Experience Flow
 
 ### Primary User Journey
-1. **Landing Page** - Introduction to Modern Matrimoney
-2. **Demo Selection** - Choose between user experience or admin view
-3. **Questionnaire** - Complete 10-question assessment
-4. **Results** - Receive personalized conversation prompt
-5. **Follow-up** - Optional email signup for continued engagement
+1. **Landing Page** - Introduction to NuConnect
+2. **Profile Setup** - Create professional profile with interests and goals
+3. **Event Discovery** - Browse and join networking events
+4. **AI-powered matching** - Get matched with relevant professionals
+5. **Connection Building** - Share contact information and build relationships
 
 ### Admin Journey
 1. **Admin Dashboard** - Overview of all submissions
@@ -250,4 +248,4 @@ Modern Matrimoney is a Next.js application designed to help couples improve thei
 - **E2E Tests**: Critical user journey testing
 - **Accessibility Tests**: Automated accessibility checking
 
-This architecture provides a solid foundation for Modern Matrimoney's current needs while maintaining flexibility for future growth and feature additions.
+This architecture provides a solid foundation for NuConnect's professional networking and AI-powered matching needs while maintaining flexibility for future growth and feature additions.
