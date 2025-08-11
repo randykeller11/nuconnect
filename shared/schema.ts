@@ -3,6 +3,8 @@ import { z } from "zod";
 // NuConnect schema definitions for Supabase integration
 // Note: Using Supabase auth.users table instead of custom users table
 
+// Database tables: profiles, events, matchRooms, matches, connections, contactShares, boostTransactions
+
 // User profile information for NuConnect
 export const insertProfileSchema = z.object({
   user_id: z.string().uuid(),
