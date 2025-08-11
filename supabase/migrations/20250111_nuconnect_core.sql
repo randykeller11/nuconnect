@@ -80,10 +80,36 @@ create table if not exists public.boost_transactions (
 alter table public.profiles enable row level security;
 create policy "profiles_owner_rw" on public.profiles
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "profiles_read_by_room_members" on public.profiles
+  for select using (
+    exists (
+      select 1 from public.room_members rm1, public.room_members rm2
+      where rm1.user_id = auth.uid() 
+      and rm2.user_id = profiles.user_id 
+      and rm1.room_id = rm2.room_id
+    )
+  );
+
+alter table public.events enable row level security;
+create policy "events_read_all" on public.events
+  for select using (true);
+create policy "events_owner_rw" on public.events
+  for all using (auth.uid() = created_by) with check (auth.uid() = created_by);
+
+alter table public.match_rooms enable row level security;
+create policy "match_rooms_read_public" on public.match_rooms
+  for select using (visibility = 'public');
+create policy "match_rooms_owner_rw" on public.match_rooms
+  for all using (auth.uid() = created_by) with check (auth.uid() = created_by);
 
 alter table public.room_members enable row level security;
 create policy "room_members_owner_rw" on public.room_members
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "room_members_read_by_room_members" on public.room_members
+  for select using (
+    exists (select 1 from public.room_members rm
+            where rm.room_id = room_members.room_id and rm.user_id = auth.uid())
+  );
 
 alter table public.matches enable row level security;
 create policy "matches_room_member_read" on public.matches
@@ -95,7 +121,17 @@ create policy "matches_room_member_read" on public.matches
 alter table public.contact_shares enable row level security;
 create policy "contact_shares_owner_rw" on public.contact_shares
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "contact_shares_read_by_match_participants" on public.contact_shares
+  for select using (
+    exists (select 1 from public.matches m
+            where m.id = contact_shares.match_id 
+            and (m.user_a = auth.uid() or m.user_b = auth.uid()))
+  );
 
 alter table public.connections enable row level security;
 create policy "connections_owner_rw" on public.connections
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+alter table public.boost_transactions enable row level security;
+create policy "boost_transactions_owner_rw" on public.boost_transactions
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
