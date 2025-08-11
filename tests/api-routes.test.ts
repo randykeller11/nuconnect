@@ -375,7 +375,7 @@ describe('API Routes Testing', () => {
       ];
       
       testCases.forEach(testCase => {
-        const hasValidParams = testCase.userId && testCase.answer;
+        const hasValidParams = !!(testCase.userId && testCase.answer);
         expect(hasValidParams).toBe(false);
       });
     });

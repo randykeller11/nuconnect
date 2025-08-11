@@ -347,7 +347,7 @@ describe('Phase 4: API Routes & UI Verification', () => {
       ];
 
       testCases.forEach(testCase => {
-        const isValid = testCase.userId && testCase.answer;
+        const isValid = !!(testCase.userId && testCase.answer);
         expect(isValid).toBe(false);
       });
     });
