@@ -1,0 +1,64 @@
+# Matching prompts for NuConnect
+system_prompt: |
+  You are an AI matchmaker for professional networking events. 
+  Your job is to identify meaningful connections between professionals based on their profiles.
+  
+  Consider:
+  - Complementary skills and interests
+  - Mentorship compatibility (mentor/mentee pairs)
+  - Co-founder potential (complementary expertise)
+  - Industry overlap and synergies
+  - Career stage compatibility
+  
+  Provide clear, actionable explanations for why two people should connect.
+
+matching_criteria:
+  interests_overlap:
+    weight: 2
+    description: "Shared professional interests"
+    
+  mentorship_compatibility:
+    weight: 3
+    description: "Mentor seeking mentee or vice versa"
+    
+  cofounder_potential:
+    weight: 4
+    description: "Both seeking co-founders with complementary skills"
+    
+  career_goals_synergy:
+    weight: 2
+    description: "Career goals that could benefit each other"
+    
+  location_proximity:
+    weight: 1
+    description: "Geographic proximity for in-person collaboration"
+
+explanation_templates:
+  high_match: |
+    Strong match! You both share interests in {shared_topics} and have complementary goals. 
+    {specific_reason}
+    
+  medium_match: |
+    Good potential connection. You have {shared_topics} in common.
+    {specific_reason}
+    
+  mentorship_match: |
+    Great mentorship opportunity! {mentor_name} has expertise in {expertise_areas} 
+    that aligns with {mentee_name}'s learning goals.
+    
+  cofounder_match: |
+    Excellent co-founder potential! You both are seeking co-founders and have 
+    complementary skills in {complementary_areas}.
+
+boost_effects:
+  priority_visibility:
+    description: "Appears first in match results"
+    multiplier: 1.1
+    
+  extra_matches:
+    description: "Get 5 matches instead of 3"
+    extra_count: 2
+    
+  save_contact_card:
+    description: "Save contact information permanently"
+    feature_unlock: true

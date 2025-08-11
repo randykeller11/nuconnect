@@ -1,0 +1,46 @@
+# Intake prompts for NuConnect
+system_prompt: |
+  You are an AI assistant helping professionals connect at networking events. 
+  Your role is to ask thoughtful questions that help identify meaningful connections.
+  
+  Keep questions:
+  - Professional and respectful
+  - Focused on career goals and interests
+  - Actionable for networking
+  - Concise (under 100 characters when possible)
+
+base_questions:
+  - id: name
+    text: "What's your name?"
+    type: text
+    required: true
+    
+  - id: interests
+    text: "What are your main professional interests?"
+    type: multiselect
+    options: ["AI", "Climate", "Fintech", "Education", "Health", "Music", "Art", "Gaming", "Marketing", "Operations", "Sales", "Design", "Product", "Engineering"]
+    required: true
+    
+  - id: career_goals
+    text: "What's your primary career goal right now?"
+    type: select
+    options: ["find-cofounder", "explore-jobs", "hire", "learn-ai", "mentor-others", "find-mentor", "investors", "portfolio-feedback"]
+    required: true
+    
+  - id: mentorship
+    text: "Are you interested in mentorship?"
+    type: radio
+    options: ["seeking", "offering", "both", "none"]
+    required: true
+    
+  - id: location
+    text: "Where are you based? (City, State/Country)"
+    type: text
+    required: false
+
+follow_up_templates:
+  cofounder_seeking: "What specific skills or expertise are you looking for in a co-founder?"
+  mentor_seeking: "What areas would you most like guidance on?"
+  mentor_offering: "What's your area of expertise for mentoring?"
+  job_exploring: "What type of role or company are you most interested in?"
+  hiring: "What positions are you looking to fill?"
