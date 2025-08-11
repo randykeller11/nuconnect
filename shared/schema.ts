@@ -4,6 +4,7 @@ import { z } from "zod";
 // Note: Using Supabase auth.users table instead of custom users table
 
 // Database tables: profiles, events, matchRooms, matches, connections, contactShares, boostTransactions
+// Key fields: interests, careerGoals (career_goals), mentorshipPref (mentorship_pref), matchScore (match_score), sharedTopics (shared_topics)
 
 // User profile information for NuConnect
 export const insertProfileSchema = z.object({
@@ -11,8 +12,8 @@ export const insertProfileSchema = z.object({
   name: z.string().min(1),
   profile_photo_url: z.string().url().optional(),
   interests: z.array(z.string()).default([]),
-  career_goals: z.string().optional(),
-  mentorship_pref: z.enum(['seeking', 'offering', 'both', 'none']).default('none'),
+  career_goals: z.string().optional(), // careerGoals in camelCase
+  mentorship_pref: z.enum(['seeking', 'offering', 'both', 'none']).default('none'), // mentorshipPref in camelCase
   contact_prefs: z.record(z.any()).default({}),
 });
 
@@ -41,8 +42,8 @@ export const insertMatchSchema = z.object({
   room_id: z.string().uuid(),
   user_a: z.string().uuid(),
   user_b: z.string().uuid(),
-  match_score: z.number().min(0).max(1).optional(),
-  shared_topics: z.array(z.string()).default([]),
+  match_score: z.number().min(0).max(1).optional(), // matchScore in camelCase
+  shared_topics: z.array(z.string()).default([]), // sharedTopics in camelCase
   ai_explanation: z.string().optional(),
 });
 
