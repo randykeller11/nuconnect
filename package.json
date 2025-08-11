@@ -21,7 +21,8 @@
     "test:phase2": "jest tests/phase2-verification.test.js",
     "test:ai": "jest tests/ai-openrouter.test.ts",
     "test:pipeline": "jest tests/pipeline-*.test.ts",
-    "test:phase3": "jest tests/phase3-verification.test.ts"
+    "test:phase3": "jest tests/phase3-verification.test.ts",
+    "test:phase4": "jest tests/phase4-verification.test.ts tests/api-routes.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
