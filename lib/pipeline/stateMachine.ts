@@ -49,7 +49,12 @@ const BASE_QUESTIONS: IntakeQuestion[] = [
 
 export class IntakeStateMachine {
   async getNextQuestion(userId: string): Promise<IntakeQuestion | null> {
-    const session = sessionManager.getSession(userId) || sessionManager.createSession(userId);
+    let session = sessionManager.getSession(userId);
+    
+    // Create session if it doesn't exist
+    if (!session) {
+      session = sessionManager.createSession(userId);
+    }
     
     // If intake is complete
     if (session.currentStep === -1) {
@@ -72,9 +77,11 @@ export class IntakeStateMachine {
     error?: string;
   }> {
     try {
-      const session = sessionManager.getSession(userId);
+      let session = sessionManager.getSession(userId);
+      
+      // Create session if it doesn't exist
       if (!session) {
-        return { success: false, error: 'No active session' };
+        session = sessionManager.createSession(userId);
       }
 
       // Validate answer based on current question
