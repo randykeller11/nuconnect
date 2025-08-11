@@ -4,7 +4,7 @@ import { z } from "zod";
 // Note: Using Supabase auth.users table instead of custom users table
 
 // Database tables: profiles, events, matchRooms, matches, connections, contactShares, boostTransactions
-// Key fields: interests, careerGoals (career_goals), mentorshipPref (mentorship_pref), matchScore (match_score), sharedTopics (shared_topics)
+// Key fields: interests, careerGoals (career_goals), mentorshipPref (mentorship_pref), matchScore (match_score), sharedTopics (shared_topics), aiExplanation (ai_explanation)
 
 // User profile information for NuConnect
 export const insertProfileSchema = z.object({
