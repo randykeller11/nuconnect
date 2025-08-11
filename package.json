@@ -25,7 +25,8 @@
     "test:phase3": "jest tests/phase3-verification.test.ts",
     "test:phase4": "jest tests/phase4-verification.test.ts tests/api-routes.test.ts",
     "verify:phase4": "node scripts/verify-phase4.js",
-    "verify:phase6": "node scripts/verify-phase6.js"
+    "verify:phase6": "node scripts/verify-phase6.js",
+    "verify:phase7": "node scripts/verify-phase7.js"
   },
   "dependencies": {
     "@faker-js/faker": "^9.9.0",

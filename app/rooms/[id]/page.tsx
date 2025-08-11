@@ -31,10 +31,10 @@ interface ContactInfo {
   website?: string
 }
 
-export default function RoomPage({ params }: { params: { id: string } }) {
+export default function RoomPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const { toast } = useToast()
-  const roomId = params.id
+  const [roomId, setRoomId] = useState<string>('')
   
   const [loading, setLoading] = useState(false)
   const [matches, setMatches] = useState<Match[]>([])
@@ -43,6 +43,11 @@ export default function RoomPage({ params }: { params: { id: string } }) {
   const [sharedContacts, setSharedContacts] = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    // Unwrap params promise
+    params.then(({ id }) => {
+      setRoomId(id)
+    })
+    
     // Get user from localStorage for demo
     const userData = localStorage.getItem('nuconnect_user')
     if (!userData) {
@@ -52,7 +57,7 @@ export default function RoomPage({ params }: { params: { id: string } }) {
     
     setUser(JSON.parse(userData))
     setHasJoined(true) // For demo, assume user has joined
-  }, [])
+  }, [params])
 
   const handleGetMatches = async () => {
     if (!user) return
@@ -185,39 +190,42 @@ export default function RoomPage({ params }: { params: { id: string } }) {
           </Button>
         </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-inkwell mb-2">
+        <div className="text-center mb-12">
+          <div className="w-16 h-16 mx-auto mb-6 bg-inkwell rounded-full flex items-center justify-center shadow-lg">
+            <Network className="w-8 h-8 text-aulait" />
+          </div>
+          <h1 className="text-4xl font-bold text-inkwell mb-4 tracking-tight">
             {getRoomName(roomId)}
           </h1>
-          <p className="text-lunar">
-            Connect with professionals who share your interests
+          <p className="text-xl text-lunar max-w-2xl mx-auto">
+            Connect with professionals who share your interests and goals
           </p>
         </div>
 
         {/* Room Status */}
         {hasJoined && (
-          <Card className="mb-8 bg-white shadow-lg border-0 rounded-2xl">
-            <CardContent className="p-6">
+          <Card className="mb-12 bg-white shadow-xl border-0 rounded-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-inkwell to-lunar p-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <Users className="w-5 h-5 text-green-600" />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                    <Users className="w-6 h-6 text-aulait" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-inkwell">You're in the room!</h3>
-                    <p className="text-sm text-lunar">Ready to find your matches</p>
+                    <h3 className="text-xl font-semibold text-aulait">You're in the room!</h3>
+                    <p className="text-aulait/80">Ready to discover your perfect matches</p>
                   </div>
                 </div>
                 <PrimaryButton
                   onClick={handleGetMatches}
                   loading={loading}
-                  className="flex items-center gap-2"
+                  className="bg-aulait text-inkwell hover:bg-white flex items-center gap-2 shadow-lg"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-5 h-5" />
                   Get Matches
                 </PrimaryButton>
               </div>
-            </CardContent>
+            </div>
           </Card>
         )}
 
@@ -227,25 +235,32 @@ export default function RoomPage({ params }: { params: { id: string } }) {
             <h2 className="text-2xl font-bold text-inkwell">Your Matches</h2>
             
             {matches.map((match) => (
-              <Card key={match.id} className="bg-white shadow-lg border-0 rounded-2xl">
-                <CardHeader>
+              <Card key={match.id} className="bg-white shadow-xl border-0 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-inkwell flex items-center gap-2">
-                        {match.profile.name}
-                        {match.hasPriorityBoost && (
-                          <Badge className="bg-yellow-100 text-yellow-800 text-xs">
-                            ⭐ Boosted
-                          </Badge>
-                        )}
-                      </CardTitle>
-                      <p className="text-sm text-lunar capitalize">
-                        {match.profile.career_goals?.replace('-', ' ')} • {match.profile.mentorship_pref} mentorship
-                      </p>
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center text-aulait font-bold text-lg">
+                        {match.profile.name.charAt(0)}
+                      </div>
+                      <div>
+                        <CardTitle className="text-inkwell flex items-center gap-2 text-xl">
+                          {match.profile.name}
+                          {match.hasPriorityBoost && (
+                            <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 text-xs font-semibold">
+                              ⭐ Boosted
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        <p className="text-lunar capitalize mt-1">
+                          {match.profile.career_goals?.replace('-', ' ')} • {match.profile.mentorship_pref} mentorship
+                        </p>
+                      </div>
                     </div>
-                    <Badge variant="outline" className="border-creme text-creme">
-                      {Math.round(match.score * 10)}% match
-                    </Badge>
+                    <div className="text-right">
+                      <Badge className="bg-gradient-to-r from-creme to-creme/80 text-white font-semibold px-3 py-1">
+                        {Math.round(match.score * 10)}% match
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -318,24 +333,24 @@ export default function RoomPage({ params }: { params: { id: string } }) {
 
         {/* Empty State */}
         {matches.length === 0 && hasJoined && (
-          <Card className="bg-white shadow-lg border-0 rounded-2xl">
-            <CardContent className="p-12 text-center">
-              <div className="w-16 h-16 bg-lunar/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-8 h-8 text-lunar" />
+          <Card className="bg-white shadow-xl border-0 rounded-2xl overflow-hidden">
+            <CardContent className="p-16 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-inkwell/10 to-lunar/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Sparkles className="w-12 h-12 text-inkwell" />
               </div>
-              <h3 className="text-xl font-semibold text-inkwell mb-2">
-                Ready to find your matches?
+              <h3 className="text-2xl font-bold text-inkwell mb-4 tracking-tight">
+                Ready to discover your matches?
               </h3>
-              <p className="text-lunar mb-6">
-                Click "Get Matches" to discover professionals who share your interests and goals.
+              <p className="text-lg text-lunar mb-8 max-w-md mx-auto">
+                Our AI will analyze your profile and find professionals who share your interests and goals.
               </p>
               <PrimaryButton
                 onClick={handleGetMatches}
                 loading={loading}
-                size="lg"
-                className="flex items-center gap-2 mx-auto"
+                size="xl"
+                className="flex items-center gap-3 mx-auto shadow-xl"
               >
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-5 h-5" />
                 Get Matches
               </PrimaryButton>
             </CardContent>

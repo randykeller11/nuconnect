@@ -92,15 +92,33 @@ export default function LoginPage() {
 
   return (
     <div>
-      <BrandHeader 
-        title="Join NuConnect"
-        subtitle="AI-powered professional connections and networking platform"
-      />
+      <div className="bg-gradient-to-br from-inkwell via-lunar to-inkwell text-aulait py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="w-20 h-20 mx-auto mb-8 bg-aulait rounded-full flex items-center justify-center shadow-2xl">
+            <span className="text-3xl font-bold text-inkwell">N</span>
+          </div>
+          <h1 className="text-5xl sm:text-6xl font-bold mb-6 tracking-tight">
+            Join NuConnect
+          </h1>
+          <p className="text-2xl text-aulait/90 max-w-3xl mx-auto">
+            AI-powered professional connections and networking platform
+          </p>
+        </div>
+      </div>
       
-      <FormCard>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-inkwell font-medium">
+      <div className="min-h-screen bg-aulait py-8">
+        <div className="max-w-2xl mx-auto px-4">
+          <Card className="bg-white shadow-2xl border-0 rounded-2xl overflow-hidden">
+            <CardHeader className="text-center pb-8 bg-gradient-to-br from-aulait/20 to-white">
+              <CardTitle className="text-3xl font-bold text-inkwell">
+                Create Your Profile
+              </CardTitle>
+              <p className="text-lunar mt-2">Tell us about your professional interests and goals</p>
+            </CardHeader>
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="space-y-3">
+            <Label htmlFor="name" className="text-inkwell font-semibold text-lg">
               Full Name *
             </Label>
             <Input
@@ -109,13 +127,13 @@ export default function LoginPage() {
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="Enter your full name"
-              className="border-lunar/30 focus:ring-lunar rounded-xl h-12"
+              className="border-2 border-lunar/30 focus:ring-2 focus:ring-lunar focus:border-lunar rounded-xl h-14 text-lg"
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-inkwell font-medium">
+          <div className="space-y-3">
+            <Label htmlFor="email" className="text-inkwell font-semibold text-lg">
               Email Address *
             </Label>
             <Input
@@ -124,24 +142,24 @@ export default function LoginPage() {
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               placeholder="Enter your email address"
-              className="border-lunar/30 focus:ring-lunar rounded-xl h-12"
+              className="border-2 border-lunar/30 focus:ring-2 focus:ring-lunar focus:border-lunar rounded-xl h-14 text-lg"
               required
             />
           </div>
 
-          <div className="space-y-3">
-            <Label className="text-inkwell font-medium">
+          <div className="space-y-4">
+            <Label className="text-inkwell font-semibold text-lg">
               Professional Interests * (Select all that apply)
             </Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {INTERESTS_OPTIONS.map((interest) => (
                 <Badge
                   key={interest}
                   variant={formData.interests.includes(interest) ? 'default' : 'outline'}
-                  className={`cursor-pointer transition-colors ${
+                  className={`cursor-pointer transition-all duration-200 px-4 py-2 text-sm font-medium ${
                     formData.interests.includes(interest)
-                      ? 'bg-inkwell text-aulait hover:bg-lunar'
-                      : 'border-lunar/30 text-lunar hover:bg-lunar/10'
+                      ? 'bg-gradient-to-r from-inkwell to-lunar text-aulait hover:shadow-lg transform hover:scale-105'
+                      : 'border-2 border-lunar/30 text-lunar hover:bg-lunar/10 hover:border-lunar'
                   }`}
                   onClick={() => handleInterestToggle(interest)}
                 >
@@ -151,18 +169,18 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Label className="text-inkwell font-medium">
+          <div className="space-y-4">
+            <Label className="text-inkwell font-semibold text-lg">
               Primary Career Goal *
             </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {CAREER_GOALS_OPTIONS.map((goal) => (
                 <label
                   key={goal.value}
-                  className={`flex items-center p-3 rounded-xl border cursor-pointer transition-colors ${
+                  className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                     formData.careerGoals === goal.value
-                      ? 'border-inkwell bg-inkwell/5 text-inkwell'
-                      : 'border-lunar/30 text-lunar hover:bg-lunar/5'
+                      ? 'border-inkwell bg-gradient-to-r from-inkwell/5 to-lunar/5 text-inkwell shadow-lg transform scale-105'
+                      : 'border-lunar/30 text-lunar hover:bg-lunar/5 hover:border-lunar'
                   }`}
                 >
                   <input
@@ -173,22 +191,25 @@ export default function LoginPage() {
                     onChange={(e) => setFormData(prev => ({ ...prev, careerGoals: e.target.value }))}
                     className="sr-only"
                   />
-                  <span className="font-medium">{goal.label}</span>
+                  <span className="font-semibold">{goal.label}</span>
                 </label>
               ))}
             </div>
           </div>
 
-          <PrimaryButton
-            type="submit"
-            loading={loading}
-            size="lg"
-            className="w-full"
-          >
-            Continue to Profile Setup
-          </PrimaryButton>
-        </form>
-      </FormCard>
+                <PrimaryButton
+                  type="submit"
+                  loading={loading}
+                  size="xl"
+                  className="w-full shadow-xl hover:shadow-2xl transition-shadow duration-300"
+                >
+                  Continue to Profile Setup
+                </PrimaryButton>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

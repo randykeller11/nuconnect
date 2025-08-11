@@ -156,33 +156,42 @@ export default function RoomsPage() {
     <div className="min-h-screen bg-aulait py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-inkwell mb-4">
+        <div className="text-center mb-16">
+          <div className="w-20 h-20 mx-auto mb-8 bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center shadow-xl">
+            <span className="text-3xl font-bold text-aulait">N</span>
+          </div>
+          <h1 className="text-5xl font-bold text-inkwell mb-6 tracking-tight">
             Welcome back, {user.name}!
           </h1>
-          <p className="text-xl text-lunar">
-            Discover networking events and connect with professionals
+          <p className="text-2xl text-lunar max-w-3xl mx-auto">
+            Discover networking events and connect with like-minded professionals
           </p>
         </div>
 
         {/* User Interests */}
-        <Card className="mb-8 bg-white shadow-lg border-0 rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-inkwell">Your Interests</CardTitle>
+        <Card className="mb-12 bg-gradient-to-br from-white to-aulait/20 shadow-xl border-0 rounded-2xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-inkwell/5 to-lunar/5 pb-4">
+            <CardTitle className="text-inkwell text-xl">Your Professional Profile</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {user.interests?.map((interest: string) => (
-                <Badge key={interest} className="bg-inkwell/10 text-inkwell">
-                  {interest}
-                </Badge>
-              ))}
+          <CardContent className="p-6">
+            <div className="mb-4">
+              <h4 className="font-semibold text-inkwell mb-3">Interests</h4>
+              <div className="flex flex-wrap gap-2">
+                {user.interests?.map((interest: string) => (
+                  <Badge key={interest} className="bg-gradient-to-r from-inkwell to-lunar text-aulait px-3 py-1 font-medium">
+                    {interest}
+                  </Badge>
+                ))}
+              </div>
             </div>
-            <p className="text-lunar mt-2">
-              Career Goal: <span className="font-medium capitalize">
-                {user.careerGoals?.replace('-', ' ')}
-              </span>
-            </p>
+            <div className="pt-4 border-t border-lunar/20">
+              <p className="text-lunar">
+                <span className="font-semibold text-inkwell">Career Goal:</span>{' '}
+                <span className="font-medium capitalize text-lg">
+                  {user.careerGoals?.replace('-', ' ')}
+                </span>
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -191,24 +200,31 @@ export default function RoomsPage() {
           <h2 className="text-2xl font-bold text-inkwell mb-6">Upcoming Events</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {events.map((event) => (
-              <Card key={event.id} className="bg-white shadow-lg border-0 rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-inkwell">{event.name}</CardTitle>
-                  <p className="text-lunar">{event.description}</p>
+              <Card key={event.id} className="bg-white shadow-xl border-0 rounded-2xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                <div className="h-2 bg-gradient-to-r from-inkwell to-lunar"></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-inkwell text-xl">{event.name}</CardTitle>
+                  <p className="text-lunar text-base">{event.description}</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 text-sm text-lunar">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {formatDate(event.date_time)}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 text-lunar">
+                      <div className="w-8 h-8 bg-inkwell/10 rounded-full flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-inkwell" />
+                      </div>
+                      <span className="font-medium">{formatDate(event.date_time)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      {event.location}
+                    <div className="flex items-center gap-3 text-lunar">
+                      <div className="w-8 h-8 bg-inkwell/10 rounded-full flex items-center justify-center">
+                        <MapPin className="w-4 h-4 text-inkwell" />
+                      </div>
+                      <span className="font-medium">{event.location}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      {event.participant_count} participants
+                    <div className="flex items-center gap-3 text-lunar">
+                      <div className="w-8 h-8 bg-inkwell/10 rounded-full flex items-center justify-center">
+                        <Users className="w-4 h-4 text-inkwell" />
+                      </div>
+                      <span className="font-medium">{event.participant_count} participants</span>
                     </div>
                   </div>
                 </CardContent>
@@ -222,25 +238,31 @@ export default function RoomsPage() {
           <h2 className="text-2xl font-bold text-inkwell mb-6">Available Match Rooms</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {rooms.map((room) => (
-              <Card key={room.id} className="bg-white shadow-lg border-0 rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-inkwell">{room.name}</CardTitle>
-                  <p className="text-lunar text-sm">{room.description}</p>
+              <Card key={room.id} className="bg-white shadow-xl border-0 rounded-2xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden group">
+                <div className="h-1 bg-gradient-to-r from-creme to-creme/60 group-hover:h-2 transition-all duration-300"></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-inkwell text-xl flex items-center gap-2">
+                    {room.name}
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  </CardTitle>
+                  <p className="text-lunar">{room.description}</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2 text-sm text-lunar">
-                      <Users className="w-4 h-4" />
-                      {room.member_count} members
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-inkwell/10 rounded-full flex items-center justify-center">
+                        <Users className="w-4 h-4 text-inkwell" />
+                      </div>
+                      <span className="font-medium text-lunar">{room.member_count} members</span>
                     </div>
-                    <Badge variant="outline" className="border-creme text-creme">
+                    <Badge className="bg-green-100 text-green-700 border-green-200 capitalize">
                       {room.visibility}
                     </Badge>
                   </div>
                   <PrimaryButton
                     onClick={() => handleJoinRoom(room.id)}
                     loading={loading}
-                    className="w-full"
+                    className="w-full shadow-lg hover:shadow-xl transition-shadow duration-300"
                   >
                     Join Room
                   </PrimaryButton>
