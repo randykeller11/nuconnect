@@ -37,14 +37,12 @@ export default function AuthPage() {
         console.log('window.location.origin:', typeof window !== 'undefined' ? window.location.origin : 'server-side')
         console.log('typeof window:', typeof window)
         
-        // Force production URL if we're in production environment
-        const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-        const baseUrl = isProduction 
-          ? 'https://nuconnect-9f3561915ae1.herokuapp.com'
-          : (process.env.NEXT_PUBLIC_APP_URL || window.location.origin)
+        // Build redirect base URL from env var first, falling back to current origin
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL ||
+          (typeof window !== 'undefined' ? window.location.origin : '')
         
         const redirectUrl = `${baseUrl}/auth/callback`
-        console.log('isProduction:', isProduction)
         console.log('Final baseUrl:', baseUrl)
         console.log('Final redirectUrl:', redirectUrl)
         console.log('=== END DEBUG INFO ===')
