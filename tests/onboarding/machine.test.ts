@@ -160,18 +160,7 @@ describe('OnboardingMachine', () => {
 
   describe('step-specific validation', () => {
     test('should validate snapshot step requirements', () => {
-      // Valid snapshot data
-      machine.updateData({ role: 'Engineer', company: 'TechCorp' })
-      expect(machine.getCurrentState().canGoNext).toBe(true)
-      
-      // Invalid snapshot data
-      machine.reset()
-      machine.updateData({ role: 'Engineer' }) // Missing company/headline
-      expect(machine.getCurrentState().canGoNext).toBe(false)
-    })
-
-    test('should validate snapshot step requirements', () => {
-      // Move to snapshot step
+      // Move to snapshot step first
       machine.nextStep() // to snapshot (step 1)
       
       // Valid snapshot data
