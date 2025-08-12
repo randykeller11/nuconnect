@@ -26,10 +26,12 @@ interface StepReviewProps {
     showCompany?: boolean
   }
   onChange: (data: any) => void
-  onEdit: (step: number) => void
+  onEditStep: (step: number) => void
+  onComplete: () => void
+  isLoading?: boolean
 }
 
-export function StepReview({ data, onChange, onEdit }: StepReviewProps) {
+export function StepReview({ data, onChange, onEditStep, onComplete, isLoading = false }: StepReviewProps) {
   const handleConsentChange = (field: string, checked: boolean) => {
     onChange({ ...data, [field]: checked })
   }
@@ -48,7 +50,7 @@ export function StepReview({ data, onChange, onEdit }: StepReviewProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onEdit(2)}
+            onClick={() => onEditStep(1)}
             className="text-lunar hover:text-inkwell"
           >
             <Edit2 className="w-4 h-4 mr-1" />
@@ -73,7 +75,7 @@ export function StepReview({ data, onChange, onEdit }: StepReviewProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onEdit(3)}
+            onClick={() => onEditStep(2)}
             className="text-lunar hover:text-inkwell"
           >
             <Edit2 className="w-4 h-4 mr-1" />
@@ -127,7 +129,7 @@ export function StepReview({ data, onChange, onEdit }: StepReviewProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onEdit(4)}
+            onClick={() => onEditStep(3)}
             className="text-lunar hover:text-inkwell"
           >
             <Edit2 className="w-4 h-4 mr-1" />
@@ -194,6 +196,17 @@ export function StepReview({ data, onChange, onEdit }: StepReviewProps) {
             />
           </div>
         </div>
+      </div>
+
+      {/* Complete Button */}
+      <div className="pt-8">
+        <Button
+          onClick={onComplete}
+          disabled={isLoading}
+          className="w-full bg-inkwell text-aulait hover:bg-lunar h-12 text-lg"
+        >
+          {isLoading ? 'Setting up your profile...' : 'Finish & See Matches'}
+        </Button>
       </div>
     </div>
   )

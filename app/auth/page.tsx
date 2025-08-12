@@ -55,20 +55,23 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-aulait flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-inkwell">Welcome to NuConnect</CardTitle>
-          <CardDescription>Sign in to start networking</CardDescription>
+    <div className="min-h-screen bg-gradient-to-br from-aulait to-aulait/80 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-2xl border-0 rounded-2xl">
+        <CardHeader className="text-center pb-6">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center shadow-lg mb-4">
+            <span className="text-2xl font-bold text-aulait">N</span>
+          </div>
+          <CardTitle className="text-3xl font-bold text-inkwell">Welcome to NuConnect</CardTitle>
+          <CardDescription className="text-lg text-lunar">Sign in to start networking</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex rounded-lg bg-gray-100 p-1">
+        <CardContent className="space-y-6 p-8">
+          <div className="flex rounded-xl bg-lunar/10 p-1">
             <button
               type="button"
               onClick={() => setMode('magic')}
-              className={`flex-1 rounded-md py-2 px-3 text-sm font-medium transition-colors ${
+              className={`flex-1 rounded-lg py-3 px-4 text-sm font-medium transition-all ${
                 mode === 'magic'
-                  ? 'bg-white text-inkwell shadow-sm'
+                  ? 'bg-white text-inkwell shadow-md'
                   : 'text-lunar hover:text-inkwell'
               }`}
             >
@@ -77,9 +80,9 @@ export default function AuthPage() {
             <button
               type="button"
               onClick={() => setMode('password')}
-              className={`flex-1 rounded-md py-2 px-3 text-sm font-medium transition-colors ${
+              className={`flex-1 rounded-lg py-3 px-4 text-sm font-medium transition-all ${
                 mode === 'password'
-                  ? 'bg-white text-inkwell shadow-sm'
+                  ? 'bg-white text-inkwell shadow-md'
                   : 'text-lunar hover:text-inkwell'
               }`}
             >
@@ -91,11 +94,11 @@ export default function AuthPage() {
             <div>
               <Input
                 type="email"
-                placeholder="Email"
+                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full"
+                className="w-full h-12 text-lg border-2 border-lunar/20 focus:border-inkwell rounded-xl"
               />
             </div>
             
@@ -107,19 +110,25 @@ export default function AuthPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full"
+                  className="w-full h-12 text-lg border-2 border-lunar/20 focus:border-inkwell rounded-xl"
                 />
               </div>
             )}
             
             <Button 
               type="submit" 
-              className="w-full bg-inkwell hover:bg-lunar text-white"
+              className="w-full h-14 text-lg bg-gradient-to-r from-inkwell to-lunar hover:from-lunar hover:to-inkwell text-aulait rounded-xl shadow-lg transition-all duration-300"
               disabled={loading}
             >
               {loading ? 'Loading...' : mode === 'magic' ? 'Send Magic Link' : 'Sign In'}
             </Button>
           </form>
+
+          {mode === 'magic' && (
+            <p className="text-sm text-lunar/70 text-center">
+              We'll send you a secure link to sign in without a password
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
