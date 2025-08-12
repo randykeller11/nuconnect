@@ -1,5 +1,13 @@
-import { NextRequest } from 'next/server'
-import { POST } from '../../app/api/onboarding/save/route'
+// Mock Next.js server components
+jest.mock('next/server', () => ({
+  NextRequest: jest.fn(),
+  NextResponse: {
+    json: jest.fn((data, options) => ({
+      json: () => Promise.resolve(data),
+      status: options?.status || 200
+    }))
+  }
+}))
 
 // Mock Supabase
 const mockSupabaseClient = {
@@ -22,6 +30,13 @@ const mockSupabaseClient = {
 
 jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn(() => mockSupabaseClient)
+}))
+
+// Mock the profile validation
+jest.mock('../../lib/validation/profile', () => ({
+  profileSchema: {
+    parse: jest.fn((data) => data)
+  }
 }))
 
 describe('/api/onboarding/save', () => {
@@ -61,9 +76,9 @@ describe('/api/onboarding/save', () => {
       error: null
     })
 
-    const request = new NextRequest('http://localhost:3000/api/onboarding/save', {
-      method: 'POST',
-      body: JSON.stringify({
+    // Mock request object
+    const mockRequest = {
+      json: jest.fn().mockResolvedValue({
         userId: 'user-123',
         profileData: {
           role: 'Software Engineer',
@@ -74,9 +89,11 @@ describe('/api/onboarding/save', () => {
         },
         isPartial: false
       })
-    })
+    }
 
-    const response = await POST(request)
+    // Import and test the route handler
+    const { POST } = require('../../app/api/onboarding/save/route')
+    const response = await POST(mockRequest)
     const data = await response.json()
 
     expect(response.status).toBe(200)
@@ -102,18 +119,18 @@ describe('/api/onboarding/save', () => {
       error: null
     })
 
-    const request = new NextRequest('http://localhost:3000/api/onboarding/save', {
-      method: 'POST',
-      body: JSON.stringify({
+    const mockRequest = {
+      json: jest.fn().mockResolvedValue({
         userId: 'user-123',
         profileData: {
           role: 'Software Engineer'
         },
         isPartial: true
       })
-    })
+    }
 
-    const response = await POST(request)
+    const { POST } = require('../../app/api/onboarding/save/route')
+    const response = await POST(mockRequest)
     const data = await response.json()
 
     expect(response.status).toBe(200)
@@ -126,15 +143,15 @@ describe('/api/onboarding/save', () => {
       error: { message: 'No user found' }
     })
 
-    const request = new NextRequest('http://localhost:3000/api/onboarding/save', {
-      method: 'POST',
-      body: JSON.stringify({
+    const mockRequest = {
+      json: jest.fn().mockResolvedValue({
         userId: 'user-123',
         profileData: { role: 'Engineer' }
       })
-    })
+    }
 
-    const response = await POST(request)
+    const { POST } = require('../../app/api/onboarding/save/route')
+    const response = await POST(mockRequest)
     const data = await response.json()
 
     expect(response.status).toBe(401)
@@ -149,15 +166,15 @@ describe('/api/onboarding/save', () => {
       error: null
     })
 
-    const request = new NextRequest('http://localhost:3000/api/onboarding/save', {
-      method: 'POST',
-      body: JSON.stringify({
+    const mockRequest = {
+      json: jest.fn().mockResolvedValue({
         userId: 'user-123', // Different from authenticated user
         profileData: { role: 'Engineer' }
       })
-    })
+    }
 
-    const response = await POST(request)
+    const { POST } = require('../../app/api/onboarding/save/route')
+    const response = await POST(mockRequest)
     const data = await response.json()
 
     expect(response.status).toBe(401)
@@ -165,14 +182,14 @@ describe('/api/onboarding/save', () => {
   })
 
   test('should handle missing userId', async () => {
-    const request = new NextRequest('http://localhost:3000/api/onboarding/save', {
-      method: 'POST',
-      body: JSON.stringify({
+    const mockRequest = {
+      json: jest.fn().mockResolvedValue({
         profileData: { role: 'Engineer' }
       })
-    })
+    }
 
-    const response = await POST(request)
+    const { POST } = require('../../app/api/onboarding/save/route')
+    const response = await POST(mockRequest)
     const data = await response.json()
 
     expect(response.status).toBe(400)
@@ -207,9 +224,8 @@ describe('/api/onboarding/save', () => {
       error: null
     })
 
-    const request = new NextRequest('http://localhost:3000/api/onboarding/save', {
-      method: 'POST',
-      body: JSON.stringify({
+    const mockRequest = {
+      json: jest.fn().mockResolvedValue({
         userId: 'user-123',
         profileData: {
           interests: ['AI', 'Technology'],
@@ -217,9 +233,10 @@ describe('/api/onboarding/save', () => {
         },
         isPartial: true
       })
-    })
+    }
 
-    const response = await POST(request)
+    const { POST } = require('../../app/api/onboarding/save/route')
+    const response = await POST(mockRequest)
     const data = await response.json()
 
     expect(response.status).toBe(200)
@@ -252,15 +269,15 @@ describe('/api/onboarding/save', () => {
       error: { message: 'Database error' }
     })
 
-    const request = new NextRequest('http://localhost:3000/api/onboarding/save', {
-      method: 'POST',
-      body: JSON.stringify({
+    const mockRequest = {
+      json: jest.fn().mockResolvedValue({
         userId: 'user-123',
         profileData: { role: 'Engineer' }
       })
-    })
+    }
 
-    const response = await POST(request)
+    const { POST } = require('../../app/api/onboarding/save/route')
+    const response = await POST(mockRequest)
     const data = await response.json()
 
     expect(response.status).toBe(500)
