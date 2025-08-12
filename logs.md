@@ -14,7 +14,7 @@ SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 ADMIN_API_KEY="super-secret-admin-key-2025"
 
 # Public (exposed to client)
-NEXT_PUBLIC_SUPABASE_URL="https://estgdcessxwbpdcgpxsa.supabase.co"
+NEXT_PUBLIC_SUPABASE_URL="https://ymxhgdcezmcrrzqdhble.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteGhnZGNlem1jcnJ6cWRoYmxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTQ4ODAsImV4cCI6MjA3MDI3MDg4MH0.7yDxOxI4pkbFmUDUOfFpCVYo53NnSB6uGpBrhnBID4E"
 
 # Openrouter
