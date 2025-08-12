@@ -56,7 +56,7 @@ function RoomsPageContent() {
     // Get user from localStorage for demo
     const userData = localStorage.getItem('nuconnect_user')
     if (!userData) {
-      router.push('/login')
+      // No local user found – stay on the page; server-side session (cookies) will handle auth.
       return
     }
     

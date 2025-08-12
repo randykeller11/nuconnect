@@ -68,7 +68,7 @@ function RoomPageContent({ params }: { params: Promise<{ id: string }> }) {
     // Get user from localStorage for demo
     const userData = localStorage.getItem('nuconnect_user')
     if (!userData) {
-      router.push('/login')
+      // No local user found – allow rendering; server-side session (cookies) will handle auth.
       return
     }
     
