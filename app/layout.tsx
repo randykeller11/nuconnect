@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { QueryProvider } from '../lib/query-provider'
-import { ToastProvider } from '../lib/hooks/use-toast'
 import { Toaster } from 'sonner'
 import { ReactNode } from 'react'
 
@@ -30,10 +29,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <QueryProvider>
-          <ToastProvider>
-            {children}
-            <Toaster position="top-center" />
-          </ToastProvider>
+          {children}
+          <Toaster position="top-center" />
         </QueryProvider>
       </body>
     </html>
