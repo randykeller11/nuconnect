@@ -1,117 +1,99 @@
 'use client'
 
-import React from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
+import { HomeHero } from '@/components/home/HomeHero'
+import { ProfileStrengthCard } from '@/components/home/ProfileStrengthCard'
+import { RoomsGrid } from '@/components/home/RoomsGrid'
+import { ConnectionsList } from '@/components/home/ConnectionsList'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Users, Calendar, MessageCircle, Settings, Plus } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+
+interface DashboardData {
+  profileStrength: any
+  upcomingRooms: any[]
+  recentConnections: any[]
+  user: any
+}
 
 export default function HomePage() {
-  const router = useRouter()
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const quickActions = [
-    {
-      title: 'Browse Events',
-      description: 'Find networking events near you',
-      icon: Calendar,
-      action: () => router.push('/events'),
-      color: 'bg-inkwell'
-    },
-    {
-      title: 'Join Match Rooms',
-      description: 'Connect with professionals in your field',
-      icon: Users,
-      action: () => router.push('/rooms'),
-      color: 'bg-lunar'
-    },
-    {
-      title: 'View Connections',
-      description: 'See your networking connections',
-      icon: MessageCircle,
-      action: () => router.push('/connections'),
-      color: 'bg-creme'
+  useEffect(() => {
+    async function fetchDashboardData() {
+      try {
+        const response = await fetch('/api/me/dashboard')
+        if (response.ok) {
+          const dashboardData = await response.json()
+          setData(dashboardData)
+        }
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
 
-  const recentActivity = [
-    {
-      type: 'match',
-      title: 'New match available',
-      description: 'You have 3 new potential connections',
-      time: '2 hours ago'
-    },
-    {
-      type: 'event',
-      title: 'Event reminder',
-      description: 'Tech Networking Meetup starts tomorrow',
-      time: '1 day ago'
-    },
-    {
-      type: 'connection',
-      title: 'Contact shared',
-      description: 'Sarah Johnson shared their contact info',
-      time: '2 days ago'
-    }
-  ]
+    fetchDashboardData()
+  }, [])
 
-  return (
-    <div className="min-h-screen bg-aulait">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center">
-                <span className="text-xl font-bold text-aulait">N</span>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-inkwell">Welcome back!</h1>
-                <p className="text-lunar">Ready to make new connections?</p>
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-aulait">
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="flex items-center gap-4">
+              <Skeleton className="w-16 h-16 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-5 w-48" />
               </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/profile')}
-              className="flex items-center gap-2"
-            >
-              <Settings className="w-4 h-4" />
-              Profile Settings
-            </Button>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-64 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl" />
+            </div>
+            <div className="space-y-6">
+              <Skeleton className="h-80 w-full rounded-2xl" />
+            </div>
           </div>
         </div>
       </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-aulait">
+      <HomeHero user={data?.user} />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="lg:col-span-2">
-            <h2 className="text-xl font-semibold text-inkwell mb-6">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {quickActions.map((action, index) => (
-                <Card 
-                  key={index}
-                  className="bg-white shadow-xl border-0 rounded-2xl hover:shadow-2xl transition-all duration-300 cursor-pointer group"
-                  onClick={action.action}
-                >
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                        <action.icon className="w-6 h-6 text-aulait" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-inkwell text-lg">{action.title}</CardTitle>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-lunar">{action.description}</p>
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Profile Strength */}
+            {data?.profileStrength && (
+              <ProfileStrengthCard strength={data.profileStrength} />
+            )}
+
+            {/* Upcoming Rooms */}
+            <div>
+              <h2 className="text-2xl font-bold text-inkwell mb-6">Upcoming Events & Rooms</h2>
+              {data?.upcomingRooms ? (
+                <RoomsGrid rooms={data.upcomingRooms} />
+              ) : (
+                <Card className="bg-white shadow-xl border-0 rounded-2xl">
+                  <CardContent className="p-8 text-center">
+                    <p className="text-lunar">No upcoming rooms available</p>
                   </CardContent>
                 </Card>
-              ))}
+              )}
             </div>
 
-            {/* Stats Overview */}
+            {/* Networking Stats */}
             <Card className="bg-white shadow-xl border-0 rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-inkwell">Your Networking Stats</CardTitle>
@@ -119,57 +101,42 @@ export default function HomePage() {
               <CardContent>
                 <div className="grid grid-cols-3 gap-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-inkwell mb-1">12</div>
+                    <div className="text-3xl font-bold text-inkwell mb-1">
+                      {data?.recentConnections?.length || 0}
+                    </div>
                     <div className="text-sm text-lunar">Connections</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-lunar mb-1">3</div>
-                    <div className="text-sm text-lunar">Events Joined</div>
+                    <div className="text-3xl font-bold text-lunar mb-1">
+                      {data?.upcomingRooms?.length || 0}
+                    </div>
+                    <div className="text-sm text-lunar">Active Rooms</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-creme mb-1">8</div>
-                    <div className="text-sm text-lunar">Matches Made</div>
+                    <div className="text-3xl font-bold text-creme mb-1">
+                      {data?.profileStrength?.score || 0}%
+                    </div>
+                    <div className="text-sm text-lunar">Profile Strength</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Recent Activity */}
-          <div>
-            <h2 className="text-xl font-semibold text-inkwell mb-6">Recent Activity</h2>
-            <Card className="bg-white shadow-xl border-0 rounded-2xl">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-3 pb-4 border-b border-lunar/10 last:border-b-0 last:pb-0">
-                      <div className="w-2 h-2 bg-inkwell rounded-full mt-2 flex-shrink-0"></div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-inkwell text-sm">{activity.title}</h4>
-                        <p className="text-lunar text-sm mt-1">{activity.description}</p>
-                        <p className="text-lunar/60 text-xs mt-2">{activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Create */}
-            <Card className="bg-gradient-to-br from-inkwell to-lunar shadow-xl border-0 rounded-2xl mt-6">
-              <CardContent className="p-6 text-center">
-                <Plus className="w-8 h-8 text-aulait mx-auto mb-3" />
-                <h3 className="font-semibold text-aulait mb-2">Create Event</h3>
-                <p className="text-aulait/80 text-sm mb-4">Host your own networking event</p>
-                <Button 
-                  variant="outline" 
-                  className="bg-transparent border-aulait text-aulait hover:bg-aulait hover:text-inkwell"
-                  onClick={() => router.push('/events/create')}
-                >
-                  Get Started
-                </Button>
-              </CardContent>
-            </Card>
+          {/* Sidebar */}
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-xl font-semibold text-inkwell mb-6">Recent Connections</h2>
+              {data?.recentConnections ? (
+                <ConnectionsList connections={data.recentConnections} />
+              ) : (
+                <Card className="bg-white shadow-xl border-0 rounded-2xl">
+                  <CardContent className="p-8 text-center">
+                    <p className="text-lunar">No connections yet</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </div>
         </div>
       </div>
