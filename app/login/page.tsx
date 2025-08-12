@@ -52,8 +52,6 @@ export default function LoginPage() {
           email,
           options: {
             emailRedirectTo: redirectUrl,
-            // Some Supabase versions expect `redirectTo`, so include both
-            redirectTo: redirectUrl,
             shouldCreateUser: true,
           },
         })
@@ -70,7 +68,6 @@ export default function LoginPage() {
             password,
             options: {
               emailRedirectTo: redirectUrl,
-              redirectTo: redirectUrl,
             },
           })
           
