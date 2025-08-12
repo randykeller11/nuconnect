@@ -67,13 +67,25 @@ function RoomPageContent({ params }: { params: Promise<{ id: string }> }) {
     
     // Get user from localStorage for demo
     const userData = localStorage.getItem('nuconnect_user')
-    if (!userData) {
-      // No local user found – allow rendering; server-side session (cookies) will handle auth.
-      return
+
+    if (userData) {
+      setUser(JSON.parse(userData))
+      setHasJoined(true)
+    } else {
+      // Fallback: fetch user from server session
+      ;(async () => {
+        try {
+          const res = await fetch('/api/me/profile')
+          if (res.ok) {
+            const u = await res.json()
+            setUser(u)
+            setHasJoined(true)
+          }
+        } catch (err) {
+          console.error('Failed to fetch user profile:', err)
+        }
+      })()
     }
-    
-    setUser(JSON.parse(userData))
-    setHasJoined(true) // For demo, assume user has joined
   }, [params, mounted])
 
   const handleGetMatches = async () => {

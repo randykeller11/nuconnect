@@ -55,13 +55,26 @@ function RoomsPageContent() {
     
     // Get user from localStorage for demo
     const userData = localStorage.getItem('nuconnect_user')
-    if (!userData) {
-      // No local user found – stay on the page; server-side session (cookies) will handle auth.
-      return
+
+    if (userData) {
+      // Use the demo user stored in localStorage
+      setUser(JSON.parse(userData))
+      fetchEventsAndRooms()
+    } else {
+      // Fallback: try to get the authenticated user from the server session
+      ;(async () => {
+        try {
+          const res = await fetch('/api/me/profile')
+          if (res.ok) {
+            const u = await res.json()
+            setUser(u)
+            fetchEventsAndRooms()
+          }
+        } catch (err) {
+          console.error('Failed to fetch user profile:', err)
+        }
+      })()
     }
-    
-    setUser(JSON.parse(userData))
-    fetchEventsAndRooms()
   }, [mounted])
 
   const fetchEventsAndRooms = async () => {
