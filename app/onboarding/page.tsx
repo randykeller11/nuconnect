@@ -184,8 +184,10 @@ export default function OnboardingPage() {
         })
       })
 
+      const result = await response.json()
+      
       if (!response.ok) {
-        throw new Error('Failed to save profile')
+        throw new Error(result.error || 'Failed to save profile')
       }
 
       toast.success('Profile completed successfully!')

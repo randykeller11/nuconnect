@@ -106,7 +106,8 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      profile: profile
+      profile: profile,
+      isOnboardingComplete: !isPartial && profileToSave.name && profileToSave.interests && profileToSave.career_goals
     })
     
   } catch (error) {
