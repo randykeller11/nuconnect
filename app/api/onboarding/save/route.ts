@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
       name: profileData.role ? `${profileData.role}${profileData.company ? ` at ${profileData.company}` : ''}` : 'Professional',
       interests: profileData.interests || [],
       career_goals: profileData.objectives?.[0],
-      mentorship_pref: profileData.seeking?.includes('Mentor') ? 'seeking' : 
-                      profileData.objectives?.includes('Mentor Others') ? 'offering' : 'none',
+      mentorship_pref: profileData.objectives?.includes('Mentor Others') ? 'offering' : 
+                      profileData.seeking?.includes('Mentor') ? 'seeking' : 'none',
       contact_prefs: {
         role: profileData.role,
         company: profileData.company,
