@@ -12,19 +12,19 @@ test.describe('Authentication E2E Tests', () => {
     expect(page.url()).toContain('/auth')
   })
 
-  test('should handle missing auth page gracefully', async ({ page }) => {
+  test('should handle auth page correctly', async ({ page }) => {
     // Navigate to auth page
     const response = await page.goto('/auth')
     
-    // If auth page doesn't exist, we should get a 404 or be redirected
-    // This test documents the current state
-    if (response?.status() === 404) {
-      console.log('Auth page not yet implemented - this is expected')
-      expect(response.status()).toBe(404)
-    } else {
-      // If page exists, check for basic structure
-      await expect(page.locator('body')).toBeVisible()
-    }
+    // Auth page should exist and load properly
+    expect(response?.status()).toBe(200)
+    
+    // Should show the auth page content
+    await expect(page.locator('body')).toBeVisible()
+    
+    // Should contain auth-related elements
+    const pageContent = await page.textContent('body')
+    expect(pageContent).toBeTruthy()
   })
 
   test('should be able to navigate to callback page', async ({ page }) => {
@@ -39,7 +39,7 @@ test.describe('Authentication E2E Tests', () => {
   })
 
   test('should handle API routes for profile check', async ({ page }) => {
-    // Mock the profile API endpoint
+    // Mock the profile API endpoint to return expected structure
     await page.route('/api/me/profile', async (route) => {
       await route.fulfill({
         status: 200,
@@ -52,8 +52,11 @@ test.describe('Authentication E2E Tests', () => {
     const response = await page.request.get('/api/me/profile')
     const data = await response.json()
     
+    // Should return the mocked response structure
     expect(data).toHaveProperty('hasProfile')
     expect(data).toHaveProperty('userId')
+    expect(data.hasProfile).toBe(false)
+    expect(data.userId).toBe('123')
   })
 
   test('should handle onboarding redirect', async ({ page }) => {

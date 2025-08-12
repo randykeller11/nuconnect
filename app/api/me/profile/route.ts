@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = await createSupabaseServerClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
