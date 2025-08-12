@@ -28,18 +28,20 @@ export default function LoginPage() {
       NODE_ENV: process.env.NODE_ENV,
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL
     })
+
+    // Build the redirect URL once and reuse it for every auth flow
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL.length > 0
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : window.location.origin
+
+    const redirectUrl = `${baseUrl}/auth/callback`
     
     const supabase = supabaseBrowser()
     
     try {
       if (mode === 'magic') {
-        // Force production URL if we're in production environment
-        const baseUrl =
-          process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL.length > 0
-            ? process.env.NEXT_PUBLIC_APP_URL
-            : window.location.origin
-
-        const redirectUrl = `${baseUrl}/auth/callback`
+        // Use the pre-computed redirectUrl for the magic link
         
         console.log('Magic link debug:')
         console.log('- baseUrl:', baseUrl)
@@ -50,6 +52,8 @@ export default function LoginPage() {
           email,
           options: {
             emailRedirectTo: redirectUrl,
+            // Some Supabase versions expect `redirectTo`, so include both
+            redirectTo: redirectUrl,
             shouldCreateUser: true,
           },
         })
@@ -65,7 +69,8 @@ export default function LoginPage() {
             email,
             password,
             options: {
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              emailRedirectTo: redirectUrl,
+              redirectTo: redirectUrl,
             },
           })
           
