@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PrimaryButton } from '@/components/PrimaryButton'
@@ -26,15 +26,24 @@ interface MatchRoom {
   visibility: 'public' | 'private'
 }
 
-export default function RoomsPage() {
+function RoomsPageContent() {
   const router = useRouter()
-  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [events, setEvents] = useState<Event[]>([])
   const [rooms, setRooms] = useState<MatchRoom[]>([])
   const [user, setUser] = useState<any>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Only initialize toast after component mounts
+  const { toast } = mounted ? useToast() : { toast: () => {} }
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    
     // Get user from localStorage for demo
     const userData = localStorage.getItem('nuconnect_user')
     if (!userData) {
@@ -44,7 +53,7 @@ export default function RoomsPage() {
     
     setUser(JSON.parse(userData))
     fetchEventsAndRooms()
-  }, [])
+  }, [mounted])
 
   const fetchEventsAndRooms = async () => {
     try {
@@ -273,5 +282,17 @@ export default function RoomsPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RoomsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-aulait flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-inkwell/30 border-t-inkwell rounded-full animate-spin" />
+      </div>
+    }>
+      <RoomsPageContent />
+    </Suspense>
   )
 }
