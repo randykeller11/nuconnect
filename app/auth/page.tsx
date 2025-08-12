@@ -146,17 +146,6 @@ export default function AuthPage() {
               type="submit" 
               className="w-full h-14 text-lg bg-gradient-to-r from-inkwell to-lunar hover:from-lunar hover:to-inkwell text-aulait rounded-xl shadow-lg transition-all duration-300"
               disabled={loading}
-              onClick={() => {
-                console.log('=== BUTTON CLICK DEBUG ===')
-                console.log('Button clicked - mode:', mode)
-                console.log('Current hostname:', window.location.hostname)
-                console.log('Current origin:', window.location.origin)
-                console.log('Environment variables:', {
-                  NODE_ENV: process.env.NODE_ENV,
-                  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL
-                })
-                console.log('=== END BUTTON CLICK DEBUG ===')
-              }}
             >
               {loading ? 'Loading...' : mode === 'magic' ? 'Send Magic Link' : 'Sign In'}
             </Button>
