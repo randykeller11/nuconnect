@@ -41,7 +41,22 @@ export default function OnboardingPage() {
 
       setUser(user)
 
-      // Always start fresh - if they're here, they need onboarding
+      // Check if user already has a complete profile
+      try {
+        const res = await fetch('/api/me/profile')
+        const data = await res.json()
+        
+        if (res.ok && data.hasProfile && data.isOnboardingComplete) {
+          // User already has a complete profile, redirect to home
+          router.replace('/home')
+          return
+        }
+      } catch (profileError) {
+        console.error('Error checking profile:', profileError)
+        // Continue with onboarding if there's an error checking profile
+      }
+
+      // Start fresh onboarding - if they're here, they need onboarding
       const newMachine = new OnboardingMachine()
       setMachine(newMachine)
     } catch (error) {
