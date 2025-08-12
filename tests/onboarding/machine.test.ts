@@ -170,6 +170,21 @@ describe('OnboardingMachine', () => {
       expect(machine.getCurrentState().canGoNext).toBe(false)
     })
 
+    test('should validate snapshot step requirements', () => {
+      // Move to snapshot step
+      machine.nextStep() // to snapshot (step 1)
+      
+      // Valid snapshot data
+      machine.updateData({ role: 'Engineer', company: 'TechCorp' })
+      expect(machine.getCurrentState().canGoNext).toBe(true)
+      
+      // Invalid snapshot data
+      machine.reset()
+      machine.nextStep() // to snapshot (step 1)
+      machine.updateData({ role: 'Engineer' }) // Missing company/headline
+      expect(machine.getCurrentState().canGoNext).toBe(false)
+    })
+
     test('should validate focus step requirements', () => {
       // Complete snapshot first
       machine.updateData({ role: 'Engineer', company: 'TechCorp' })
