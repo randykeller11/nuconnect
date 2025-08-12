@@ -105,7 +105,11 @@ export default function OnboardingPage() {
 
     try {
       const updatedState = machine.updateData(newData)
-      setMachine(new OnboardingMachine(updatedState.data))
+      // Create new machine instance with the updated state
+      const newMachine = new OnboardingMachine(updatedState.data)
+      // Restore the current step from the updated state
+      newMachine.getCurrentState().currentStep = updatedState.currentStep
+      setMachine(newMachine)
       
       // Auto-save the changes
       autoSave(updatedState.data, true)
@@ -119,7 +123,11 @@ export default function OnboardingPage() {
 
     try {
       const updatedState = machine.nextStep()
-      setMachine(new OnboardingMachine(updatedState.data))
+      // Create new machine instance with the updated state
+      const newMachine = new OnboardingMachine(updatedState.data)
+      // Restore the current step from the updated state
+      newMachine.getCurrentState().currentStep = updatedState.currentStep
+      setMachine(newMachine)
       
       // Save progress
       autoSave(updatedState.data, true)
@@ -133,7 +141,11 @@ export default function OnboardingPage() {
 
     try {
       const updatedState = machine.previousStep()
-      setMachine(new OnboardingMachine(updatedState.data))
+      // Create new machine instance with the updated state
+      const newMachine = new OnboardingMachine(updatedState.data)
+      // Restore the current step from the updated state
+      newMachine.getCurrentState().currentStep = updatedState.currentStep
+      setMachine(newMachine)
     } catch (error: any) {
       toast.error(error.message)
     }
