@@ -43,7 +43,13 @@ function RoomPageContent({ params }: { params: Promise<{ id: string }> }) {
 
   // Always call useToast to maintain hook order
   const { toast: toastFn } = useToast()
-  const toast = mounted ? toastFn : () => {}
+  
+  // Create a safe toast function that only works after mounting
+  const toast = (options: any) => {
+    if (mounted) {
+      toastFn(options)
+    }
+  }
 
   useEffect(() => {
     setMounted(true)

@@ -40,8 +40,15 @@ function ConnectionsPageContent() {
   const [noteText, setNoteText] = useState('')
   const [mounted, setMounted] = useState(false)
 
-  // Only initialize toast after component mounts
-  const { toast } = mounted ? useToast() : { toast: () => {} }
+  // Always call useToast to maintain hook order
+  const { toast: toastFn } = useToast()
+  
+  // Create a safe toast function that only works after mounting
+  const toast = (options: any) => {
+    if (mounted) {
+      toastFn(options)
+    }
+  }
 
   useEffect(() => {
     setMounted(true)
