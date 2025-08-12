@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -32,7 +32,7 @@ interface Connection {
   connectedAt: string
 }
 
-export default function ConnectionsPage() {
+function ConnectionsPageContent() {
   const router = useRouter()
   const { toast } = useToast()
   const [connections, setConnections] = useState<Connection[]>([])
@@ -365,5 +365,17 @@ export default function ConnectionsPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ConnectionsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-aulait flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-inkwell/30 border-t-inkwell rounded-full animate-spin" />
+      </div>
+    }>
+      <ConnectionsPageContent />
+    </Suspense>
   )
 }
