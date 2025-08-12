@@ -9,12 +9,13 @@ const supabase = createClient(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json()
     const { userId, contactInfo } = body
-    const matchId = params.id
+    const resolvedParams = await params
+    const matchId = resolvedParams.id
     
     if (!userId || !contactInfo) {
       return NextResponse.json(
