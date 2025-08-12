@@ -91,34 +91,3 @@ export default function HomePage() {
     </div>
   )
 }
-export default function HomePage() {
-  return (
-    <div className="min-h-screen bg-aulait flex items-center justify-center p-4">
-      <div className="text-center max-w-lg">
-        <div className="w-16 h-16 mx-auto bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center shadow-lg mb-6">
-          <span className="text-2xl font-bold text-aulait">N</span>
-        </div>
-        <h1 className="text-3xl font-bold text-inkwell mb-4">Welcome to NuConnect</h1>
-        <p className="text-lg text-lunar mb-8">
-          Professional networking powered by AI matching
-        </p>
-        <div className="space-y-4">
-          <a
-            href="/auth"
-            className="inline-block bg-inkwell text-aulait px-6 py-3 rounded-xl hover:bg-lunar transition-colors"
-          >
-            Get Started
-          </a>
-          <div>
-            <a
-              href="/demo-selection"
-              className="text-lunar hover:text-inkwell underline"
-            >
-              Try Demo
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
