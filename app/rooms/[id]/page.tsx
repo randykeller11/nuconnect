@@ -41,8 +41,9 @@ function RoomPageContent({ params }: { params: Promise<{ id: string }> }) {
   const [sharedContacts, setSharedContacts] = useState<Set<string>>(new Set())
   const [mounted, setMounted] = useState(false)
 
-  // Only initialize toast after component mounts
-  const { toast } = mounted ? useToast() : { toast: () => {} }
+  // Always call useToast to maintain hook order
+  const { toast: toastFn } = useToast()
+  const toast = mounted ? toastFn : () => {}
 
   useEffect(() => {
     setMounted(true)
