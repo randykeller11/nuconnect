@@ -8,9 +8,9 @@ export default function GlobalError({
   reset: () => void
 }) {
   return (
-    <html>
-      <body>
-        <div className="min-h-screen bg-aulait flex items-center justify-center p-4">
+    <html lang="en">
+      <body className="bg-aulait">
+        <div className="min-h-screen flex items-center justify-center p-4">
           <div className="text-center max-w-lg">
             <div className="w-16 h-16 mx-auto bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center shadow-lg mb-6">
               <span className="text-2xl font-bold text-aulait">!</span>
