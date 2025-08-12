@@ -1,3 +1,14 @@
+// Mock Next.js server components
+jest.mock('next/server', () => ({
+  NextRequest: jest.fn(),
+  NextResponse: {
+    json: jest.fn((data, options) => ({
+      json: () => Promise.resolve(data),
+      status: options?.status || 200
+    }))
+  }
+}))
+
 describe('/api/onboarding/save', () => {
   test('should save profile data successfully', async () => {
     const mockRequest = {
