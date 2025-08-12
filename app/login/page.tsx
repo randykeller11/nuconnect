@@ -30,8 +30,10 @@ export default function LoginPage() {
     })
 
     // Build the redirect URL once and reuse it for every auth flow
+    // Prefer NEXT_PUBLIC_APP_URL unless it still points to localhost
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL.length > 0
+      process.env.NEXT_PUBLIC_APP_URL &&
+      !process.env.NEXT_PUBLIC_APP_URL.includes('localhost')
         ? process.env.NEXT_PUBLIC_APP_URL
         : window.location.origin
 
