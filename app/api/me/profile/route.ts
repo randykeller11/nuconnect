@@ -23,8 +23,20 @@ export async function GET() {
     const isOnboardingComplete = hasProfile && 
       profile.name && 
       profile.interests && 
+      Array.isArray(profile.interests) &&
       profile.interests.length > 0 && 
       profile.career_goals
+
+    console.log('Profile check debug:', {
+      hasProfile,
+      profileExists: !!profile,
+      profileError: profileError?.message,
+      name: profile?.name,
+      interests: profile?.interests,
+      interestsLength: profile?.interests?.length,
+      career_goals: profile?.career_goals,
+      isOnboardingComplete
+    })
     
     return NextResponse.json({ 
       hasProfile, 
