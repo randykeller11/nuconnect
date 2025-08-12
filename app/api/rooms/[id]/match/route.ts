@@ -56,7 +56,8 @@ export async function POST(
     // Extract profiles from the join
     const candidateProfiles = roomMembers
       ?.map(member => member.profiles)
-      .filter(profile => profile !== null) || []
+      .filter(profile => profile !== null)
+      .flat() || []
     
     // Check for existing boosts (simplified - in production would query boost_transactions)
     const hasExtraMatches = false // Placeholder
