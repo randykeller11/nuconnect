@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
@@ -14,6 +15,18 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Create service role client to bypass RLS for profile operations
+    const serviceSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
     
     const body = await request.json()
     const { profileData, isPartial = false } = body
@@ -73,8 +86,8 @@ export async function POST(request: NextRequest) {
       profileToSave.contact_prefs = contactPrefs
     }
     
-    // Try to upsert the profile
-    const { data: profile, error: profileError } = await supabase
+    // Try to upsert the profile using service role to bypass RLS
+    const { data: profile, error: profileError } = await serviceSupabase
       .from('profiles')
       .upsert(profileToSave, { 
         onConflict: 'user_id',
