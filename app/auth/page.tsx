@@ -22,15 +22,22 @@ export default function AuthPage() {
     
     try {
       if (mode === 'magic') {
+        // Log all environment info
+        console.log('=== MAGIC LINK DEBUG INFO ===')
+        console.log('NODE_ENV:', process.env.NODE_ENV)
+        console.log('NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
+        console.log('window.location.origin:', typeof window !== 'undefined' ? window.location.origin : 'server-side')
+        console.log('typeof window:', typeof window)
+        
         // Use window.location.origin as fallback, but prefer the env var if available
         const baseUrl = typeof window !== 'undefined' 
           ? (process.env.NEXT_PUBLIC_APP_URL || window.location.origin)
           : process.env.NEXT_PUBLIC_APP_URL || 'https://nuconnect-9f3561915ae1.herokuapp.com'
         
         const redirectUrl = `${baseUrl}/auth/callback`
-        console.log('Magic link redirect URL:', redirectUrl)
-        console.log('NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
-        console.log('window.location.origin:', typeof window !== 'undefined' ? window.location.origin : 'server-side')
+        console.log('Final baseUrl:', baseUrl)
+        console.log('Final redirectUrl:', redirectUrl)
+        console.log('=== END DEBUG INFO ===')
         
         const { error } = await supabase.auth.signInWithOtp({
           email,
