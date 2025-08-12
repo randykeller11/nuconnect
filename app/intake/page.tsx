@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FormCard } from '@/components/FormCard'
 import { PrimaryButton } from '@/components/PrimaryButton'
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/lib/hooks/use-toast'
 import type { IntakeQuestion } from '@/lib/pipeline/stateMachine'
 
-export default function IntakePage() {
+function IntakePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -259,5 +259,17 @@ export default function IntakePage() {
         </PrimaryButton>
       </form>
     </FormCard>
+  )
+}
+
+export default function IntakePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-aulait flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-inkwell/30 border-t-inkwell rounded-full animate-spin" />
+      </div>
+    }>
+      <IntakePageContent />
+    </Suspense>
   )
 }
