@@ -62,14 +62,17 @@ export class OnboardingMachine {
   private updateNavigationState(): void {
     this.state.canGoBack = this.state.currentStep > 0
     
-    // For canGoNext, check if we can advance from current step
+    // For canGoNext, check if current step requirements are met
     if (this.state.currentStep === 0) {
       this.state.canGoNext = true // Welcome step can always advance
     } else if (this.state.currentStep === 1) {
+      // Snapshot step - need role and (company or headline)
       this.state.canGoNext = isSnapshotComplete(this.state.data)
     } else if (this.state.currentStep === 2) {
+      // Focus step - need industries or skills
       this.state.canGoNext = isFocusComplete(this.state.data)
     } else if (this.state.currentStep === 3) {
+      // Intent step - need objectives and seeking
       this.state.canGoNext = isIntentComplete(this.state.data)
     } else {
       this.state.canGoNext = false
@@ -123,12 +126,13 @@ export class OnboardingMachine {
       return { ...this.state }
     }
 
-    if (this.state.currentStep === 4) {
-      this.state.isComplete = true
-      return { ...this.state }
-    }
-
     this.state.currentStep += 1
+    
+    // Check if we've completed all steps (step 4 is review/final)
+    if (this.state.currentStep >= 4) {
+      this.state.isComplete = true
+    }
+    
     this.updateNavigationState()
     return { ...this.state }
   }

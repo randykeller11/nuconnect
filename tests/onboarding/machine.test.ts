@@ -62,8 +62,9 @@ describe('OnboardingMachine', () => {
     })
 
     test('should not advance when requirements not met', () => {
-      machine.updateData({ currentStep: 1 }) // Move to focus step
-      // Don't provide required focus data
+      // Move to snapshot step (step 1) but don't provide required data
+      machine.nextStep() // Move from welcome (0) to snapshot (1)
+      // Don't provide required snapshot data (role + company/headline)
       
       const state = machine.getCurrentState()
       expect(state.canGoNext).toBe(false)
@@ -94,16 +95,18 @@ describe('OnboardingMachine', () => {
         seeking: ['talent']
       })
       
-      // Navigate to final step
-      machine.nextStep() // to focus
-      machine.nextStep() // to intent
-      machine.nextStep() // to review
-      const state = machine.nextStep() // complete
+      // Navigate through all steps
+      machine.nextStep() // to snapshot (1)
+      machine.nextStep() // to focus (2)
+      machine.nextStep() // to intent (3)
+      const state = machine.nextStep() // to review (4) - should complete
       
       expect(state.isComplete).toBe(true)
     })
 
     test('should not complete when requirements missing', () => {
+      // Move to snapshot step and provide incomplete data
+      machine.nextStep() // to snapshot step
       machine.updateData({ role: 'Engineer' }) // Missing company/headline
       
       const state = machine.getCurrentState()
@@ -182,14 +185,15 @@ describe('OnboardingMachine', () => {
     })
 
     test('should validate intent step requirements', () => {
-      // Complete previous steps
+      // Complete previous steps and navigate to intent step
       machine.updateData({
         role: 'Engineer',
         company: 'TechCorp',
         industries: ['Technology']
       })
-      machine.nextStep() // to focus
-      machine.nextStep() // to intent
+      machine.nextStep() // to snapshot (1)
+      machine.nextStep() // to focus (2)
+      machine.nextStep() // to intent (3)
       
       // Valid intent data
       machine.updateData({
@@ -198,8 +202,8 @@ describe('OnboardingMachine', () => {
       })
       expect(machine.getCurrentState().canGoNext).toBe(true)
       
-      // Invalid intent data
-      machine.updateData({ objectives: ['hire'] }) // Missing seeking
+      // Invalid intent data - reset and try again
+      machine.updateData({ objectives: ['hire'], seeking: [] }) // Missing seeking
       expect(machine.getCurrentState().canGoNext).toBe(false)
     })
   })
