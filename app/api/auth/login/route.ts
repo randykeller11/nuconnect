@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { storage } from '../../../../lib/storage'
 import { loginUserSchema } from '../../../../shared/schema'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
