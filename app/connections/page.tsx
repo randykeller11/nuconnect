@@ -34,13 +34,22 @@ interface Connection {
 
 function ConnectionsPageContent() {
   const router = useRouter()
-  const { toast } = useToast()
   const [connections, setConnections] = useState<Connection[]>([])
   const [user, setUser] = useState<any>(null)
   const [editingNotes, setEditingNotes] = useState<string | null>(null)
   const [noteText, setNoteText] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  // Only initialize toast after component mounts
+  const { toast } = mounted ? useToast() : { toast: () => {} }
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    
     // Get user from localStorage for demo
     const userData = localStorage.getItem('nuconnect_user')
     if (!userData) {
@@ -50,7 +59,7 @@ function ConnectionsPageContent() {
     
     setUser(JSON.parse(userData))
     fetchConnections()
-  }, [])
+  }, [mounted])
 
   const fetchConnections = async () => {
     try {
