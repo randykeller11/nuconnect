@@ -5,8 +5,7 @@ const nextConfig = {
     // Ignore ESLint errors during build
     ignoreDuringBuilds: true,
   },
-  serverExternalPackages: ['@supabase/supabase-js'],
-  output: 'standalone'
+  serverExternalPackages: ['@supabase/supabase-js']
 }
 
 module.exports = nextConfig
