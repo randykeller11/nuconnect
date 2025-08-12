@@ -7,15 +7,16 @@ export default function Callback() {
   const router = useRouter()
   
   useEffect(() => {
-    ;(async () => {
-      const supabase = supabaseBrowser()
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        return router.replace('/auth')
-      }
-      
+    const handleCallback = async () => {
       try {
+        const supabase = supabaseBrowser()
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (!user) {
+          router.replace('/auth')
+          return
+        }
+        
         const res = await fetch('/api/me/profile')
         const { hasProfile } = await res.json()
         
@@ -25,10 +26,12 @@ export default function Callback() {
           router.replace('/onboarding')
         }
       } catch (error) {
-        // If API call fails, assume no profile and go to onboarding
+        console.error('Callback error:', error)
         router.replace('/onboarding')
       }
-    })()
+    }
+
+    handleCallback()
   }, [router])
   
   return (
