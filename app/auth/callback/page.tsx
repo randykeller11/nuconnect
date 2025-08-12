@@ -12,7 +12,7 @@ export default function Callback() {
         const supabase = supabaseBrowser()
         
         // Complete the magic-link / OAuth flow and set the auth cookie
-        const { error: callbackError } = await supabase.auth.exchangeCodeForSession()
+        const { error: callbackError } = await supabase.auth.getSessionFromUrl()
         
         if (callbackError) {
           console.error('Auth callback error:', callbackError)
