@@ -61,7 +61,19 @@ export class OnboardingMachine {
 
   private updateNavigationState(): void {
     this.state.canGoBack = this.state.currentStep > 0
-    this.state.canGoNext = this.canAdvanceToStep(this.state.currentStep + 1)
+    
+    // For canGoNext, check if we can advance from current step
+    if (this.state.currentStep === 0) {
+      this.state.canGoNext = true // Welcome step can always advance
+    } else if (this.state.currentStep === 1) {
+      this.state.canGoNext = isSnapshotComplete(this.state.data)
+    } else if (this.state.currentStep === 2) {
+      this.state.canGoNext = isFocusComplete(this.state.data)
+    } else if (this.state.currentStep === 3) {
+      this.state.canGoNext = isIntentComplete(this.state.data)
+    } else {
+      this.state.canGoNext = false
+    }
   }
 
   canAdvanceToStep(step: number): boolean {
@@ -106,6 +118,11 @@ export class OnboardingMachine {
   }
 
   nextStep(): OnboardingState {
+    // Check if we can advance
+    if (!this.state.canGoNext) {
+      return { ...this.state }
+    }
+
     if (this.state.currentStep === 4) {
       this.state.isComplete = true
       return { ...this.state }
