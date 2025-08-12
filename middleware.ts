@@ -2,11 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-/**
- * Refreshes the Supabase session and writes cookies for SSR.
- * Uses getUser() (not getSession) to force token revalidation.
- */
-export async function updateSession(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Prepare a response we can mutate cookies on
   const response = NextResponse.next({ request })
 
@@ -30,10 +26,6 @@ export async function updateSession(request: NextRequest) {
   await supabase.auth.getUser()
 
   return response
-}
-
-export async function middleware(request: NextRequest) {
-  return updateSession(request)
 }
 
 export const config = {
