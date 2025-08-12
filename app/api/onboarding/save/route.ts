@@ -45,10 +45,10 @@ export async function POST(request: NextRequest) {
     }
     
     // Always ensure we have a name - never allow null
-    if (profileData.role || profileData.company) {
-      profileToSave.name = profileData.role ? 
-        `${profileData.role}${profileData.company ? ` at ${profileData.company}` : ''}` : 
-        'Professional'
+    if (profileData.role && profileData.role.trim()) {
+      profileToSave.name = `${profileData.role.trim()}${profileData.company && profileData.company.trim() ? ` at ${profileData.company.trim()}` : ''}`
+    } else if (profileData.company && profileData.company.trim()) {
+      profileToSave.name = `Professional at ${profileData.company.trim()}`
     } else {
       // Fallback name if no role or company provided
       profileToSave.name = 'Professional'
