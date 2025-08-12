@@ -39,20 +39,9 @@ export default function OnboardingPage() {
 
       setUser(user)
 
-      // Try to load existing profile data
-      const response = await fetch('/api/me/profile')
-      if (response.ok) {
-        const { profile } = await response.json()
-        
-        // Initialize machine with existing data or empty
-        const initialData = profile?.contact_prefs || {}
-        const newMachine = new OnboardingMachine(initialData)
-        setMachine(newMachine)
-      } else {
-        // Start fresh
-        const newMachine = new OnboardingMachine()
-        setMachine(newMachine)
-      }
+      // Always start fresh - if they're here, they need onboarding
+      const newMachine = new OnboardingMachine()
+      setMachine(newMachine)
     } catch (error) {
       console.error('Failed to initialize onboarding:', error)
       toast.error('Failed to load onboarding. Please try again.')

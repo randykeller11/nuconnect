@@ -18,7 +18,12 @@ export default function Callback() {
       try {
         const res = await fetch('/api/me/profile')
         const { hasProfile } = await res.json()
-        router.replace(hasProfile ? '/home' : '/onboarding')
+        
+        if (hasProfile) {
+          router.replace('/home')
+        } else {
+          router.replace('/onboarding')
+        }
       } catch (error) {
         // If API call fails, assume no profile and go to onboarding
         router.replace('/onboarding')
