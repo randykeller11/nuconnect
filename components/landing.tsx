@@ -5,9 +5,30 @@ import { Button } from '@/components/ui/button'
 import { BookOpen, Users, TrendingUp, Heart, Shield, Target, CheckCircle, Star, ArrowRight, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FloatingMenu } from './landing/floating-menu'
-import { HeroSection } from './landing/hero-section'
-import { ContactForm } from './landing/contact-form'
+// Removed missing imports - these components don't exist
+// import { FloatingMenu } from './landing/floating-menu'
+// import { HeroSection } from './landing/hero-section'
+// import { ContactForm } from './landing/contact-form'
+
+// Simple placeholder components
+const FloatingMenu = () => <div />
+const HeroSection = () => (
+  <section className="py-24 relative hero-background hero-parallax">
+    <div className="absolute inset-0 bg-black/40"></div>
+    <div className="absolute inset-0 bg-hero-gradient"></div>
+    <div className="relative max-w-7xl mx-auto px-4 text-center">
+      <h1 className="text-5xl font-bold text-white mb-8">Welcome to NuConnect</h1>
+      <p className="text-xl text-white/90 mb-8">Professional networking reimagined</p>
+    </div>
+  </section>
+)
+const ContactForm = () => (
+  <form className="space-y-4">
+    <input type="email" placeholder="Your email" className="w-full p-3 rounded-lg border" />
+    <textarea placeholder="Your message" className="w-full p-3 rounded-lg border h-32"></textarea>
+    <button type="submit" className="bg-brand-teal text-white px-6 py-3 rounded-lg">Send Message</button>
+  </form>
+)
 
 export default function Landing(): React.JSX.Element {
   const router = useRouter()
