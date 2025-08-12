@@ -34,15 +34,14 @@ export default function LoginPage() {
     try {
       if (mode === 'magic') {
         // Force production URL if we're in production environment
-        const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-        const baseUrl = isProduction 
-          ? 'https://nuconnect-9f3561915ae1.herokuapp.com'
-          : (process.env.NEXT_PUBLIC_APP_URL || window.location.origin)
-        
+        const baseUrl =
+          process.env.NEXT_PUBLIC_APP_URL && process.env.NEXT_PUBLIC_APP_URL.length > 0
+            ? process.env.NEXT_PUBLIC_APP_URL
+            : window.location.origin
+
         const redirectUrl = `${baseUrl}/auth/callback`
         
         console.log('Magic link debug:')
-        console.log('- isProduction:', isProduction)
         console.log('- baseUrl:', baseUrl)
         console.log('- redirectUrl:', redirectUrl)
         console.log('=== END LOGIN DEBUG ===')
