@@ -3,18 +3,19 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { QueryProvider } from '../lib/query-provider'
 import { ToastProvider } from '../lib/hooks/use-toast'
+import { Toaster } from 'sonner'
 import { ReactNode } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Modern Matrimoney - Financial Literacy for Couples',
-  description: 'Transform money stress into shared success with our comprehensive e-book & workbook—designed to help couples master their finances, together.',
-  keywords: 'financial literacy, couples finance, money management, relationship finance, financial planning',
-  authors: [{ name: 'Modern Matrimoney' }],
+  title: 'NuConnect - Professional Networking',
+  description: 'Connect with professionals and build meaningful business relationships through intelligent matching.',
+  keywords: 'professional networking, business connections, AI matching, career development',
+  authors: [{ name: 'NuConnect' }],
   openGraph: {
-    title: 'Modern Matrimoney - Financial Literacy for Couples',
-    description: 'Transform money stress into shared success with our comprehensive e-book & workbook—designed to help couples master their finances, together.',
+    title: 'NuConnect - Professional Networking',
+    description: 'Connect with professionals and build meaningful business relationships through intelligent matching.',
     type: 'website',
     locale: 'en_US',
   },
@@ -31,6 +32,7 @@ export default function RootLayout({
         <QueryProvider>
           <ToastProvider>
             {children}
+            <Toaster position="top-center" />
           </ToastProvider>
         </QueryProvider>
       </body>
