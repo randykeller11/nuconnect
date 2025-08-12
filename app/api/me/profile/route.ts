@@ -3,6 +3,15 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
+    // Skip Supabase calls during build
+    if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      return NextResponse.json({ 
+        hasProfile: false, 
+        userId: null,
+        profile: null
+      })
+    }
+
     const supabase = await createSupabaseServerClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
