@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PrimaryButton } from '@/components/PrimaryButton'
@@ -31,18 +31,26 @@ interface ContactInfo {
   website?: string
 }
 
-export default function RoomPage({ params }: { params: Promise<{ id: string }> }) {
+function RoomPageContent({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
-  const { toast } = useToast()
   const [roomId, setRoomId] = useState<string>('')
-  
   const [loading, setLoading] = useState(false)
   const [matches, setMatches] = useState<Match[]>([])
   const [user, setUser] = useState<any>(null)
   const [hasJoined, setHasJoined] = useState(false)
   const [sharedContacts, setSharedContacts] = useState<Set<string>>(new Set())
+  const [mounted, setMounted] = useState(false)
+
+  // Only initialize toast after component mounts
+  const { toast } = mounted ? useToast() : { toast: () => {} }
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+    
     // Unwrap params promise
     params.then(({ id }) => {
       setRoomId(id)
@@ -57,7 +65,7 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
     
     setUser(JSON.parse(userData))
     setHasJoined(true) // For demo, assume user has joined
-  }, [params])
+  }, [params, mounted])
 
   const handleGetMatches = async () => {
     if (!user) return
@@ -358,5 +366,17 @@ export default function RoomPage({ params }: { params: Promise<{ id: string }> }
         )}
       </div>
     </div>
+  )
+}
+
+export default function RoomPage({ params }: { params: Promise<{ id: string }> }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-aulait flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-inkwell/30 border-t-inkwell rounded-full animate-spin" />
+      </div>
+    }>
+      <RoomPageContent params={params} />
+    </Suspense>
   )
 }
