@@ -1,0 +1,346 @@
+.
+├── Architecture.md
+├── ComprehensiveAnalysis.md
+├── Features.png
+├── NuconnectRecipe.md
+├── NuconnectUpdateInstructions.md
+├── Procfile
+├── ThisIsNOtJustAboutMoney.png
+├── WhoIsItFor.png
+├── app
+│   ├── admin
+│   │   └── page.tsx
+│   ├── admin-dashboard
+│   │   └── page.tsx
+│   ├── api
+│   │   ├── admin
+│   │   │   ├── contact
+│   │   │   │   └── route.ts
+│   │   │   ├── professionals
+│   │   │   │   └── route.ts
+│   │   │   └── questionnaire
+│   │   │       └── route.ts
+│   │   ├── auth
+│   │   │   ├── login
+│   │   │   │   └── route.ts
+│   │   │   ├── register
+│   │   │   │   └── route.ts
+│   │   │   └── validate
+│   │   │       └── route.ts
+│   │   ├── boosts
+│   │   │   └── route.ts
+│   │   ├── connections
+│   │   │   └── route.ts
+│   │   ├── contact
+│   │   ├── intake
+│   │   │   ├── answers
+│   │   │   │   └── route.ts
+│   │   │   └── questions
+│   │   │       └── route.ts
+│   │   ├── matches
+│   │   │   └── [id]
+│   │   │       └── share-contact
+│   │   │           └── route.ts
+│   │   ├── me
+│   │   │   ├── dashboard
+│   │   │   │   └── route.ts
+│   │   │   └── profile
+│   │   │       └── route.ts
+│   │   ├── onboarding
+│   │   │   ├── import
+│   │   │   │   └── route.ts
+│   │   │   └── save
+│   │   │       └── route.ts
+│   │   ├── professionals
+│   │   ├── questionnaire
+│   │   │   ├── load
+│   │   │   ├── responses
+│   │   │   └── submit
+│   │   └── rooms
+│   │       ├── [id]
+│   │       │   └── match
+│   │       │       └── route.ts
+│   │       ├── create
+│   │       │   └── route.ts
+│   │       └── join
+│   │           └── route.ts
+│   ├── auth
+│   │   ├── callback
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   ├── connections
+│   │   └── page.tsx
+│   ├── demo-selection
+│   │   └── page.tsx
+│   ├── error.tsx
+│   ├── global-error.tsx
+│   ├── globals.css
+│   ├── home
+│   │   └── page.tsx
+│   ├── intake
+│   │   └── page.tsx
+│   ├── layout.tsx
+│   ├── login
+│   │   └── page.tsx
+│   ├── not-found.tsx
+│   ├── onboarding
+│   │   └── page.tsx
+│   ├── page.tsx
+│   ├── professional-signup
+│   │   └── page.tsx
+│   ├── profile
+│   │   ├── edit
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   ├── questionnaire
+│   │   └── page.tsx
+│   ├── rooms
+│   │   ├── [id]
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   └── shop
+│       └── page.tsx
+├── attached_assets
+│   └── Pasted--Product-Requirements-Document-PRD-Financial-Couples-Hub-Demo-1-Overview-Objecti-1751502044748_1751502044748.txt
+├── components
+│   ├── BrandHeader.tsx
+│   ├── FormCard.tsx
+│   ├── PrimaryButton.tsx
+│   ├── demo-selection.tsx
+│   ├── header.tsx
+│   ├── home
+│   │   ├── ConnectionsList.tsx
+│   │   ├── HomeHero.tsx
+│   │   ├── ProfileStrengthCard.tsx
+│   │   └── RoomsGrid.tsx
+│   ├── hooks
+│   │   ├── use-mobile.tsx
+│   │   └── use-toast.ts
+│   ├── onboarding
+│   │   ├── OnboardingShell.tsx
+│   │   ├── StepFocus.tsx
+│   │   ├── StepIntent.tsx
+│   │   ├── StepReview.tsx
+│   │   ├── StepSnapshot.tsx
+│   │   └── StepWelcome.tsx
+│   ├── questionnaire.tsx
+│   └── ui
+│       ├── accordion.tsx
+│       ├── alert-dialog.tsx
+│       ├── alert.tsx
+│       ├── aspect-ratio.tsx
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── breadcrumb.tsx
+│       ├── button.tsx
+│       ├── calendar.tsx
+│       ├── card.tsx
+│       ├── carousel.tsx
+│       ├── chart.tsx
+│       ├── checkbox.tsx
+│       ├── collapsible.tsx
+│       ├── command.tsx
+│       ├── context-menu.tsx
+│       ├── dialog.tsx
+│       ├── drawer.tsx
+│       ├── dropdown-menu.tsx
+│       ├── form.tsx
+│       ├── hover-card.tsx
+│       ├── input-otp.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── menubar.tsx
+│       ├── navigation-menu.tsx
+│       ├── pagination.tsx
+│       ├── popover.tsx
+│       ├── progress.tsx
+│       ├── radio-group.tsx
+│       ├── resizable.tsx
+│       ├── scroll-area.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── sheet.tsx
+│       ├── sidebar.tsx
+│       ├── skeleton.tsx
+│       ├── slider.tsx
+│       ├── switch.tsx
+│       ├── table.tsx
+│       ├── tabs.tsx
+│       ├── textarea.tsx
+│       ├── toast.tsx
+│       ├── toaster.tsx
+│       ├── toggle-group.tsx
+│       ├── toggle.tsx
+│       └── tooltip.tsx
+├── components.json
+├── create-tables.sql
+├── cssExplained.md
+├── deploy-schema.js
+├── directory_structure.txt
+├── drizzle.config.ts
+├── instructions.md
+├── jest.config.js
+├── jest.setup.js
+├── lib
+│   ├── ai
+│   │   ├── openrouter.test.ts
+│   │   └── openrouter.ts
+│   ├── api.ts
+│   ├── hooks
+│   │   ├── use-toast.ts
+│   │   └── use-toast.tsx
+│   ├── integrations
+│   │   └── linkedin.ts
+│   ├── onboarding
+│   │   └── machine.ts
+│   ├── pipeline
+│   │   ├── match-heuristic.test.ts
+│   │   ├── match-heuristic.ts
+│   │   ├── session.ts
+│   │   ├── stateMachine.test.ts
+│   │   └── stateMachine.ts
+│   ├── profile
+│   │   └── strength.ts
+│   ├── query-provider.tsx
+│   ├── queryClient.ts
+│   ├── session.ts
+│   ├── storage.ts
+│   ├── supabase
+│   │   ├── browser.ts
+│   │   └── server.ts
+│   ├── utils.ts
+│   └── validation
+│       └── profile.ts
+├── logs.md
+├── manual-schema-deploy.js
+├── middleware.ts
+├── next-env.d.ts
+├── next.config.js
+├── package-lock.json
+├── package.json
+├── playwright-report
+│   ├── data
+│   │   └── ff296799767f3cebf784a115b9b7c53b29749cdb.md
+│   └── index.html
+├── playwright.config.ts
+├── portingInstructions.md
+├── postcss.config.js
+├── prompts
+│   ├── intake.yaml
+│   └── match.yaml
+├── public
+│   └── images
+│       ├── BookCover.jpg
+│       ├── ContactUs.png
+│       ├── MatriMoneyCoverBook.jpg
+│       ├── MatriMoneyCoverWorkbook.jpg
+│       ├── ModernMatrimoneyLogo.png
+│       ├── ThisIsNotJustAboutMoney.png
+│       ├── TryTheFreeCheckIn.png
+│       ├── WhatWeStandFor.png
+│       ├── WhatsInside.png
+│       ├── WhoIsItFor.png
+│       └── freshBackground.png
+├── replit.md
+├── results.md
+├── scripts
+│   ├── seed-data.js
+│   ├── seed-matches.js
+│   ├── verify-phase1.js
+│   ├── verify-phase2.js
+│   ├── verify-phase3.js
+│   ├── verify-phase4.js
+│   ├── verify-phase6.js
+│   └── verify-phase7.js
+├── server
+│   ├── index.ts
+│   ├── routes.ts
+│   ├── storage.js
+│   ├── storage.ts
+│   └── vite.ts
+├── shared
+│   └── schema.ts
+├── style-guidelines.md
+├── supabase
+│   └── migrations
+│       └── 20250111_nuconnect_core.sql
+├── supabase-schema.sql
+├── tailwind.config.js
+├── tailwind.config.ts
+├── test-db-connection.js
+├── test-results
+│   ├── onboarding.e2e-Onboarding--36c30-should-enforce-field-limits-chromium
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--36c30-should-enforce-field-limits-firefox
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--36c30-should-enforce-field-limits-webkit
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--a0e65-uld-support-back-navigation-chromium
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--a0e65-uld-support-back-navigation-firefox
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--a0e65-uld-support-back-navigation-webkit
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--d62f0-ould-handle-mobile-viewport-chromium
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--d62f0-ould-handle-mobile-viewport-firefox
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--d62f0-ould-handle-mobile-viewport-webkit
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--da598-dle-resume-from-saved-state-chromium
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--da598-dle-resume-from-saved-state-firefox
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--da598-dle-resume-from-saved-state-webkit
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--dcf96-mplete-full-onboarding-flow-chromium
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--dcf96-mplete-full-onboarding-flow-firefox
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--dcf96-mplete-full-onboarding-flow-webkit
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--f1f3f-ould-handle-step-validation-chromium
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--f1f3f-ould-handle-step-validation-firefox
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--f1f3f-ould-handle-step-validation-webkit
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--fd40f-andle-deep-linking-to-rooms-chromium
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--fd40f-andle-deep-linking-to-rooms-firefox
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding--fd40f-andle-deep-linking-to-rooms-webkit
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding-E2E-Tests-should-handle-auto-save-chromium
+│   │   └── error-context.md
+│   ├── onboarding.e2e-Onboarding-E2E-Tests-should-handle-auto-save-firefox
+│   │   └── error-context.md
+│   └── onboarding.e2e-Onboarding-E2E-Tests-should-handle-auto-save-webkit
+│       └── error-context.md
+├── test-rls-policies.js
+├── test-section2-implementation.js
+├── test-step3-admin-auth.js
+├── tests
+│   ├── ai-openrouter.test.ts
+│   ├── api
+│   │   └── onboarding-save.test.ts
+│   ├── api-routes.test.ts
+│   ├── auth
+│   │   └── signin.test.ts
+│   ├── e2e
+│   │   ├── auth.e2e.spec.ts
+│   │   └── onboarding.e2e.spec.ts
+│   ├── onboarding
+│   │   ├── machine.test.ts
+│   │   └── validation.test.ts
+│   ├── phase1-verification.test.js
+│   ├── phase2-verification.test.js
+│   ├── phase3-verification.test.ts
+│   ├── phase4-verification.test.ts
+│   ├── pipeline-matching.test.ts
+│   └── pipeline-stateMachine.test.ts
+├── tsconfig.json
+├── vercel.json
+└── vite.config.ts
+
+108 directories, 236 files

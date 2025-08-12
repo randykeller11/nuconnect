@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/auth/register": {},
+    "/api/auth/login": {},
+    "/api/onboarding/save": {}
+  }
+}
