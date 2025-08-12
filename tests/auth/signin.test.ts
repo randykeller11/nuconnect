@@ -2,11 +2,11 @@
 const mockCreateSupabaseServerClient = jest.fn()
 const mockSupabaseBrowser = jest.fn()
 
-jest.mock('../lib/supabase/server', () => ({
+jest.mock('../../lib/supabase/server', () => ({
   createSupabaseServerClient: mockCreateSupabaseServerClient
 }))
 
-jest.mock('../lib/supabase/browser', () => ({
+jest.mock('../../lib/supabase/browser', () => ({
   supabaseBrowser: mockSupabaseBrowser
 }))
 
