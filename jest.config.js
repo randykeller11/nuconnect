@@ -15,6 +15,10 @@ const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   testMatch: [
     '<rootDir>/tests/**/*.test.{js,jsx,ts,tsx}',
+    '<rootDir>/lib/**/*.test.{js,jsx,ts,tsx}',
+  ],
+  testPathIgnorePatterns: [
+    '<rootDir>/tests/e2e/',
   ],
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',

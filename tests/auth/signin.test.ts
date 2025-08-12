@@ -1,13 +1,14 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { supabaseBrowser } from '@/lib/supabase/browser'
-
 // Mock Supabase clients
-jest.mock('@/lib/supabase/server')
-jest.mock('@/lib/supabase/browser')
+const mockCreateSupabaseServerClient = jest.fn()
+const mockSupabaseBrowser = jest.fn()
 
-const mockSupabaseServer = createSupabaseServerClient as jest.MockedFunction<typeof createSupabaseServerClient>
-const mockSupabaseBrowser = supabaseBrowser as jest.MockedFunction<typeof supabaseBrowser>
+jest.mock('@/lib/supabase/server', () => ({
+  createSupabaseServerClient: mockCreateSupabaseServerClient
+}))
+
+jest.mock('@/lib/supabase/browser', () => ({
+  supabaseBrowser: mockSupabaseBrowser
+}))
 
 describe('Authentication Integration Tests', () => {
   let mockSupabaseClient: any
@@ -22,7 +23,7 @@ describe('Authentication Integration Tests', () => {
       },
     }
     
-    mockSupabaseServer.mockReturnValue(mockSupabaseClient)
+    mockCreateSupabaseServerClient.mockReturnValue(mockSupabaseClient)
     mockSupabaseBrowser.mockReturnValue(mockSupabaseClient)
   })
 
