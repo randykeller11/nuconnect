@@ -20,6 +20,24 @@ const linkedinUrlRegex = /^https:\/\/(www\.)?linkedin\.com\/in\/[\w-]+\/?$/
 // Website URL validation
 const websiteUrlRegex = /^https?:\/\/.+\..+/
 
+// Simple profile schema for the API route
+export const profileSchema = z.object({
+  role: z.string().optional(),
+  company: z.string().optional(),
+  location: z.string().optional(),
+  headline: z.string().optional(),
+  industries: z.array(z.string()).optional(),
+  skills: z.array(z.string()).optional(),
+  interests: z.array(z.string()).optional(),
+  objectives: z.array(z.string()).optional(),
+  seeking: z.array(z.string()).optional(),
+  openness: z.number().optional(),
+  introStyle: z.string().optional(),
+  enableIcebreakers: z.boolean().optional(),
+  showLinkedIn: z.boolean().optional(),
+  showCompany: z.boolean().optional()
+})
+
 // Validation schemas for onboarding profile data
 export const snapshotSchema = z.object({
   role: z.string().min(1, 'Role is required'),
