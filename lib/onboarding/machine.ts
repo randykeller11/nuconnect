@@ -35,9 +35,9 @@ export interface OnboardingState {
 export class OnboardingMachine {
   private state: OnboardingState
 
-  constructor(initialData?: any) {
+  constructor(initialData?: any, initialStep?: number) {
     this.state = {
-      currentStep: 0,
+      currentStep: initialStep || 0,
       data: initialData || {},
       isComplete: false,
       lastCompletedStep: 0,

@@ -94,10 +94,8 @@ export default function OnboardingPage() {
 
     try {
       const updatedState = machine.updateData(newData)
-      // Create new machine instance with the updated state
-      const newMachine = new OnboardingMachine(updatedState.data)
-      // Restore the current step from the updated state
-      newMachine.getCurrentState().currentStep = updatedState.currentStep
+      // Create new machine instance with the updated state and current step
+      const newMachine = new OnboardingMachine(updatedState.data, updatedState.currentStep)
       setMachine(newMachine)
       
       // Auto-save the changes
@@ -112,14 +110,14 @@ export default function OnboardingPage() {
 
     try {
       const updatedState = machine.nextStep()
-      // Create new machine instance with the updated state
-      const newMachine = new OnboardingMachine(updatedState.data)
-      // Restore the current step from the updated state
-      newMachine.getCurrentState().currentStep = updatedState.currentStep
+      // Create new machine instance with the updated state and current step
+      const newMachine = new OnboardingMachine(updatedState.data, updatedState.currentStep)
       setMachine(newMachine)
       
-      // Save progress
-      autoSave(updatedState.data, true)
+      // Save progress only if not on welcome step
+      if (updatedState.currentStep > 0) {
+        autoSave(updatedState.data, true)
+      }
     } catch (error: any) {
       toast.error(error.message)
     }
@@ -130,10 +128,8 @@ export default function OnboardingPage() {
 
     try {
       const updatedState = machine.previousStep()
-      // Create new machine instance with the updated state
-      const newMachine = new OnboardingMachine(updatedState.data)
-      // Restore the current step from the updated state
-      newMachine.getCurrentState().currentStep = updatedState.currentStep
+      // Create new machine instance with the updated state and current step
+      const newMachine = new OnboardingMachine(updatedState.data, updatedState.currentStep)
       setMachine(newMachine)
     } catch (error: any) {
       toast.error(error.message)
@@ -145,8 +141,7 @@ export default function OnboardingPage() {
 
     try {
       const currentState = machine.getCurrentState()
-      const newMachine = new OnboardingMachine(currentState.data)
-      newMachine.getCurrentState().currentStep = step
+      const newMachine = new OnboardingMachine(currentState.data, step)
       setMachine(newMachine)
     } catch (error: any) {
       toast.error(error.message)
