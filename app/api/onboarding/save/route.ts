@@ -44,11 +44,14 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString()
     }
     
-    // Only add fields that have values
+    // Always ensure we have a name - never allow null
     if (profileData.role || profileData.company) {
       profileToSave.name = profileData.role ? 
         `${profileData.role}${profileData.company ? ` at ${profileData.company}` : ''}` : 
         'Professional'
+    } else {
+      // Fallback name if no role or company provided
+      profileToSave.name = 'Professional'
     }
     
     if (profileData.interests && profileData.interests.length > 0) {
