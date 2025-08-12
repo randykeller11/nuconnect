@@ -48,15 +48,20 @@ test.describe('Authentication E2E Tests', () => {
       })
     })
     
-    // Make a request to the API
-    const response = await page.request.get('/api/me/profile')
-    const data = await response.json()
+    // Navigate to a page first to establish the route mock
+    await page.goto('/')
+    
+    // Make a request to the API through the page context (which respects mocks)
+    const response = await page.evaluate(async () => {
+      const res = await fetch('/api/me/profile')
+      return await res.json()
+    })
     
     // Should return the mocked response structure
-    expect(data).toHaveProperty('hasProfile')
-    expect(data).toHaveProperty('userId')
-    expect(data.hasProfile).toBe(false)
-    expect(data.userId).toBe('123')
+    expect(response).toHaveProperty('hasProfile')
+    expect(response).toHaveProperty('userId')
+    expect(response.hasProfile).toBe(false)
+    expect(response.userId).toBe('123')
   })
 
   test('should handle onboarding redirect', async ({ page }) => {
