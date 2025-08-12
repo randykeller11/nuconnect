@@ -25,34 +25,55 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Build the profile object to save
-    const profileToSave = {
+    // Build the profile object to save - only include non-null values
+    const profileToSave: any = {
       user_id: user.id,
-      name: profileData.role ? `${profileData.role}${profileData.company ? ` at ${profileData.company}` : ''}` : 'Professional',
-      interests: profileData.interests || [],
-      career_goals: profileData.objectives?.[0] || profileData.career_goals,
-      mentorship_pref: profileData.objectives?.includes('Mentor Others') ? 'offering' : 
-                      profileData.seeking?.includes('Mentor') ? 'seeking' : 'none',
-      contact_prefs: {
-        role: profileData.role,
-        company: profileData.company,
-        location: profileData.location,
-        headline: profileData.headline,
-        industries: profileData.industries,
-        skills: profileData.skills,
-        seniority: profileData.seniority,
-        objectives: profileData.objectives,
-        seeking: profileData.seeking,
-        openness: profileData.openness,
-        introStyle: profileData.introStyle,
-        enableIcebreakers: profileData.enableIcebreakers,
-        showLinkedIn: profileData.showLinkedIn,
-        showCompany: profileData.showCompany
-      },
       updated_at: new Date().toISOString()
     }
     
-    // Upsert the profile (insert or update)
+    // Only add fields that have values
+    if (profileData.role || profileData.company) {
+      profileToSave.name = profileData.role ? 
+        `${profileData.role}${profileData.company ? ` at ${profileData.company}` : ''}` : 
+        'Professional'
+    }
+    
+    if (profileData.interests && profileData.interests.length > 0) {
+      profileToSave.interests = profileData.interests
+    }
+    
+    if (profileData.objectives?.[0] || profileData.career_goals) {
+      profileToSave.career_goals = profileData.objectives?.[0] || profileData.career_goals
+    }
+    
+    // Determine mentorship preference
+    if (profileData.objectives || profileData.seeking) {
+      profileToSave.mentorship_pref = profileData.objectives?.includes('Mentor Others') ? 'offering' : 
+                        profileData.seeking?.includes('Mentor') ? 'seeking' : 'none'
+    }
+    
+    // Build contact preferences object
+    const contactPrefs: any = {}
+    if (profileData.role) contactPrefs.role = profileData.role
+    if (profileData.company) contactPrefs.company = profileData.company
+    if (profileData.location) contactPrefs.location = profileData.location
+    if (profileData.headline) contactPrefs.headline = profileData.headline
+    if (profileData.industries) contactPrefs.industries = profileData.industries
+    if (profileData.skills) contactPrefs.skills = profileData.skills
+    if (profileData.seniority) contactPrefs.seniority = profileData.seniority
+    if (profileData.objectives) contactPrefs.objectives = profileData.objectives
+    if (profileData.seeking) contactPrefs.seeking = profileData.seeking
+    if (profileData.openness !== undefined) contactPrefs.openness = profileData.openness
+    if (profileData.introStyle) contactPrefs.introStyle = profileData.introStyle
+    if (profileData.enableIcebreakers !== undefined) contactPrefs.enableIcebreakers = profileData.enableIcebreakers
+    if (profileData.showLinkedIn !== undefined) contactPrefs.showLinkedIn = profileData.showLinkedIn
+    if (profileData.showCompany !== undefined) contactPrefs.showCompany = profileData.showCompany
+    
+    if (Object.keys(contactPrefs).length > 0) {
+      profileToSave.contact_prefs = contactPrefs
+    }
+    
+    // Try to upsert the profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .upsert(profileToSave, { 
@@ -65,7 +86,7 @@ export async function POST(request: NextRequest) {
     if (profileError) {
       console.error('Profile save error:', profileError)
       return NextResponse.json(
-        { error: 'Failed to save profile to database' },
+        { error: 'Failed to save profile to database', details: profileError.message },
         { status: 500 }
       )
     }
@@ -78,7 +99,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error saving profile:', error)
     return NextResponse.json(
-      { error: 'Failed to save profile' },
+      { error: 'Failed to save profile', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
