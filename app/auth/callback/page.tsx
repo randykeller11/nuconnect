@@ -11,8 +11,8 @@ export default function Callback() {
       try {
         const supabase = supabaseBrowser()
         
-        // Handle the auth callback first
-        const { error: callbackError } = await supabase.auth.getSession()
+        // Complete the magic-link / OAuth flow and set the auth cookie
+        const { error: callbackError } = await supabase.auth.exchangeCodeForSession()
         
         if (callbackError) {
           console.error('Auth callback error:', callbackError)
@@ -27,6 +27,13 @@ export default function Callback() {
           console.error('User fetch error:', userError)
           router.replace('/auth')
           return
+        }
+
+        // Persist user locally so other client routes don’t force re-login
+        try {
+          localStorage.setItem('nuconnect_user', JSON.stringify(user))
+        } catch (_) {
+          /* ignore quota / SSR issues */
         }
         
         // Check if user has completed onboarding
