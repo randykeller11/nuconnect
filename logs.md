@@ -1,89 +1,25 @@
-Fetching questionnaire responses from Supabase...
-Raw Supabase data: [
-  {
-    id: 3,
-    user_id: 7,
-    answers: {
-      story_consent: 'Yes, I consent anonymously',
-      time_together: 'Less than 1 year',
-      stay_connected: [Object],
-      living_situation: 'Yes',
-      money_management: 'One of us handles everything',
-      practical_prompt: 'What habit do you admire & wish to change?',
-      reflective_story: 'test',
-      relationship_status: 'Solid, just looking to grow',
-      conversation_frequency: 'Within the last week'
-    },
-    is_complete: false,
-    submitted_at: '2025-08-05T23:04:12.032304+00:00',
-    updated_at: '2025-08-05T23:04:35.333+00:00'
-  }
-]
-Transformed data: [
-  {
-    id: 3,
-    userId: 7,
-    answers: {
-      story_consent: 'Yes, I consent anonymously',
-      time_together: 'Less than 1 year',
-      stay_connected: [Object],
-      living_situation: 'Yes',
-      money_management: 'One of us handles everything',
-      practical_prompt: 'What habit do you admire & wish to change?',
-      reflective_story: 'test',
-      relationship_status: 'Solid, just looking to grow',
-      conversation_frequency: 'Within the last week'
-    },
-    isComplete: false,
-    submittedAt: '2025-08-05T23:04:12.032304+00:00',
-    updatedAt: '2025-08-05T23:04:35.333+00:00'
-  }
-]
- GET /api/admin/questionnaire 200 in 2210ms
- GET /admin 200 in 1580ms
- GET /api/admin/contact 200 in 2448ms
- GET /api/admin/professionals 200 in 2462ms
-Fetching questionnaire responses from Supabase...
- GET /api/admin/professionals 200 in 148ms
-Raw Supabase data: [
-  {
-    id: 3,
-    user_id: 7,
-    answers: {
-      story_consent: 'Yes, I consent anonymously',
-      time_together: 'Less than 1 year',
-      stay_connected: [Object],
-      living_situation: 'Yes',
-      money_management: 'One of us handles everything',
-      practical_prompt: 'What habit do you admire & wish to change?',
-      reflective_story: 'test',
-      relationship_status: 'Solid, just looking to grow',
-      conversation_frequency: 'Within the last week'
-    },
-    is_complete: false,
-    submitted_at: '2025-08-05T23:04:12.032304+00:00',
-    updated_at: '2025-08-05T23:04:35.333+00:00'
-  }
-]
-Transformed data: [
-  {
-    id: 3,
-    userId: 7,
-    answers: {
-      story_consent: 'Yes, I consent anonymously',
-      time_together: 'Less than 1 year',
-      stay_connected: [Object],
-      living_situation: 'Yes',
-      money_management: 'One of us handles everything',
-      practical_prompt: 'What habit do you admire & wish to change?',
-      reflective_story: 'test',
-      relationship_status: 'Solid, just looking to grow',
-      conversation_frequency: 'Within the last week'
-    },
-    isComplete: false,
-    submittedAt: '2025-08-05T23:04:12.032304+00:00',
-    updatedAt: '2025-08-05T23:04:35.333+00:00'
-  }
-]
- GET /api/admin/questionnaire 200 in 188ms
- GET /api/admin/contact 200 in 231ms
+# ==== Server-only / private (never commit these) ====
+# Supabase HTTP API URL
+SUPABASE_URL="https://ymxhgdcezmcrrzqdhble.supabase.co"
+
+# Direct PostgreSQL connection for Drizzle ORM
+DATABASE_URL="postgresql://postgres:!1Stocksaretight@db.ymxhgdcezmcrrzqdhble.supabase.co:5432/postgres"
+
+# API Keys
+SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteGhnZGNlem1jcnJ6cWRoYmxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTQ4ODAsImV4cCI6MjA3MDI3MDg4MH0.7yDxOxI4pkbFmUDUOfFpCVYo53NnSB6uGpBrhnBID4E"
+
+SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteGhnZGNlem1jcnJ6cWRoYmxlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDY5NDg4MCwiZXhwIjoyMDcwMjcwODgwfQ.766TDEvUbVnj-Lq0mKSFMbkMyS9R-b1Xa1sd7PAserE"
+
+# Admin protection for dashboard / admin GET endpoints
+ADMIN_API_KEY="super-secret-admin-key-2025"
+
+# Public (exposed to client)
+NEXT_PUBLIC_SUPABASE_URL="https://estgdcessxwbpdcgpxsa.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteGhnZGNlem1jcnJ6cWRoYmxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ2OTQ4ODAsImV4cCI6MjA3MDI3MDg4MH0.7yDxOxI4pkbFmUDUOfFpCVYo53NnSB6uGpBrhnBID4E"
+
+# Openrouter
+OPENROUTER_API_KEY='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'
+
+# Local dev helpers
+NODE_ENV=development
+PORT=3000
