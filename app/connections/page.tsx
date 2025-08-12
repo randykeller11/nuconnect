@@ -40,13 +40,15 @@ function ConnectionsPageContent() {
   const [noteText, setNoteText] = useState('')
   const [mounted, setMounted] = useState(false)
 
-  // Always call useToast to maintain hook order
-  const { toast: toastFn } = useToast()
-  
   // Create a safe toast function that only works after mounting
   const toast = (options: any) => {
-    if (mounted) {
-      toastFn(options)
+    if (mounted && typeof window !== 'undefined') {
+      try {
+        const { toast: toastFn } = require('@/lib/hooks/use-toast').useToast()
+        toastFn(options)
+      } catch (error) {
+        console.log('Toast not available:', error)
+      }
     }
   }
 
