@@ -1,4 +1,4 @@
-import { snapshotSchema, focusSchema, intentSchema, profileSchema } from '../validation/profile'
+import { snapshotSchema, focusSchema, intentSchema, profileValidationSchema, validateMaxCounts, isSnapshotComplete, isFocusComplete, isIntentComplete } from '../validation/profile'
 
 export interface OnboardingState {
   currentStep: number
@@ -28,19 +28,23 @@ export interface OnboardingState {
   }
   isComplete: boolean
   lastCompletedStep: number
+  canGoNext: boolean
+  canGoBack: boolean
 }
 
 export class OnboardingMachine {
   private state: OnboardingState
 
-  constructor(initialState?: Partial<OnboardingState>) {
+  constructor(initialData?: any) {
     this.state = {
-      currentStep: 1,
-      data: {},
+      currentStep: 0,
+      data: initialData || {},
       isComplete: false,
       lastCompletedStep: 0,
-      ...initialState
+      canGoNext: true,
+      canGoBack: false
     }
+    this.updateNavigationState()
   }
 
   getCurrentStep(): number {
@@ -51,129 +55,78 @@ export class OnboardingMachine {
     return this.state.data
   }
 
-  getState(): OnboardingState {
+  getCurrentState(): OnboardingState {
     return { ...this.state }
+  }
+
+  private updateNavigationState(): void {
+    this.state.canGoBack = this.state.currentStep > 0
+    this.state.canGoNext = this.canAdvanceToStep(this.state.currentStep + 1)
   }
 
   canAdvanceToStep(step: number): boolean {
     switch (step) {
-      case 1: // Welcome
+      case 0: // Welcome
         return true
-      case 2: // Snapshot
+      case 1: // Snapshot
         return true
-      case 3: // Focus
-        return this.snapshotComplete()
-      case 4: // Intent
-        return this.focusComplete()
-      case 5: // Review
-        return this.intentComplete()
+      case 2: // Focus
+        return isSnapshotComplete(this.state.data)
+      case 3: // Intent
+        return isFocusComplete(this.state.data)
+      case 4: // Review
+        return isIntentComplete(this.state.data)
       default:
         return false
     }
   }
 
-  snapshotComplete(): boolean {
-    const { role, company, headline } = this.state.data
-    return !!(role && (company || headline))
-  }
+  updateData(newData: Partial<OnboardingState['data']>): OnboardingState {
+    // Validate array limits
+    const validation = validateMaxCounts(newData)
+    if (!validation.isValid) {
+      throw new Error(validation.errors[0])
+    }
 
-  focusComplete(): boolean {
-    const { industries, skills } = this.state.data
-    return !!(
-      (industries && industries.length >= 1) || 
-      (skills && skills.length >= 2)
-    )
-  }
-
-  intentComplete(): boolean {
-    const { objectives, seeking } = this.state.data
-    return !!(
-      objectives && objectives.length >= 1 &&
-      seeking && seeking.length >= 1
-    )
-  }
-
-  updateData(newData: Partial<OnboardingState['data']>): void {
     this.state.data = { ...this.state.data, ...newData }
     
     // Update last completed step based on data completeness
-    if (this.snapshotComplete() && this.state.lastCompletedStep < 2) {
+    if (isSnapshotComplete(this.state.data) && this.state.lastCompletedStep < 1) {
+      this.state.lastCompletedStep = 1
+    }
+    if (isFocusComplete(this.state.data) && this.state.lastCompletedStep < 2) {
       this.state.lastCompletedStep = 2
     }
-    if (this.focusComplete() && this.state.lastCompletedStep < 3) {
+    if (isIntentComplete(this.state.data) && this.state.lastCompletedStep < 3) {
       this.state.lastCompletedStep = 3
     }
-    if (this.intentComplete() && this.state.lastCompletedStep < 4) {
-      this.state.lastCompletedStep = 4
-    }
+
+    this.updateNavigationState()
+    return { ...this.state }
   }
 
-  goToStep(step: number): boolean {
-    if (this.canAdvanceToStep(step)) {
-      this.state.currentStep = step
-      return true
-    }
-    return false
-  }
-
-  nextStep(): boolean {
-    const nextStep = this.state.currentStep + 1
-    return this.goToStep(nextStep)
-  }
-
-  previousStep(): boolean {
-    const prevStep = this.state.currentStep - 1
-    if (prevStep >= 1) {
-      this.state.currentStep = prevStep
-      return true
-    }
-    return false
-  }
-
-  complete(): boolean {
-    try {
-      // Validate final profile data
-      profileSchema.parse(this.state.data)
+  nextStep(): OnboardingState {
+    if (this.state.currentStep === 4) {
       this.state.isComplete = true
-      this.state.lastCompletedStep = 5
-      return true
-    } catch (error) {
-      console.error('Profile validation failed:', error)
-      return false
+      return { ...this.state }
     }
+
+    this.state.currentStep += 1
+    this.updateNavigationState()
+    return { ...this.state }
   }
 
-  validateCurrentStep(): { isValid: boolean; errors: string[] } {
-    const errors: string[] = []
-    
-    try {
-      switch (this.state.currentStep) {
-        case 2: // Snapshot
-          snapshotSchema.parse(this.state.data)
-          break
-        case 3: // Focus
-          focusSchema.parse(this.state.data)
-          break
-        case 4: // Intent
-          intentSchema.parse(this.state.data)
-          break
-        case 5: // Review
-          profileSchema.parse(this.state.data)
-          break
-      }
-      return { isValid: true, errors: [] }
-    } catch (error: any) {
-      if (error.errors) {
-        error.errors.forEach((err: any) => {
-          errors.push(err.message)
-        })
-      }
-      return { isValid: false, errors }
+  previousStep(): OnboardingState {
+    if (this.state.currentStep === 0) {
+      throw new Error('Cannot go back')
     }
+
+    this.state.currentStep -= 1
+    this.updateNavigationState()
+    return { ...this.state }
   }
 
-  // Resume from saved state (e.g., from localStorage)
-  resume(savedState: Partial<OnboardingState>): void {
+  resume(savedState: Partial<OnboardingState>): OnboardingState {
     this.state = {
       ...this.state,
       ...savedState
@@ -181,7 +134,22 @@ export class OnboardingMachine {
     
     // Ensure we're on a valid step
     if (!this.canAdvanceToStep(this.state.currentStep)) {
-      this.state.currentStep = Math.max(1, this.state.lastCompletedStep)
+      this.state.currentStep = Math.max(0, this.state.lastCompletedStep)
     }
+
+    this.updateNavigationState()
+    return { ...this.state }
+  }
+
+  reset(): OnboardingState {
+    this.state = {
+      currentStep: 0,
+      data: {},
+      isComplete: false,
+      lastCompletedStep: 0,
+      canGoNext: true,
+      canGoBack: false
+    }
+    return { ...this.state }
   }
 }
