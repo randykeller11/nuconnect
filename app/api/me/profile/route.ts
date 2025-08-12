@@ -17,10 +17,18 @@ export async function GET() {
       .eq('user_id', user.id)
       .single()
     
+    // Check if profile exists and has completed onboarding
+    // A complete profile should have at least: name, interests, career_goals
     const hasProfile = !profileError && !!profile
+    const isOnboardingComplete = hasProfile && 
+      profile.name && 
+      profile.interests && 
+      profile.interests.length > 0 && 
+      profile.career_goals
     
     return NextResponse.json({ 
       hasProfile, 
+      isOnboardingComplete,
       userId: user.id,
       profile: hasProfile ? profile : null
     })

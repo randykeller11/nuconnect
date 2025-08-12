@@ -1,3 +1,4 @@
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
@@ -5,23 +6,31 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { userId, profileData, isPartial = false } = body
+    const supabase = await createSupabaseServerClient()
     
-    if (!userId) {
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    const body = await request.json()
+    const { profileData, isPartial = false } = body
+    
+    if (!profileData) {
       return NextResponse.json(
-        { error: 'Missing userId' },
+        { error: 'Missing profileData' },
         { status: 400 }
       )
     }
     
-    // For now, just validate the input and return success
-    // In a real implementation, this would save to Supabase
-    const mockProfile = {
-      user_id: userId,
+    // Build the profile object to save
+    const profileToSave = {
+      user_id: user.id,
       name: profileData.role ? `${profileData.role}${profileData.company ? ` at ${profileData.company}` : ''}` : 'Professional',
       interests: profileData.interests || [],
-      career_goals: profileData.objectives?.[0],
+      career_goals: profileData.objectives?.[0] || profileData.career_goals,
       mentorship_pref: profileData.objectives?.includes('Mentor Others') ? 'offering' : 
                       profileData.seeking?.includes('Mentor') ? 'seeking' : 'none',
       contact_prefs: {
@@ -39,12 +48,31 @@ export async function POST(request: NextRequest) {
         enableIcebreakers: profileData.enableIcebreakers,
         showLinkedIn: profileData.showLinkedIn,
         showCompany: profileData.showCompany
-      }
+      },
+      updated_at: new Date().toISOString()
+    }
+    
+    // Upsert the profile (insert or update)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .upsert(profileToSave, { 
+        onConflict: 'user_id',
+        ignoreDuplicates: false 
+      })
+      .select()
+      .single()
+    
+    if (profileError) {
+      console.error('Profile save error:', profileError)
+      return NextResponse.json(
+        { error: 'Failed to save profile to database' },
+        { status: 500 }
+      )
     }
     
     return NextResponse.json({
       success: true,
-      profile: mockProfile
+      profile: profile
     })
     
   } catch (error) {

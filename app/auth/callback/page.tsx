@@ -10,17 +10,38 @@ export default function Callback() {
     const handleCallback = async () => {
       try {
         const supabase = supabaseBrowser()
-        const { data: { user } } = await supabase.auth.getUser()
         
-        if (!user) {
+        // Handle the auth callback first
+        const { error: callbackError } = await supabase.auth.getSession()
+        
+        if (callbackError) {
+          console.error('Auth callback error:', callbackError)
           router.replace('/auth')
           return
         }
         
-        const res = await fetch('/api/me/profile')
-        const { hasProfile } = await res.json()
+        // Get the current user
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
         
-        if (hasProfile) {
+        if (userError || !user) {
+          console.error('User fetch error:', userError)
+          router.replace('/auth')
+          return
+        }
+        
+        // Check if user has completed onboarding
+        const res = await fetch('/api/me/profile')
+        const data = await res.json()
+        
+        if (!res.ok) {
+          console.error('Profile check failed:', data.error)
+          router.replace('/onboarding')
+          return
+        }
+        
+        const { hasProfile, isOnboardingComplete } = data
+        
+        if (hasProfile && isOnboardingComplete) {
           router.replace('/home')
         } else {
           router.replace('/onboarding')
