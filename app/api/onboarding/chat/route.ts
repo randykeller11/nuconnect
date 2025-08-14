@@ -46,91 +46,20 @@ export async function POST(req: Request) {
     .replace('{TAXONOMY}', JSON.stringify(TAXONOMY))
     .replace('{STATE}', stage)
 
-  // Simple cost control: if userText is empty and no formData, don't call the model
-  if (!input.userText && !input.formData && stage !== 'GREETING') {
-    return NextResponse.json({
-      message: 'Ready when you are—shall we continue?',
-      quickReplies: ['Yes', 'Skip for now'],
-      nextState: stage,
-    })
-  }
-
+  // Use deterministic responses instead of AI to prevent looping
+  let ai: any
+  
   // Assemble conversation: keep transcript short (last ~8 turns)
-  const transcript: any[] = Array.isArray(profile?.onboarding_transcript) ? profile!.onboarding_transcript : []
+  const transcript: any[] = Array.isArray(updatedProfile?.onboarding_transcript) ? updatedProfile!.onboarding_transcript : []
   if (input.userText) {
     transcript.push({ id: crypto.randomUUID(), role: 'user', content: input.userText, ts: new Date().toISOString() })
   }
 
-  const messages = [
-    { role: 'system', content: 'Reply in strict JSON only.' },
-    { role: 'user', content: filled },
-  ] as const
-
-  const raw = await openrouterChat(messages as any, 'openai/gpt-4o-mini', 0.2)
-  let ai: any
-  try { 
-    // More aggressive JSON cleaning
-    let cleanedRaw = raw.trim()
-    
-    // Remove trailing commas before closing braces/brackets
-    cleanedRaw = cleanedRaw.replace(/,(\s*[}\]])/g, '$1')
-    
-    // Remove control characters
-    cleanedRaw = cleanedRaw.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
-    
-    // Fix common JSON issues
-    cleanedRaw = cleanedRaw.replace(/,(\s*,)/g, ',') // Remove double commas
-    cleanedRaw = cleanedRaw.replace(/:\s*,/g, ': null,') // Fix empty values
-    
-    console.log('Cleaned JSON:', cleanedRaw)
-    ai = JSON.parse(cleanedRaw)
-    
-    // Ensure nextState is valid and progresses
-    if (!ai.nextState || !['GREETING', 'SNAPSHOT', 'FOCUS', 'INTENT', 'POLISH', 'DONE'].includes(ai.nextState)) {
-      ai.nextState = stage
-    }
-    
-    // Simple progression logic
-    if (stage === 'GREETING' && input.userText && 
-        (input.userText.toLowerCase().includes('yes') || 
-         input.userText.toLowerCase().includes('start') ||
-         input.userText.toLowerCase().includes('go'))) {
-      ai.nextState = STATE_PROGRESSION[stage]
-    }
-    
-    // If we just saved form data, always progress to next state
-    if (input.formData && Object.keys(input.formData).length && stage in STATE_PROGRESSION) {
-      ai.nextState = STATE_PROGRESSION[stage as keyof typeof STATE_PROGRESSION]
-    }
-    
-  } catch (error) {
-    console.error('Failed to parse AI response:', error, 'Raw response:', raw)
-    
-    // Simplified fallback responses that always progress
-    if (stage === 'GREETING') {
-      if (input.userText) {
-        ai = { 
-          message: "Perfect! Let's start with the basics. What's your current role and company?", 
-          ask: {
-            fields: [
-              { key: 'role', label: 'Your Role', type: 'text', placeholder: 'e.g. Software Engineer' },
-              { key: 'company', label: 'Company', type: 'text', placeholder: 'e.g. Google' },
-              { key: 'location', label: 'Location', type: 'text', placeholder: 'e.g. San Francisco, CA' }
-            ],
-            cta: 'Continue'
-          },
-          nextState: 'FOCUS' 
-        }
-      } else {
-        ai = { 
-          message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
-          quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
-          nextState: 'SNAPSHOT' 
-        }
-      }
-    } else if (stage === 'SNAPSHOT') {
+  // Deterministic state machine - no AI calls
+  if (stage === 'GREETING') {
+    if (input.userText) {
       ai = { 
-        message: "Great! Let's start with the basics. What's your current role and company?", 
+        message: "Perfect! Let's start with the basics. What's your current role and company?", 
         ask: {
           fields: [
             { key: 'role', label: 'Your Role', type: 'text', placeholder: 'e.g. Software Engineer' },
@@ -139,9 +68,58 @@ export async function POST(req: Request) {
           ],
           cta: 'Continue'
         },
-        nextState: 'FOCUS' 
+        nextState: 'SNAPSHOT' 
       }
-    } else if (stage === 'FOCUS') {
+    } else {
+      ai = { 
+        message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
+        quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
+        nextState: 'GREETING' 
+      }
+    }
+  } else if (stage === 'SNAPSHOT') {
+    if (input.formData && Object.keys(input.formData).length) {
+      // Form submitted, move to next state
+      ai = {
+        message: "Great! Now let's focus on your expertise. Select your industries and key skills.",
+        ask: {
+          fields: [
+            { key: 'industries', label: 'Industries (max 3)', type: 'multi-select', options: INDUSTRIES, max: 3 },
+            { key: 'skills', label: 'Key Skills (max 5)', type: 'multi-select', options: SKILLS, max: 5 }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'FOCUS'
+      }
+    } else {
+      ai = { 
+        message: "Let's start with the basics. What's your current role and company?", 
+        ask: {
+          fields: [
+            { key: 'role', label: 'Your Role', type: 'text', placeholder: 'e.g. Software Engineer' },
+            { key: 'company', label: 'Company', type: 'text', placeholder: 'e.g. Google' },
+            { key: 'location', label: 'Location', type: 'text', placeholder: 'e.g. San Francisco, CA' }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'SNAPSHOT' 
+      }
+    }
+  } else if (stage === 'FOCUS') {
+    if (input.formData && Object.keys(input.formData).length) {
+      // Form submitted, move to next state
+      ai = {
+        message: "Excellent! What are your networking goals? What type of people do you want to meet?",
+        ask: {
+          fields: [
+            { key: 'objectives', label: 'Your Objectives', type: 'multi-select', options: OBJECTIVES, max: 3 },
+            { key: 'seeking', label: 'Who You Want to Meet', type: 'multi-select', options: SEEKING, max: 3 }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'INTENT'
+      }
+    } else {
       ai = {
         message: "Now let's focus on your expertise. Select your industries and key skills.",
         ask: {
@@ -151,9 +129,18 @@ export async function POST(req: Request) {
           ],
           cta: 'Continue'
         },
-        nextState: 'INTENT'
+        nextState: 'FOCUS'
       }
-    } else if (stage === 'INTENT') {
+    }
+  } else if (stage === 'INTENT') {
+    if (input.formData && Object.keys(input.formData).length) {
+      // Form submitted, move to final state
+      ai = {
+        message: "Perfect! Your profile is almost ready. Let me create a headline and bio for you.",
+        quickReplies: ['Generate my profile', 'Let me review first'],
+        nextState: 'POLISH'
+      }
+    } else {
       ai = {
         message: "What are your networking goals? What type of people do you want to meet?",
         ask: {
@@ -163,10 +150,20 @@ export async function POST(req: Request) {
           ],
           cta: 'Continue'
         },
-        nextState: 'POLISH'
+        nextState: 'INTENT'
       }
-    } else {
-      ai = { message: "Let's continue with your profile setup.", quickReplies: ['Continue'], nextState: stage }
+    }
+  } else if (stage === 'POLISH') {
+    ai = {
+      message: "All set! Your profile is complete and ready to help you make great connections.",
+      quickReplies: ['Start networking!'],
+      nextState: 'DONE'
+    }
+  } else {
+    ai = { 
+      message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
+      quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
+      nextState: 'GREETING' 
     }
   }
 
