@@ -10,13 +10,14 @@ import path from 'node:path'
 
 type ClientMsg = { userText?: string; formData?: Record<string, any>; state?: string }
 
-function nextStateFromProfile(p: any) {
-  if (!p?.role || !p?.company || !p?.location) return 'SNAPSHOT'
-  if (!p?.industries?.length || !p?.skills?.length) return 'FOCUS'
-  if (!p?.objectives?.length || !p?.seeking?.length) return 'INTENT'
-  if (!p?.ai_bio || !p?.headline) return 'POLISH'
-  return 'DONE'
-}
+// Simple state progression map
+const STATE_PROGRESSION = {
+  'GREETING': 'SNAPSHOT',
+  'SNAPSHOT': 'FOCUS', 
+  'FOCUS': 'INTENT',
+  'INTENT': 'POLISH',
+  'POLISH': 'DONE'
+} as const
 
 export async function POST(req: Request) {
   const sb = await createSupabaseServerClient()
@@ -34,8 +35,8 @@ export async function POST(req: Request) {
     updatedProfile = updated || { ...profile, ...patch }
   }
 
-  // Use explicit state from input, or determine from updated profile
-  const stage = input.state || nextStateFromProfile(updatedProfile)
+  // Use explicit state from input, or get from profile, or default to GREETING
+  const stage = input.state || updatedProfile?.onboarding_current_state || 'GREETING'
   const TAXONOMY = { INDUSTRIES, SKILLS, OBJECTIVES, SEEKING, SENIORITY }
   const promptPath = path.join(process.cwd(), 'prompts', 'onboarding-convo.md')
   const base = await fs.readFile(promptPath, 'utf8')
@@ -89,47 +90,43 @@ export async function POST(req: Request) {
       ai.nextState = stage
     }
     
-    // Force progression logic based on current state and input
+    // Simple progression logic
     if (stage === 'GREETING' && input.userText && 
         (input.userText.toLowerCase().includes('yes') || 
          input.userText.toLowerCase().includes('start') ||
          input.userText.toLowerCase().includes('go'))) {
-      ai.nextState = 'SNAPSHOT'
+      ai.nextState = STATE_PROGRESSION[stage]
     }
     
-    // If we just saved form data, ensure we progress to next state
-    if (input.formData && Object.keys(input.formData).length) {
-      if (stage === 'SNAPSHOT' && updatedProfile?.role && updatedProfile?.company) {
-        ai.nextState = 'FOCUS'
-      } else if (stage === 'FOCUS' && updatedProfile?.industries?.length && updatedProfile?.skills?.length) {
-        ai.nextState = 'INTENT'
-      } else if (stage === 'INTENT' && updatedProfile?.objectives?.length && updatedProfile?.seeking?.length) {
-        ai.nextState = 'POLISH'
-      }
+    // If we just saved form data, always progress to next state
+    if (input.formData && Object.keys(input.formData).length && stage in STATE_PROGRESSION) {
+      ai.nextState = STATE_PROGRESSION[stage as keyof typeof STATE_PROGRESSION]
     }
     
   } catch (error) {
     console.error('Failed to parse AI response:', error, 'Raw response:', raw)
     
-    // Force progression based on user input and current state
-    if (stage === 'GREETING' && input.userText) {
-      ai = { 
-        message: "Perfect! Let's start with the basics. What's your current role and company?", 
-        ask: {
-          fields: [
-            { key: 'role', label: 'Your Role', type: 'text', placeholder: 'e.g. Software Engineer' },
-            { key: 'company', label: 'Company', type: 'text', placeholder: 'e.g. Google' },
-            { key: 'location', label: 'Location', type: 'text', placeholder: 'e.g. San Francisco, CA' }
-          ],
-          cta: 'Continue'
-        },
-        nextState: 'SNAPSHOT' 
-      }
-    } else if (stage === 'GREETING') {
-      ai = { 
-        message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
-        quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
-        nextState: 'GREETING' 
+    // Simplified fallback responses that always progress
+    if (stage === 'GREETING') {
+      if (input.userText) {
+        ai = { 
+          message: "Perfect! Let's start with the basics. What's your current role and company?", 
+          ask: {
+            fields: [
+              { key: 'role', label: 'Your Role', type: 'text', placeholder: 'e.g. Software Engineer' },
+              { key: 'company', label: 'Company', type: 'text', placeholder: 'e.g. Google' },
+              { key: 'location', label: 'Location', type: 'text', placeholder: 'e.g. San Francisco, CA' }
+            ],
+            cta: 'Continue'
+          },
+          nextState: 'FOCUS' 
+        }
+      } else {
+        ai = { 
+          message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
+          quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
+          nextState: 'SNAPSHOT' 
+        }
       }
     } else if (stage === 'SNAPSHOT') {
       ai = { 
@@ -143,6 +140,30 @@ export async function POST(req: Request) {
           cta: 'Continue'
         },
         nextState: 'FOCUS' 
+      }
+    } else if (stage === 'FOCUS') {
+      ai = {
+        message: "Now let's focus on your expertise. Select your industries and key skills.",
+        ask: {
+          fields: [
+            { key: 'industries', label: 'Industries (max 3)', type: 'multi-select', options: INDUSTRIES, max: 3 },
+            { key: 'skills', label: 'Key Skills (max 5)', type: 'multi-select', options: SKILLS, max: 5 }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'INTENT'
+      }
+    } else if (stage === 'INTENT') {
+      ai = {
+        message: "What are your networking goals? What type of people do you want to meet?",
+        ask: {
+          fields: [
+            { key: 'objectives', label: 'Your Objectives', type: 'multi-select', options: OBJECTIVES, max: 3 },
+            { key: 'seeking', label: 'Who You Want to Meet', type: 'multi-select', options: SEEKING, max: 3 }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'POLISH'
       }
     } else {
       ai = { message: "Let's continue with your profile setup.", quickReplies: ['Continue'], nextState: stage }
@@ -158,10 +179,11 @@ export async function POST(req: Request) {
     meta: { quickReplies: ai.quickReplies, ask: ai.ask } 
   })
 
-  // If POLISH produced headline/bio via formData in the next call, we'll save there.
+  // Save current state and transcript
   const update: any = { 
     onboarding_transcript: transcript, 
-    onboarding_stage: ai.nextState === 'DONE' ? 'complete' : 'in_progress', 
+    onboarding_stage: ai.nextState === 'DONE' ? 'complete' : 'in_progress',
+    onboarding_current_state: ai.nextState, // Track current state explicitly
     updated_at: new Date().toISOString() 
   }
   await sb.from('profiles').update(update).eq('user_id', user.id)
