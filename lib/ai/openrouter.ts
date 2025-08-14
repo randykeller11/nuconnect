@@ -5,7 +5,9 @@ export async function openrouterChat(
   model = 'openai/gpt-4o-mini',
   temperature = 0.2
 ){
-  const key = process.env.OPENROUTER_API_KEY!
+  const key = process.env.OPENROUTER_API_KEY
+  if (!key) throw new Error('OPENROUTER_API_KEY missing')
+  
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
