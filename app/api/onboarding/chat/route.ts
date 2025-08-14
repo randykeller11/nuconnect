@@ -66,8 +66,18 @@ export async function POST(req: Request) {
   let ai: any
   try { 
     ai = JSON.parse(raw) 
-  } catch { 
-    ai = { message: "Let's keep going.", quickReplies: ['Okay'], nextState: stage } 
+  } catch (error) {
+    console.error('Failed to parse AI response:', error, 'Raw response:', raw)
+    // Better fallback based on current state
+    if (stage === 'GREETING') {
+      ai = { 
+        message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
+        quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
+        nextState: 'GREETING' 
+      }
+    } else {
+      ai = { message: "Let's continue with your profile setup.", quickReplies: ['Continue'], nextState: stage }
+    }
   }
 
   // Append AI turn to transcript

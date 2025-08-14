@@ -158,7 +158,18 @@ export default function OnboardingChat() {
   }
 
   useEffect(() => { 
-    call({ state: 'GREETING' }) 
+    // Check auth first
+    const checkAuth = async () => {
+      const supabase = supabaseBrowser()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/auth')
+        return
+      }
+      // Start onboarding
+      call({ state: 'GREETING' })
+    }
+    checkAuth()
   }, [])
 
   function onQuick(r: string) { 
@@ -195,6 +206,17 @@ export default function OnboardingChat() {
             ))}
           </div>
         </div>
+
+        {/* Welcome header for first state */}
+        {state === 'GREETING' && transcript.length === 0 && (
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 mx-auto bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center shadow-lg mb-4">
+              <span className="text-2xl font-bold text-aulait">N</span>
+            </div>
+            <h1 className="text-2xl font-bold text-inkwell mb-2">Welcome to NuConnect</h1>
+            <p className="text-lunar">Let's create your networking profile</p>
+          </div>
+        )}
 
         {/* Chat messages */}
         <div className="space-y-4 mb-6">
