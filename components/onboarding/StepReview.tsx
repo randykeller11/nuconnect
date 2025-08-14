@@ -24,6 +24,8 @@ interface StepReviewProps {
     enableIcebreakers?: boolean
     showLinkedIn?: boolean
     showCompany?: boolean
+    linkedin_url?: string
+    profile_photo_url?: string
   }
   onChange: (data: any) => void
   onEditStep: (step: number) => void
@@ -64,6 +66,9 @@ export function StepReview({ data, onChange, onEditStep, onComplete, isLoading =
           <div><span className="font-medium">Seniority:</span> {data.seniority || 'Not specified'}</div>
           {data.headline && (
             <div><span className="font-medium">Headline:</span> {data.headline}</div>
+          )}
+          {data.linkedin_url && (
+            <div><span className="font-medium">LinkedIn:</span> {data.linkedin_url}</div>
           )}
         </div>
       </div>

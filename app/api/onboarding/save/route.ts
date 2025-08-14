@@ -58,6 +58,10 @@ export async function POST(request: NextRequest) {
     if (profileData.interests && profileData.interests.length > 0) {
       profileToSave.interests = profileData.interests
     }
+
+    // Optional links & photo
+    if (profileData.linkedin_url) profileToSave.linkedin_url = profileData.linkedin_url
+    if (profileData.profile_photo_url) profileToSave.profile_photo_url = profileData.profile_photo_url
     
     if (profileData.objectives?.[0] || profileData.career_goals) {
       profileToSave.career_goals = profileData.objectives?.[0] || profileData.career_goals

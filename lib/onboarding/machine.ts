@@ -8,6 +8,8 @@ export interface OnboardingState {
     company?: string
     location?: string
     headline?: string
+    linkedin_url?: string
+    profile_photo_url?: string
     
     // Focus
     industries?: string[]
