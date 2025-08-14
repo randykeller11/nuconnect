@@ -57,10 +57,6 @@ export function StepIntent({ data, onChange }: StepIntentProps) {
 
   return (
     <div className="space-y-8">
-      <div className="text-center">
-        <h3 className="text-xl font-semibold text-inkwell mb-2">Networking Intent</h3>
-        <p className="text-lunar">What are you looking to achieve through networking?</p>
-      </div>
 
       {/* Objectives */}
       <div>

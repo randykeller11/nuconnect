@@ -70,10 +70,6 @@ export function StepFocus({ data, onChange }: StepFocusProps) {
 
   return (
     <div className="space-y-8">
-      <div className="text-center">
-        <h3 className="text-xl font-semibold text-inkwell mb-2">Professional Focus</h3>
-        <p className="text-lunar">Help us understand your expertise and interests</p>
-      </div>
 
       {/* Search */}
       <div className="relative">

@@ -27,10 +27,6 @@ export function StepSnapshot({ data, onChange, isLinkedInPrefilled = false }: St
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-8">
-        <h3 className="text-xl font-semibold text-inkwell mb-2">Professional Snapshot</h3>
-        <p className="text-lunar">Tell us about your current role and background</p>
-      </div>
 
       {isLinkedInPrefilled && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
