@@ -38,14 +38,13 @@ export async function POST(req: Request) {
     .replace('{SEEKING[]}', JSON.stringify(SEEKING))
     .replace('{SENIORITY[]}', JSON.stringify(SENIORITY))
 
-  const content = await openrouterChat([
-    { role:'system', content:'You reply in strict JSON only.' },
-    { role:'user', content: filled }
-  ])
+  const content = await openrouterChat(
+    [{ role:'system', content:'You reply in strict JSON only.' }, { role:'user', content: filled }],
+    'openai/gpt-4o-mini', 0.2
+  )
 
-  // Best-effort parse
-  let json:any = {}
-  try { json = JSON.parse(content) } catch { json = { question: 'Tell us your role', suggestedChoices: [], explanation: '' } }
+  let json:any
+  try { json = JSON.parse(content) } catch { json = { question:'What is your role?', suggestedChoices:[], explanation:'' } }
 
   return NextResponse.json(json)
 }
