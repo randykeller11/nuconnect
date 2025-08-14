@@ -65,26 +65,57 @@ export async function POST(req: Request) {
   const raw = await openrouterChat(messages as any, 'openai/gpt-4o-mini', 0.2)
   let ai: any
   try { 
-    // Clean up common JSON issues before parsing
-    const cleanedRaw = raw
-      .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
-      .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
-      .trim()
+    // More aggressive JSON cleaning
+    let cleanedRaw = raw.trim()
     
+    // Remove trailing commas before closing braces/brackets
+    cleanedRaw = cleanedRaw.replace(/,(\s*[}\]])/g, '$1')
+    
+    // Remove control characters
+    cleanedRaw = cleanedRaw.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+    
+    // Fix common JSON issues
+    cleanedRaw = cleanedRaw.replace(/,(\s*,)/g, ',') // Remove double commas
+    cleanedRaw = cleanedRaw.replace(/:\s*,/g, ': null,') // Fix empty values
+    
+    console.log('Cleaned JSON:', cleanedRaw)
     ai = JSON.parse(cleanedRaw)
     
     // Ensure nextState is valid and progresses
     if (!ai.nextState || !['GREETING', 'SNAPSHOT', 'FOCUS', 'INTENT', 'POLISH', 'DONE'].includes(ai.nextState)) {
       ai.nextState = stage
     }
+    
+    // Force progression from GREETING when user responds positively
+    if (stage === 'GREETING' && input.userText && 
+        (input.userText.toLowerCase().includes('yes') || 
+         input.userText.toLowerCase().includes('start') ||
+         input.userText.toLowerCase().includes('go'))) {
+      ai.nextState = 'SNAPSHOT'
+    }
+    
   } catch (error) {
     console.error('Failed to parse AI response:', error, 'Raw response:', raw)
-    // Better fallback based on current state with progression
-    if (stage === 'GREETING') {
+    
+    // Force progression based on user input and current state
+    if (stage === 'GREETING' && input.userText) {
+      ai = { 
+        message: "Perfect! Let's start with the basics. What's your current role and company?", 
+        ask: {
+          fields: [
+            { key: 'role', label: 'Your Role', type: 'text', placeholder: 'e.g. Software Engineer' },
+            { key: 'company', label: 'Company', type: 'text', placeholder: 'e.g. Google' },
+            { key: 'location', label: 'Location', type: 'text', placeholder: 'e.g. San Francisco, CA' }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'SNAPSHOT' 
+      }
+    } else if (stage === 'GREETING') {
       ai = { 
         message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
         quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
-        nextState: 'SNAPSHOT' 
+        nextState: 'GREETING' 
       }
     } else if (stage === 'SNAPSHOT') {
       ai = { 
