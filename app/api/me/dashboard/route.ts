@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { calculateProfileStrength } from '@/lib/profile/strength'
 import { NextResponse } from 'next/server'

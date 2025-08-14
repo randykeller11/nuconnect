@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { handleLinkedInOAuth, importFromLinkedInUrl, getDevMockProfile } from '../../../../lib/integrations/linkedin'
 
