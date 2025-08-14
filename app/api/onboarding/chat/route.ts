@@ -65,15 +65,32 @@ export async function POST(req: Request) {
   const raw = await openrouterChat(messages as any, 'openai/gpt-4o-mini', 0.2)
   let ai: any
   try { 
-    ai = JSON.parse(raw) 
+    ai = JSON.parse(raw)
+    // Ensure nextState is valid and progresses
+    if (!ai.nextState || !['GREETING', 'SNAPSHOT', 'FOCUS', 'INTENT', 'POLISH', 'DONE'].includes(ai.nextState)) {
+      ai.nextState = stage
+    }
   } catch (error) {
     console.error('Failed to parse AI response:', error, 'Raw response:', raw)
-    // Better fallback based on current state
+    // Better fallback based on current state with progression
     if (stage === 'GREETING') {
       ai = { 
         message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
         quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
-        nextState: 'GREETING' 
+        nextState: 'SNAPSHOT' 
+      }
+    } else if (stage === 'SNAPSHOT') {
+      ai = { 
+        message: "Great! Let's start with the basics. What's your current role and company?", 
+        ask: {
+          fields: [
+            { key: 'role', label: 'Your Role', type: 'text', placeholder: 'e.g. Software Engineer' },
+            { key: 'company', label: 'Company', type: 'text', placeholder: 'e.g. Google' },
+            { key: 'location', label: 'Location', type: 'text', placeholder: 'e.g. San Francisco, CA' }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'FOCUS' 
       }
     } else {
       ai = { message: "Let's continue with your profile setup.", quickReplies: ['Continue'], nextState: stage }

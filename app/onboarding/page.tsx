@@ -121,9 +121,17 @@ export default function OnboardingChat() {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [transcript, setTranscript] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
+  const [lastCallTime, setLastCallTime] = useState(0)
   const router = useRouter()
 
   async function call(body: any) {
+    // Rate limiting: prevent calls within 1 second of each other
+    const now = Date.now()
+    if (now - lastCallTime < 1000) {
+      return
+    }
+    setLastCallTime(now)
+    
     setBusy(true)
     try {
       const res = await fetch('/api/onboarding/chat', { 
@@ -134,14 +142,22 @@ export default function OnboardingChat() {
       const j = await res.json()
       
       if (res.ok) {
-        setAi(j)
-        setState(j.nextState)
+        // Only update if we got a different message or state change
+        const isDifferentMessage = !ai || ai.message !== j.message
+        const isStateChange = j.nextState !== state
         
-        // Add to transcript
-        if (body.userText) {
-          setTranscript(prev => [...prev, { role: 'user', content: body.userText }])
+        if (isDifferentMessage || isStateChange) {
+          setAi(j)
+          setState(j.nextState)
+          
+          // Add to transcript only if it's a new message
+          if (body.userText && isDifferentMessage) {
+            setTranscript(prev => [...prev, { role: 'user', content: body.userText }])
+          }
+          if (isDifferentMessage) {
+            setTranscript(prev => [...prev, { role: 'assistant', content: j.message }])
+          }
         }
-        setTranscript(prev => [...prev, { role: 'assistant', content: j.message }])
         
         if (j.nextState === 'DONE') {
           toast.success('Onboarding complete!')
