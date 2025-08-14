@@ -4,18 +4,19 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { openrouterChat } from '@/lib/ai/openrouter'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 
 export async function POST() {
-  const sb = await createSupabaseServerClient()
+  const sb = createSupabaseServerClient()
   const { data:{ user } } = await sb.auth.getUser()
   if (!user) return NextResponse.json({ error:'unauthorized' }, { status:401 })
 
   const { data: p } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle()
   if (!p) return NextResponse.json({ error:'profile not found' }, { status:404 })
 
-  const tmpl = await readFile(join(process.cwd(), 'prompts/bio.md'), 'utf-8').catch(()=>'')
+  const tmplPath = path.join(process.cwd(), 'prompts', 'bio.md')
+  const tmpl = await fs.readFile(tmplPath, 'utf8').catch(()=>'')
 
   const filled =
     tmpl.replace('{name}', p.name ?? '')

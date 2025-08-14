@@ -1,5 +1,5 @@
 'use client'
-import { supabaseBrowser } from '@/lib/supabase/browser'
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -39,7 +39,7 @@ export default function LoginPage() {
 
     const redirectUrl = `${baseUrl}/auth/callback`
     
-    const supabase = supabaseBrowser()
+    const supabase = createSupabaseBrowserClient()
     
     try {
       if (mode === 'magic') {

@@ -5,11 +5,11 @@ import { NextResponse } from 'next/server'
 import { openrouterChat } from '@/lib/ai/openrouter'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { INDUSTRIES, SKILLS, OBJECTIVES, SEEKING, SENIORITY } from '@/shared/taxonomy'
-import { readFile } from 'fs/promises'
-import { join } from 'path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 
 export async function POST(req: Request) {
-  const sb = await createSupabaseServerClient()
+  const sb = createSupabaseServerClient()
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
@@ -17,7 +17,8 @@ export async function POST(req: Request) {
   // Load current profile
   const { data: profile } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle()
 
-  const template = await readFile(join(process.cwd(), 'prompts/onboarding.md'), 'utf-8').catch(()=>'')
+  const tmplPath = path.join(process.cwd(), 'prompts', 'onboarding.md')
+  const template = await fs.readFile(tmplPath, 'utf8').catch(()=>'')
 
   const filled = template
     .replace('{name}', profile?.name ?? '')
