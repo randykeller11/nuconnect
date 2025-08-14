@@ -65,7 +65,14 @@ export async function POST(req: Request) {
   const raw = await openrouterChat(messages as any, 'openai/gpt-4o-mini', 0.2)
   let ai: any
   try { 
-    ai = JSON.parse(raw)
+    // Clean up common JSON issues before parsing
+    const cleanedRaw = raw
+      .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+      .trim()
+    
+    ai = JSON.parse(cleanedRaw)
+    
     // Ensure nextState is valid and progresses
     if (!ai.nextState || !['GREETING', 'SNAPSHOT', 'FOCUS', 'INTENT', 'POLISH', 'DONE'].includes(ai.nextState)) {
       ai.nextState = stage
