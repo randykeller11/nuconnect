@@ -106,4 +106,5 @@ export function calculateProfileStrength(profile: any): ProfileStrengthResult {
     suggestions: suggestions.slice(0, 3),
     breakdown,
   }
+}
 
