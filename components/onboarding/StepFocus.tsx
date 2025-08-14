@@ -5,8 +5,9 @@ import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
-import { Search, Star } from 'lucide-react'
+import { Search, Star, Sparkles } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
+import { toast } from 'sonner'
 
 const INDUSTRY_GROUPS = [
   {
@@ -118,6 +119,8 @@ interface StepFocusProps {
 export function StepFocus({ data, onChange }: StepFocusProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedPanel, setExpandedPanel] = useState<'industries' | 'skills' | 'interests' | 'seniority'>('industries')
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+  const [aiSuggestion, setAiSuggestion] = useState<{question: string, suggestedChoices: string[], explanation: string} | null>(null)
 
   const handleArrayChange = (field: string, value: string, maxCount: number) => {
     const currentArray = data[field as keyof typeof data] as string[] || []
@@ -204,6 +207,29 @@ export function StepFocus({ data, onChange }: StepFocusProps) {
     }
   }
 
+  // AI Suggestions
+  const getSuggestions = async () => {
+    setIsLoadingSuggestions(true)
+    try {
+      const response = await fetch('/api/onboarding/next', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context: { step: 'focus', data } })
+      })
+      
+      if (!response.ok) throw new Error('Failed to get suggestions')
+      
+      const suggestion = await response.json()
+      setAiSuggestion(suggestion)
+      toast.success('AI suggestions loaded!')
+    } catch (error) {
+      console.error('Failed to get AI suggestions:', error)
+      toast.error('Failed to get suggestions. Please try again.')
+    } finally {
+      setIsLoadingSuggestions(false)
+    }
+  }
+
   // Progress bar encouragement
   const encouragement = "These details help us make smarter matches at your next event."
 
@@ -213,6 +239,56 @@ export function StepFocus({ data, onChange }: StepFocusProps) {
   return (
     <div className="space-y-6">
       <div className="mb-2 text-center text-sm text-lunar">{encouragement}</div>
+      
+      {/* AI Suggestions Button */}
+      <div className="flex justify-center mb-4">
+        <Button
+          variant="outline"
+          onClick={getSuggestions}
+          disabled={isLoadingSuggestions}
+          className="flex items-center gap-2"
+        >
+          <Sparkles className="w-4 h-4" />
+          {isLoadingSuggestions ? 'Getting suggestions...' : 'Need suggestions?'}
+        </Button>
+      </div>
+
+      {/* AI Suggestion Display */}
+      {aiSuggestion && (
+        <div className="bg-inkwell/5 border border-inkwell/20 rounded-xl p-4 mb-4">
+          <div className="flex items-start gap-2 mb-2">
+            <Sparkles className="w-4 h-4 text-inkwell mt-0.5" />
+            <div>
+              <p className="font-medium text-inkwell mb-1">{aiSuggestion.question}</p>
+              <p className="text-sm text-lunar mb-3">{aiSuggestion.explanation}</p>
+              {aiSuggestion.suggestedChoices.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {aiSuggestion.suggestedChoices.map((choice, index) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-inkwell hover:text-aulait"
+                      onClick={() => {
+                        // Auto-add to appropriate field based on current panel
+                        if (expandedPanel === 'industries') {
+                          handleArrayChange('industries', choice, 3)
+                        } else if (expandedPanel === 'skills') {
+                          handleArrayChange('skills', choice, 5)
+                        } else if (expandedPanel === 'interests') {
+                          handleArrayChange('interests', choice, 7)
+                        }
+                      }}
+                    >
+                      {choice}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Search */}
       <div className="relative mb-2">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lunar w-4 h-4" />
