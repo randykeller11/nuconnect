@@ -1,7 +1,9 @@
+'use client'
 import { createBrowserClient } from '@supabase/ssr'
 
-export const supabaseBrowser = () =>
+export const createSupabaseBrowserClient = () =>
   createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { name: 'sb', lifetime: 60*60*24*7, domain: undefined, path: '/', sameSite: 'lax' } }
   )
