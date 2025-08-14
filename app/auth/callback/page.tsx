@@ -11,8 +11,8 @@ export default function Callback() {
       try {
         const supabase = supabaseBrowser()
         
-        // Complete the magic-link / OAuth flow and set the auth cookie
-        const { error: callbackError } = await supabase.auth.getSessionFromUrl()
+        // Ensure the auth session is available (magic-link / OAuth has already set it)
+        const { error: callbackError } = await supabase.auth.getSession()
         
         if (callbackError) {
           console.error('Auth callback error:', callbackError)
