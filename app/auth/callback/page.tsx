@@ -1,7 +1,7 @@
 'use client'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabaseBrowser } from '@/lib/supabase/browser'
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 
 export default function Callback() {
   const router = useRouter()
@@ -9,7 +9,7 @@ export default function Callback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const supabase = supabaseBrowser()
+        const supabase = createSupabaseBrowserClient()
         
         // Ensure the auth session is available (magic-link / OAuth has already set it)
         const { error: callbackError } = await supabase.auth.getSession()

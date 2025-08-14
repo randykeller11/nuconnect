@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
-import { supabaseBrowser } from '@/lib/supabase/browser'
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
 import { OnboardingMachine } from '@/lib/onboarding/machine'
 import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
 import { StepWelcome } from '@/components/onboarding/StepWelcome'
@@ -31,7 +31,7 @@ export default function OnboardingPage() {
 
   const initializeOnboarding = async () => {
     try {
-      const supabase = supabaseBrowser()
+      const supabase = createSupabaseBrowserClient()
       const { data: { user }, error } = await supabase.auth.getUser()
       
       if (error || !user) {
