@@ -105,8 +105,15 @@ export function StepReview({ data, onChange, onEditStep, onComplete, isLoading =
               <span className="font-medium text-sm">Skills:</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {data.skills.map(skill => (
-                  <Badge key={skill} variant="outline" className="text-xs">
+                  <Badge
+                    key={skill}
+                    variant={data.primarySkill === skill ? "default" : "outline"}
+                    className={`text-xs ${data.primarySkill === skill ? "bg-inkwell text-aulait" : ""}`}
+                  >
                     {skill}
+                    {data.primarySkill === skill && (
+                      <span className="ml-1 text-xs font-bold">(Primary)</span>
+                    )}
                   </Badge>
                 ))}
               </div>
@@ -172,6 +179,11 @@ export function StepReview({ data, onChange, onEditStep, onComplete, isLoading =
           <div className="text-sm">
             <span className="font-medium">Style:</span> {data.introStyle || 'Not specified'}
           </div>
+          {data.enableIcebreakers && (
+            <div className="text-sm">
+              <span className="font-medium">Icebreaker Tone:</span> {data.icebreakerTone || 'Fun'}
+            </div>
+          )}
         </div>
       </div>
 

@@ -8,12 +8,14 @@ import { Switch } from '../ui/switch'
 
 const OBJECTIVES = [
   'Find Co-founder', 'Explore Jobs', 'Hire Talent', 'Learn AI', 
-  'Mentor Others', 'Find Mentor', 'Find Investors', 'Get Feedback'
+  'Mentor Others', 'Find Mentor', 'Find Investors', 'Get Feedback',
+  'Build Brand Awareness', 'Recruit Volunteers', 'Explore Partnerships', 'Share Knowledge', 'Test Ideas', 'Find Beta Users'
 ]
 
 const SEEKING = [
   'Technical Co-founder', 'Business Co-founder', 'Mentor', 'Job Opportunities',
-  'Investment', 'Partnerships', 'Feedback', 'Learning Opportunities'
+  'Investment', 'Partnerships', 'Feedback', 'Learning Opportunities',
+  'Advisor', 'Sponsor', 'Media Coverage', 'Event Collaborators'
 ]
 
 interface StepIntentProps {
@@ -53,6 +55,12 @@ export function StepIntent({ data, onChange }: StepIntentProps) {
 
   const handleRadioChange = (field: string, value: string) => {
     onChange({ ...data, [field]: value })
+  }
+
+  const [icebreakerTone, setIcebreakerTone] = React.useState('Fun')
+  const handleIcebreakerToneChange = (tone: string) => {
+    setIcebreakerTone(tone)
+    onChange({ ...data, icebreakerTone: tone })
   }
 
   return (
@@ -126,6 +134,15 @@ export function StepIntent({ data, onChange }: StepIntentProps) {
               <span>Selective</span>
               <span>Very Open</span>
             </div>
+            <div className="text-xs text-lunar mt-1">
+              {data.openness === 3
+                ? "3/5 means you’re open to a few select, high-quality introductions."
+                : data.openness === 5
+                ? "5/5 means you’re open to meeting anyone relevant."
+                : data.openness === 1
+                ? "1/5 means you prefer only the most relevant matches."
+                : ""}
+            </div>
           </div>
         </div>
 
@@ -165,6 +182,20 @@ export function StepIntent({ data, onChange }: StepIntentProps) {
           <div>
             <Label className="text-inkwell font-medium">Enable AI Icebreakers</Label>
             <p className="text-sm text-lunar">Get conversation starters for your matches</p>
+            {data.enableIcebreakers && (
+              <div className="mt-2">
+                <Label className="text-inkwell font-medium">Icebreaker Tone</Label>
+                <select
+                  className="ml-2 border rounded px-2 py-1 text-sm"
+                  value={icebreakerTone}
+                  onChange={e => handleIcebreakerToneChange(e.target.value)}
+                >
+                  <option value="Fun">Fun</option>
+                  <option value="Professional">Professional</option>
+                  <option value="Thought-Provoking">Thought-Provoking</option>
+                </select>
+              </div>
+            )}
           </div>
           <Switch
             checked={data.enableIcebreakers || false}

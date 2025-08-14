@@ -6,19 +6,91 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { Search } from 'lucide-react'
 
-const INDUSTRIES = [
-  'Technology', 'Healthcare', 'Finance', 'Education', 'Retail', 'Manufacturing',
-  'Real Estate', 'Media', 'Transportation', 'Energy', 'Agriculture', 'Consulting'
+const INDUSTRY_GROUPS = [
+  {
+    label: "Tech & Startups",
+    options: [
+      "Technology", "Startups", "Venture Capital", "Fintech", "EdTech", "HealthTech", "Climate Tech"
+    ]
+  },
+  {
+    label: "Business & Services",
+    options: [
+      "Consulting", "Finance", "Retail", "Manufacturing", "Non-Tech Services", "Logistics/Supply Chain", "Hospitality", "Real Estate"
+    ]
+  },
+  {
+    label: "Impact & Public",
+    options: [
+      "Nonprofit", "Government", "NGO", "Social Impact"
+    ]
+  },
+  {
+    label: "Creative & Media",
+    options: [
+      "Media", "Creative/Arts"
+    ]
+  },
+  {
+    label: "Other",
+    options: [
+      "Healthcare", "Education", "Energy", "Agriculture", "Transportation"
+    ]
+  }
 ]
 
-const SKILLS = [
-  'JavaScript', 'Python', 'React', 'Node.js', 'Product Management', 'UX Design',
-  'Data Science', 'Marketing', 'Sales', 'Operations', 'Strategy', 'Leadership'
+const SKILL_GROUPS = [
+  {
+    label: "Tech",
+    options: [
+      "JavaScript", "Python", "React", "Node.js", "Data Analytics", "Cybersecurity", "AI/ML", "Cloud Architecture", "DevOps"
+    ]
+  },
+  {
+    label: "Business",
+    options: [
+      "Negotiation", "Sales Strategy", "Business Development", "Fundraising", "Partnerships", "Project Management"
+    ]
+  },
+  {
+    label: "Creative",
+    options: [
+      "Branding", "Content Creation", "Video Editing", "Storytelling", "UX/UI"
+    ]
+  },
+  {
+    label: "People Skills",
+    options: [
+      "Mentorship", "Conflict Resolution", "Public Speaking", "Community Management"
+    ]
+  }
 ]
 
-const INTERESTS = [
-  'AI', 'Machine Learning', 'Blockchain', 'Climate Tech', 'Fintech', 'EdTech',
-  'HealthTech', 'Gaming', 'Music', 'Art', 'Sports', 'Travel', 'Cooking', 'Reading'
+const INTEREST_GROUPS = [
+  {
+    label: "Emerging Tech",
+    options: [
+      "AI", "Machine Learning", "Blockchain", "AR/VR", "Climate Tech"
+    ]
+  },
+  {
+    label: "Lifestyle",
+    options: [
+      "Travel", "Cooking", "Reading", "Sports"
+    ]
+  },
+  {
+    label: "Social Good",
+    options: [
+      "Education Equity", "Sustainability", "Diversity & Inclusion"
+    ]
+  },
+  {
+    label: "Hobbies",
+    options: [
+      "Gaming", "Music", "Art", "Photography"
+    ]
+  }
 ]
 
 const SENIORITY_OPTIONS = [
@@ -35,6 +107,7 @@ interface StepFocusProps {
     skills?: string[]
     interests?: string[]
     seniority?: string
+    primarySkill?: string
   }
   onChange: (data: any) => void
 }
@@ -61,9 +134,15 @@ export function StepFocus({ data, onChange }: StepFocusProps) {
     onChange({ ...data, seniority: value })
   }
 
+  // Primary Skill selection
+  const handlePrimarySkillChange = (skill: string) => {
+    onChange({ ...data, primarySkill: skill })
+  }
+
+  // Filter helper for search
   const filterOptions = (options: string[]) => {
     if (!searchTerm) return options
-    return options.filter(option => 
+    return options.filter(option =>
       option.toLowerCase().includes(searchTerm.toLowerCase())
     )
   }
@@ -87,22 +166,27 @@ export function StepFocus({ data, onChange }: StepFocusProps) {
         <Label className="text-inkwell font-medium mb-3 block">
           Industries (max 3) {data.industries?.length || 0}/3
         </Label>
-        <div className="flex flex-wrap gap-2">
-          {filterOptions(INDUSTRIES).map((industry) => (
-            <Badge
-              key={industry}
-              variant={data.industries?.includes(industry) ? 'default' : 'outline'}
-              className={`cursor-pointer transition-colors ${
-                data.industries?.includes(industry)
-                  ? 'bg-inkwell text-aulait'
-                  : 'hover:bg-inkwell/10'
-              }`}
-              onClick={() => handleArrayChange('industries', industry, 3)}
-            >
-              {industry}
-            </Badge>
-          ))}
-        </div>
+        {INDUSTRY_GROUPS.map(group => (
+          <div key={group.label} className="mb-2">
+            <div className="text-xs text-lunar mb-1">{group.label}</div>
+            <div className="flex flex-wrap gap-2">
+              {filterOptions(group.options).map((industry) => (
+                <Badge
+                  key={industry}
+                  variant={data.industries?.includes(industry) ? 'default' : 'outline'}
+                  className={`cursor-pointer transition-colors ${
+                    data.industries?.includes(industry)
+                      ? 'bg-inkwell text-aulait'
+                      : 'hover:bg-inkwell/10'
+                  }`}
+                  onClick={() => handleArrayChange('industries', industry, 3)}
+                >
+                  {industry}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Skills */}
@@ -110,21 +194,38 @@ export function StepFocus({ data, onChange }: StepFocusProps) {
         <Label className="text-inkwell font-medium mb-3 block">
           Skills (max 5) {data.skills?.length || 0}/5
         </Label>
-        <div className="flex flex-wrap gap-2">
-          {filterOptions(SKILLS).map((skill) => (
-            <Badge
-              key={skill}
-              variant={data.skills?.includes(skill) ? 'default' : 'outline'}
-              className={`cursor-pointer transition-colors ${
-                data.skills?.includes(skill)
-                  ? 'bg-lunar text-aulait'
-                  : 'hover:bg-lunar/10'
-              }`}
-              onClick={() => handleArrayChange('skills', skill, 5)}
-            >
-              {skill}
-            </Badge>
-          ))}
+        {SKILL_GROUPS.map(group => (
+          <div key={group.label} className="mb-2">
+            <div className="text-xs text-lunar mb-1">{group.label}</div>
+            <div className="flex flex-wrap gap-2">
+              {filterOptions(group.options).map((skill) => (
+                <Badge
+                  key={skill}
+                  variant={data.skills?.includes(skill) ? 'default' : 'outline'}
+                  className={`cursor-pointer transition-colors ${
+                    data.skills?.includes(skill)
+                      ? 'bg-lunar text-aulait'
+                      : 'hover:bg-lunar/10'
+                  }`}
+                  onClick={() => handleArrayChange('skills', skill, 5)}
+                  style={{
+                    border: data.primarySkill === skill ? '2px solid #3b3b4f' : undefined,
+                    boxShadow: data.primarySkill === skill ? '0 0 0 2px #3b3b4f' : undefined
+                  }}
+                  onDoubleClick={() => handlePrimarySkillChange(skill)}
+                  title="Double-click to set as Primary Skill"
+                >
+                  {skill}
+                  {data.primarySkill === skill && (
+                    <span className="ml-1 text-xs text-inkwell font-bold">(Primary)</span>
+                  )}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="text-xs text-lunar mt-1">
+          <span>Double-click a skill to set as your Primary Skill.</span>
         </div>
       </div>
 
@@ -133,22 +234,27 @@ export function StepFocus({ data, onChange }: StepFocusProps) {
         <Label className="text-inkwell font-medium mb-3 block">
           Interests (max 7) {data.interests?.length || 0}/7
         </Label>
-        <div className="flex flex-wrap gap-2">
-          {filterOptions(INTERESTS).map((interest) => (
-            <Badge
-              key={interest}
-              variant={data.interests?.includes(interest) ? 'default' : 'outline'}
-              className={`cursor-pointer transition-colors ${
-                data.interests?.includes(interest)
-                  ? 'bg-creme text-aulait'
-                  : 'hover:bg-creme/10'
-              }`}
-              onClick={() => handleArrayChange('interests', interest, 7)}
-            >
-              {interest}
-            </Badge>
-          ))}
-        </div>
+        {INTEREST_GROUPS.map(group => (
+          <div key={group.label} className="mb-2">
+            <div className="text-xs text-lunar mb-1">{group.label}</div>
+            <div className="flex flex-wrap gap-2">
+              {filterOptions(group.options).map((interest) => (
+                <Badge
+                  key={interest}
+                  variant={data.interests?.includes(interest) ? 'default' : 'outline'}
+                  className={`cursor-pointer transition-colors ${
+                    data.interests?.includes(interest)
+                      ? 'bg-creme text-aulait'
+                      : 'hover:bg-creme/10'
+                  }`}
+                  onClick={() => handleArrayChange('interests', interest, 7)}
+                >
+                  {interest}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Seniority */}

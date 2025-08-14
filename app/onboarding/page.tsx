@@ -232,7 +232,7 @@ export default function OnboardingPage() {
   const stepSubtitles = [
     'Let\'s get you connected with the right professionals',
     'Tell us about your current role and background',
-    'What are your key areas of expertise and interest?',
+    'What are your key areas of expertise and interest? (Double-click a skill to set as Primary)',
     'What are you looking to achieve through networking?',
     'Review your profile and set your preferences'
   ]
