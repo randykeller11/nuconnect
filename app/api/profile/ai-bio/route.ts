@@ -8,7 +8,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 export async function POST() {
-  const sb = createSupabaseServerClient()
+  const sb = await createSupabaseServerClient()
   const { data:{ user } } = await sb.auth.getUser()
   if (!user) return NextResponse.json({ error:'unauthorized' }, { status:401 })
 

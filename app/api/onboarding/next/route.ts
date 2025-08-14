@@ -11,8 +11,8 @@ import path from 'node:path'
 export async function POST(req: Request) {
   try {
     // Check if OpenRouter API key is configured
-    if (!process.env.OPENROUTER_API_KEY) {
-      console.error('OPENROUTER_API_KEY not configured')
+    if (!process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY === 'your_openrouter_api_key_here') {
+      console.error('OPENROUTER_API_KEY not configured or using placeholder')
       return NextResponse.json({ 
         question: 'What industry do you work in?', 
         suggestedChoices: ['Technology', 'Healthcare', 'Finance', 'Education', 'Consulting', 'Startups'], 
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
       })
     }
 
-    const sb = createSupabaseServerClient()
+    const sb = await createSupabaseServerClient()
     const { data: { user } } = await sb.auth.getUser()
     if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
