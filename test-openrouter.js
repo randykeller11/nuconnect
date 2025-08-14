@@ -4,7 +4,8 @@ require('dotenv').config({ path: '.env.local' });
 async function testOpenRouter() {
   console.log('Testing OpenRouter connection...');
   console.log('API Key configured:', !!process.env.OPENROUTER_API_KEY);
-  console.log('API Key starts with:', process.env.OPENROUTER_API_KEY?.substring(0, 15) + '...');
+  console.log('API Key starts with:', process.env.OPENROUTER_API_KEY?.substring(0, 20) + '...');
+  console.log('Full API Key (for debugging):', process.env.OPENROUTER_API_KEY);
   
   try {
     // Test the actual fetch call to OpenRouter
