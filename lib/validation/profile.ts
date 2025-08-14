@@ -1,9 +1,9 @@
 import { z } from 'zod'
+import { optionalUrl, sanitizeOptionalUrl } from './url'
 
-// Seniority levels enum
-export const seniorityLevels = [
+export const SENIORITY = [
   'student',
-  'junior', 
+  'junior',
   'mid',
   'senior',
   'lead',
@@ -11,148 +11,83 @@ export const seniorityLevels = [
   'founder'
 ] as const
 
-// Visibility options enum
-export const visibilityOptions = ['public', 'private'] as const
+const tagArray = (max: number) =>
+  z
+    .array(z.string().trim().min(1))
+    .max(max)
+    .transform((arr) => Array.from(new Set(arr.map((s) => s.trim().toLowerCase()))))
 
-// LinkedIn URL validation
-const linkedinUrlRegex = /^https:\/\/(www\.)?linkedin\.com\/in\/[\w-]+\/?$/
-
-// Website URL validation
-const websiteUrlRegex = /^https?:\/\/.+\..+/
-
-// Simple profile schema for the API route
-export const profileSchema = z.object({
-  role: z.string().optional(),
-  company: z.string().optional(),
-  location: z.string().optional(),
-  headline: z.string().optional(),
-  industries: z.array(z.string()).optional(),
-  skills: z.array(z.string()).optional(),
-  interests: z.array(z.string()).optional(),
-  objectives: z.array(z.string()).optional(),
-  seeking: z.array(z.string()).optional(),
-  openness: z.number().optional(),
-  introStyle: z.string().optional(),
-  enableIcebreakers: z.boolean().optional(),
-  showLinkedIn: z.boolean().optional(),
-  showCompany: z.boolean().optional()
-})
-
-// Validation schemas for onboarding profile data
 export const snapshotSchema = z.object({
-  role: z.string().min(1, 'Role is required'),
-  company: z.string().optional(),
-  location: z.string().optional(),
-  headline: z.string().optional()
-}).refine(data => data.company || data.headline, {
-  message: 'Either company or headline is required'
+  role: z.string().trim().max(80).optional(),
+  company: z.string().trim().max(80).optional(),
+  location: z.string().trim().max(80).optional(),
+  headline: z.string().trim().max(120).optional(),
+  profile_photo_url: optionalUrl,
+  linkedin_url: optionalUrl,
+  website_url: optionalUrl,
+  portfolio_url: optionalUrl,
+  x_url: optionalUrl,
+  github_url: optionalUrl,
 })
 
 export const focusSchema = z.object({
-  industries: z.array(z.string()).max(3, 'Maximum 3 industries allowed').default([]),
-  skills: z.array(z.string()).max(5, 'Maximum 5 skills allowed').default([]),
-  interests: z.array(z.string()).max(7, 'Maximum 7 interests allowed').default([]),
-  seniority: z.enum(seniorityLevels).optional()
-}).refine(data => 
-  (data.industries && data.industries.length >= 1) || 
-  (data.skills && data.skills.length >= 2), {
-  message: 'At least 1 industry or 2 skills required'
+  industries: tagArray(3).optional(),
+  skills: tagArray(5).optional(),
+  interests: tagArray(7).optional(),
+  seniority: z.enum(SENIORITY).optional(),
+  primarySkill: z.string().optional(),
 })
 
 export const intentSchema = z.object({
-  objectives: z.array(z.string()).min(1, 'At least 1 objective required').max(4, 'Maximum 4 objectives allowed'),
-  seeking: z.array(z.string()).min(1, 'At least 1 seeking item required').max(3, 'Maximum 3 seeking items allowed'),
+  objectives: tagArray(4).optional(),
+  seeking: tagArray(3).optional(),
   openness: z.number().min(1).max(5).optional(),
   introStyle: z.enum(['short', 'detailed']).optional(),
-  enableIcebreakers: z.boolean().optional()
+  enableIcebreakers: z.boolean().optional(),
+  icebreakerTone: z.string().optional(),
 })
 
-export const profileValidationSchema = z.object({
-  // Snapshot data
-  role: z.string().min(1).optional(),
-  company: z.string().optional(),
-  location: z.string().optional(),
-  headline: z.string().optional(),
-  seniority: z.enum(seniorityLevels).optional(),
-  linkedin_url: z.string().regex(linkedinUrlRegex, 'Invalid LinkedIn URL format').optional(),
-  website_url: z.string().regex(websiteUrlRegex, 'Invalid website URL format').optional(),
-  
-  // Focus data
-  industries: z.array(z.string()).max(3, 'Maximum 3 industries allowed').default([]),
-  skills: z.array(z.string()).max(5, 'Maximum 5 skills allowed').default([]),
-  interests: z.array(z.string()).max(7, 'Maximum 7 interests allowed').default([]),
-  
-  // Intent data
-  objectives: z.array(z.string()).max(4, 'Maximum 4 objectives allowed').default([]),
-  seeking: z.array(z.string()).max(3, 'Maximum 3 seeking items allowed').default([]),
-  openness: z.number().min(1).max(5).optional(),
-  intro_style: z.enum(['short', 'detailed']).optional(),
-  enable_icebreakers: z.boolean().optional(),
-  
-  // Privacy settings
-  contact_prefs: z.record(z.any()).default({})
-}).refine(data => {
-  // Custom validation for array limits
-  const validation = validateMaxCounts(data)
-  return validation.isValid
-}, {
-  message: 'Array limits exceeded'
-})
-
-// Utility functions for validation
-export function sanitizeArray(arr: string[]): string[] {
-  return Array.from(new Set(
-    arr.map(item => item.trim().toLowerCase())
-      .filter(item => item.length > 0)
-  ))
-}
+export const profileValidationSchema = snapshotSchema
+  .merge(focusSchema)
+  .merge(intentSchema)
+  .extend({
+    showLinkedIn: z.boolean().optional(),
+    showCompany: z.boolean().optional(),
+    contact_prefs: z.record(z.any()).default({}),
+    privacy: z.record(z.any()).default({}),
+    consent: z.record(z.any()).default({}),
+  })
 
 export function validateMaxCounts(data: any): { isValid: boolean; errors: string[] } {
   const errors: string[] = []
-  
-  if (data.industries && data.industries.length > 3) {
-    errors.push('Maximum 3 industries allowed')
-  }
-  
-  if (data.skills && data.skills.length > 5) {
-    errors.push('Maximum 5 skills allowed')
-  }
-  
-  if (data.interests && data.interests.length > 7) {
-    errors.push('Maximum 7 interests allowed')
-  }
-  
-  if (data.objectives && data.objectives.length > 4) {
-    errors.push('Maximum 4 objectives allowed')
-  }
-  
-  if (data.seeking && data.seeking.length > 3) {
-    errors.push('Maximum 3 seeking items allowed')
-  }
-  
-  return {
-    isValid: errors.length === 0,
-    errors
-  }
+  if (data.industries && data.industries.length > 3) errors.push('Maximum 3 industries allowed')
+  if (data.skills && data.skills.length > 5) errors.push('Maximum 5 skills allowed')
+  if (data.interests && data.interests.length > 7) errors.push('Maximum 7 interests allowed')
+  if (data.objectives && data.objectives.length > 4) errors.push('Maximum 4 objectives allowed')
+  if (data.seeking && data.seeking.length > 3) errors.push('Maximum 3 seeking items allowed')
+  return { isValid: errors.length === 0, errors }
 }
 
-// Completion guard functions
-export function isSnapshotComplete(data: any): boolean {
-  return !!(data.role && (data.company || data.headline))
+export function isSnapshotComplete(d: any): boolean {
+  return !!(d.role && (d.company || d.headline))
+}
+export function isFocusComplete(d: any): boolean {
+  return (d.industries?.length ?? 0) >= 1 || (d.skills?.length ?? 0) >= 2
+}
+export function isIntentComplete(d: any): boolean {
+  return (d.objectives?.length ?? 0) >= 1 && (d.seeking?.length ?? 0) >= 1
 }
 
-export function isFocusComplete(data: any): boolean {
-  return !!(
-    (data.industries && data.industries.length >= 1) || 
-    (data.skills && data.skills.length >= 2)
-  )
-}
-
-export function isIntentComplete(data: any): boolean {
-  return !!(
-    data.objectives && data.objectives.length >= 1 &&
-    data.seeking && data.seeking.length >= 1
-  )
+export function normalizeProfileInput(input: any) {
+  const parsed = profileValidationSchema.parse(input)
+  Object.assign(parsed, {
+    linkedin_url: sanitizeOptionalUrl(parsed.linkedin_url),
+    website_url: sanitizeOptionalUrl(parsed.website_url),
+    portfolio_url: sanitizeOptionalUrl(parsed.portfolio_url),
+    x_url: sanitizeOptionalUrl(parsed.x_url),
+    github_url: sanitizeOptionalUrl(parsed.github_url),
+  })
+  return parsed
 }
 
 export type SnapshotData = z.infer<typeof snapshotSchema>
