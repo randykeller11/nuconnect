@@ -54,6 +54,9 @@ export function OnboardingShell({
             </div>
           </div>
           <Progress value={progress} className="h-2" />
+          <div className="text-xs text-lunar mt-1 text-center">
+            These details help us make smarter matches at your next event.
+          </div>
         </div>
 
         {/* Main Card */}
