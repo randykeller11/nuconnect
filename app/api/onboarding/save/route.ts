@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
+import { calculateProfileStrength } from '@/lib/profile/strength'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
@@ -107,10 +108,27 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Calculate and persist profile strength
+    const strength = calculateProfileStrength(profile)
+    if (strength.score !== profile.profile_strength) {
+      const { error: strengthError } = await serviceSupabase
+        .from('profiles')
+        .update({ profile_strength: strength.score })
+        .eq('user_id', user.id)
+      if (!strengthError) {
+        profile.profile_strength = strength.score
+      }
+    }
     return NextResponse.json({
       success: true,
-      profile: profile,
-      isOnboardingComplete: !isPartial && profileToSave.name && profileToSave.interests && profileToSave.career_goals
+      profile,
+      profile_strength: profile.profile_strength,
+      isOnboardingComplete:
+        !isPartial &&
+        profile.role &&
+        (profile.company || profile.headline) &&
+        (profile.objectives?.length ?? 0) > 0 &&
+        (profile.seeking?.length ?? 0) > 0,
     })
     
   } catch (error) {
