@@ -1,339 +1,281 @@
 'use client'
-
-import React, { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { supabaseBrowser } from '@/lib/supabase/browser'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { useRouter } from 'next/navigation'
-
-export const dynamic = 'force-dynamic'
-import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
-import { OnboardingMachine } from '@/lib/onboarding/machine'
-import { OnboardingShell } from '@/components/onboarding/OnboardingShell'
-import { StepWelcome } from '@/components/onboarding/StepWelcome'
-import { StepSnapshot } from '@/components/onboarding/StepSnapshot'
-import { StepFocus } from '@/components/onboarding/StepFocus'
-import { StepIntent } from '@/components/onboarding/StepIntent'
-import { StepReview } from '@/components/onboarding/StepReview'
 import { toast } from 'sonner'
 
-type AutoSaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+type AiReply = {
+  message: string
+  quickReplies?: string[]
+  chips?: { type: 'industries' | 'skills' | 'objectives' | 'seeking', options: string[] }[]
+  ask?: {
+    fields: Array<{
+      key: string
+      label: string
+      type: 'text' | 'select' | 'multi-select' | 'location' | 'url'
+      options?: string[]
+      max?: number
+      placeholder?: string
+    }>
+    cta: string
+  }
+  nextState: 'GREETING' | 'SNAPSHOT' | 'FOCUS' | 'INTENT' | 'POLISH' | 'DONE'
+}
 
-export default function OnboardingPage() {
+function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: Record<string, any>) => void }) {
+  const [formData, setFormData] = useState<Record<string, any>>({})
+
+  if (!ask) return null
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSubmit(formData)
+  }
+
+  return (
+    <Card className="mt-4">
+      <CardContent className="p-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {ask.fields.map((field) => (
+            <div key={field.key}>
+              <label className="block text-sm font-medium mb-1">{field.label}</label>
+              {field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
+                <Input
+                  type={field.type === 'url' ? 'url' : 'text'}
+                  placeholder={field.placeholder}
+                  value={formData[field.key] || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                />
+              ) : field.type === 'select' ? (
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-2"
+                  value={formData[field.key] || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                >
+                  <option value="">Select...</option>
+                  {field.options?.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              ) : field.type === 'multi-select' ? (
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    {(formData[field.key] || []).map((item: string) => (
+                      <Badge key={item} variant="secondary" className="cursor-pointer" onClick={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          [field.key]: (prev[field.key] || []).filter((i: string) => i !== item)
+                        }))
+                      }}>
+                        {item} ×
+                      </Badge>
+                    ))}
+                  </div>
+                  <select
+                    className="w-full rounded-md border border-input bg-background px-3 py-2"
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value && !(formData[field.key] || []).includes(e.target.value)) {
+                        const current = formData[field.key] || []
+                        if (!field.max || current.length < field.max) {
+                          setFormData(prev => ({
+                            ...prev,
+                            [field.key]: [...current, e.target.value]
+                          }))
+                        }
+                      }
+                    }}
+                  >
+                    <option value="">Add {field.label.toLowerCase()}...</option>
+                    {field.options?.map(option => (
+                      <option key={option} value={option} disabled={(formData[field.key] || []).includes(option)}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {field.max && (
+                    <p className="text-xs text-muted-foreground">
+                      {(formData[field.key] || []).length} / {field.max} selected
+                    </p>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          ))}
+          <Button type="submit" className="w-full">
+            {ask.cta}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  )
+}
+
+export default function OnboardingChat() {
+  const [ai, setAi] = useState<AiReply | null>(null)
+  const [state, setState] = useState<'GREETING' | 'SNAPSHOT' | 'FOCUS' | 'INTENT' | 'POLISH' | 'DONE'>('GREETING')
+  const [input, setInput] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [transcript, setTranscript] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
   const router = useRouter()
-  const [machine, setMachine] = useState<OnboardingMachine | null>(null)
-  const [user, setUser] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>('idle')
-  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null)
 
-  // Initialize
-  useEffect(() => {
-    initializeOnboarding()
+  async function call(body: any) {
+    setBusy(true)
+    try {
+      const res = await fetch('/api/onboarding/chat', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body) 
+      })
+      const j = await res.json()
+      
+      if (res.ok) {
+        setAi(j)
+        setState(j.nextState)
+        
+        // Add to transcript
+        if (body.userText) {
+          setTranscript(prev => [...prev, { role: 'user', content: body.userText }])
+        }
+        setTranscript(prev => [...prev, { role: 'assistant', content: j.message }])
+        
+        if (j.nextState === 'DONE') {
+          toast.success('Onboarding complete!')
+          setTimeout(() => router.push('/home'), 2000)
+        }
+      } else {
+        toast.error('Something went wrong. Please try again.')
+      }
+    } catch (error) {
+      toast.error('Network error. Please check your connection.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  useEffect(() => { 
+    call({ state: 'GREETING' }) 
   }, [])
 
-  const initializeOnboarding = async () => {
-    try {
-      const supabase = createSupabaseBrowserClient()
-      const { data: { user }, error } = await supabase.auth.getUser()
-      
-      if (error || !user) {
-        router.replace('/auth')
-        return
-      }
-
-      setUser(user)
-
-      // Check if user already has a complete profile
-      try {
-        const res = await fetch('/api/me/profile')
-        const data = await res.json()
-        
-        if (res.ok && data.hasProfile && data.isOnboardingComplete) {
-          // User already has a complete profile, redirect to home
-          router.replace('/home')
-          return
-        }
-      } catch (profileError) {
-        console.error('Error checking profile:', profileError)
-        // Continue with onboarding if there's an error checking profile
-      }
-
-      // Start fresh onboarding - if they're here, they need onboarding
-      const newMachine = new OnboardingMachine()
-      setMachine(newMachine)
-    } catch (error) {
-      console.error('Failed to initialize onboarding:', error)
-      toast.error('Failed to load onboarding. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
+  function onQuick(r: string) { 
+    call({ userText: r, state }) 
   }
 
-  const autoSave = async (data: any, isPartial = true) => {
-    if (!user) return
-
-    // Clear existing timeout
-    if (saveTimeout) {
-      clearTimeout(saveTimeout)
-    }
-
-    // Set new timeout for auto-save
-    const timeout = setTimeout(async () => {
-      try {
-        setAutoSaveStatus('saving')
-        
-        const response = await fetch('/api/onboarding/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: user.id,
-            profileData: data,
-            isPartial
-          })
-        })
-
-        if (response.ok) {
-          setAutoSaveStatus('saved')
-          setTimeout(() => setAutoSaveStatus('idle'), 2000)
-        } else {
-          throw new Error('Save failed')
-        }
-      } catch (error) {
-        console.error('Auto-save failed:', error)
-        setAutoSaveStatus('error')
-        setTimeout(() => setAutoSaveStatus('idle'), 3000)
-      }
-    }, 1000) // Save after 1 second of inactivity
-
-    setSaveTimeout(timeout)
+  async function onSubmitText() {
+    const text = input.trim()
+    if (!text) return
+    setInput('')
+    await call({ userText: text, state })
   }
 
-  const handleDataChange = (newData: any) => {
-    if (!machine) return
-
-    try {
-      const updatedState = machine.updateData(newData)
-      // Create new machine instance with the updated state and current step
-      const newMachine = new OnboardingMachine(updatedState.data, updatedState.currentStep)
-      setMachine(newMachine)
-      
-      // Auto-save the changes
-      autoSave(updatedState.data, true)
-    } catch (error: any) {
-      toast.error(error.message)
-    }
+  async function onSubmitForm(formData: Record<string, any>) {
+    await call({ formData, state })
   }
 
-  const handleNext = () => {
-    if (!machine) return
+  const progressSteps = ['GREETING', 'SNAPSHOT', 'FOCUS', 'INTENT', 'POLISH']
+  const currentStepIndex = progressSteps.indexOf(state)
 
-    try {
-      const updatedState = machine.nextStep()
-      // Create new machine instance with the updated state and current step
-      const newMachine = new OnboardingMachine(updatedState.data, updatedState.currentStep)
-      setMachine(newMachine)
-      
-      // Save progress only if not on welcome step
-      if (updatedState.currentStep > 0) {
-        autoSave(updatedState.data, true)
-      }
-    } catch (error: any) {
-      toast.error(error.message)
-    }
-  }
-
-  const handleBack = () => {
-    if (!machine) return
-
-    try {
-      const updatedState = machine.previousStep()
-      // Create new machine instance with the updated state and current step
-      const newMachine = new OnboardingMachine(updatedState.data, updatedState.currentStep)
-      setMachine(newMachine)
-    } catch (error: any) {
-      toast.error(error.message)
-    }
-  }
-
-  const handleEditStep = (step: number) => {
-    if (!machine) return
-
-    try {
-      const currentState = machine.getCurrentState()
-      const newMachine = new OnboardingMachine(currentState.data, step)
-      setMachine(newMachine)
-    } catch (error: any) {
-      toast.error(error.message)
-    }
-  }
-
-  const handleComplete = async () => {
-    if (!machine || !user) return
-
-    try {
-      setIsLoading(true)
-      
-      const currentState = machine.getCurrentState()
-      
-      // Final save with complete profile
-      const response = await fetch('/api/onboarding/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          profileData: currentState.data,
-          isPartial: false
-        })
-      })
-
-      const result = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to save profile')
-      }
-
-      toast.success('Profile completed successfully!')
-      
-      // Redirect to home or room if deep-linked
-      const urlParams = new URLSearchParams(window.location.search)
-      const roomId = urlParams.get('room')
-      
-      if (roomId) {
-        router.replace(`/rooms/${roomId}`)
-      } else {
-        router.replace('/home')
-      }
-    } catch (error) {
-      console.error('Failed to complete onboarding:', error)
-      toast.error('Failed to complete setup. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  if (isLoading || !machine) {
-    return (
-      <div className="min-h-screen bg-aulait flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-inkwell mx-auto mb-4"></div>
-          <p className="text-lunar font-medium">Loading your profile...</p>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-aulait to-aulait/80 p-4">
+      <div className="mx-auto max-w-2xl">
+        {/* Progress indicator */}
+        <div className="mb-6 flex justify-center">
+          <div className="flex space-x-2">
+            {progressSteps.map((step, index) => (
+              <div
+                key={step}
+                className={`h-2 w-8 rounded-full ${
+                  index <= currentStepIndex ? 'bg-inkwell' : 'bg-lunar/30'
+                }`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
-    )
-  }
 
-  const currentState = machine.getCurrentState()
-  const stepTitles = [
-    'Welcome to NuConnect',
-    'Professional Snapshot', 
-    'Professional Focus',
-    'Networking Intent',
-    'Review & Finish'
-  ]
-
-  const stepSubtitles = [
-    'Let\'s get you connected with the right professionals',
-    'Tell us about your current role and background',
-    'What are your key areas of expertise and interest? (Double-click a skill to set as Primary)',
-    'What are you looking to achieve through networking?',
-    'Review your profile and set your preferences'
-  ]
-
-  const renderCurrentStep = () => {
-    switch (currentState.currentStep) {
-      case 0:
-        return (
-          <StepWelcome
-            onContinue={handleNext}
-            userEmail={user?.email}
-          />
-        )
-      case 1:
-        return (
-          <StepSnapshot
-            data={currentState.data}
-            onChange={handleDataChange}
-          />
-        )
-      case 2:
-        return (
-          <StepFocus
-            data={currentState.data}
-            onChange={handleDataChange}
-          />
-        )
-      case 3:
-        return (
-          <StepIntent
-            data={currentState.data}
-            onChange={handleDataChange}
-          />
-        )
-      case 4:
-        return (
-          <StepReview
-            data={currentState.data}
-            onChange={handleDataChange}
-            onEditStep={handleEditStep}
-            onComplete={handleComplete}
-            isLoading={isLoading}
-          />
-        )
-      default:
-        return null
-    }
-  }
-
-  // Welcome step has custom layout
-  if (currentState.currentStep === 0) {
-    return (
-      <div className="min-h-screen bg-aulait flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl">
-          {renderCurrentStep()}
+        {/* Chat messages */}
+        <div className="space-y-4 mb-6">
+          {transcript.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[80%] rounded-2xl p-4 ${
+                msg.role === 'user' 
+                  ? 'bg-inkwell text-aulait' 
+                  : 'bg-white text-inkwell shadow-sm'
+              }`}>
+                <p className="text-[15px] leading-6">{msg.content}</p>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    )
-  }
 
-  // Review step has custom navigation
-  if (currentState.currentStep === 4) {
-    return (
-      <div className="min-h-screen bg-aulait py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-lunar">Step 5 of 5</span>
-              {autoSaveStatus !== 'idle' && (
-                <div className="text-sm text-lunar">
-                  {autoSaveStatus === 'saving' && '💾 Saving...'}
-                  {autoSaveStatus === 'saved' && '✅ Saved'}
-                  {autoSaveStatus === 'error' && '❌ Save failed'}
+        {/* Current AI message with quick replies */}
+        {ai?.message && (
+          <Card className="mb-4 shadow-lg">
+            <CardContent className="p-4">
+              <p className="text-[15px] leading-6 mb-3">{ai.message}</p>
+              {ai.quickReplies && ai.quickReplies.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {ai.quickReplies.map((reply) => (
+                    <Button
+                      key={reply}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onQuick(reply)}
+                      disabled={busy}
+                      className="rounded-full"
+                    >
+                      {reply}
+                    </Button>
+                  ))}
                 </div>
               )}
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-inkwell h-2 rounded-full w-full"></div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Dynamic form */}
+        {ai?.ask && (
+          <DynamicForm ask={ai.ask} onSubmit={onSubmitForm} />
+        )}
+
+        {/* Text input */}
+        {state !== 'DONE' && (
+          <Card className="mt-4">
+            <CardContent className="p-4">
+              <div className="flex gap-2">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Type a reply…"
+                  className="flex-1"
+                  onKeyPress={(e) => e.key === 'Enter' && onSubmitText()}
+                  disabled={busy}
+                />
+                <Button 
+                  onClick={onSubmitText} 
+                  disabled={busy || !input.trim()}
+                  className="bg-inkwell hover:bg-inkwell/90 text-aulait"
+                >
+                  Send
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Loading indicator */}
+        {busy && (
+          <div className="text-center mt-4">
+            <div className="inline-flex items-center px-4 py-2 bg-white rounded-full shadow-sm">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-inkwell mr-2"></div>
+              <span className="text-sm text-lunar">Thinking...</span>
             </div>
           </div>
-          {renderCurrentStep()}
-        </div>
+        )}
       </div>
-    )
-  }
-
-  // Standard steps use OnboardingShell
-  return (
-    <OnboardingShell
-      title={stepTitles[currentState.currentStep]}
-      subtitle={stepSubtitles[currentState.currentStep]}
-      currentStep={currentState.currentStep}
-      totalSteps={5}
-      onNext={handleNext}
-      onBack={handleBack}
-      canGoNext={currentState.canGoNext}
-      canGoBack={currentState.canGoBack}
-      isLoading={isLoading}
-      autoSaveStatus={autoSaveStatus}
-    >
-      {renderCurrentStep()}
-    </OnboardingShell>
+    </div>
   )
 }
