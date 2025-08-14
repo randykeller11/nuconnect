@@ -189,6 +189,7 @@ export default function OnboardingChat() {
   }, [])
 
   function onQuick(r: string) { 
+    // Pass current state explicitly with user text
     call({ userText: r, state }) 
   }
 
@@ -200,6 +201,7 @@ export default function OnboardingChat() {
   }
 
   async function onSubmitForm(formData: Record<string, any>) {
+    // Pass current state explicitly when submitting form data
     await call({ formData, state })
   }
 

@@ -27,18 +27,21 @@ export async function POST(req: Request) {
   const { data: profile } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle()
 
   // Merge formData into profile if present (autosave)
+  let updatedProfile = profile
   if (input.formData && Object.keys(input.formData).length) {
     const patch = { ...input.formData, updated_at: new Date().toISOString(), onboarding_stage: 'in_progress' }
-    await sb.from('profiles').update(patch).eq('user_id', user.id)
+    const { data: updated } = await sb.from('profiles').update(patch).eq('user_id', user.id).select().single()
+    updatedProfile = updated || { ...profile, ...patch }
   }
 
-  const stage = input.state || nextStateFromProfile(profile)
+  // Use explicit state from input, or determine from updated profile
+  const stage = input.state || nextStateFromProfile(updatedProfile)
   const TAXONOMY = { INDUSTRIES, SKILLS, OBJECTIVES, SEEKING, SENIORITY }
   const promptPath = path.join(process.cwd(), 'prompts', 'onboarding-convo.md')
   const base = await fs.readFile(promptPath, 'utf8')
 
   const filled = base
-    .replace('{profile_json}', JSON.stringify(profile || {}))
+    .replace('{profile_json}', JSON.stringify(updatedProfile || {}))
     .replace('{TAXONOMY}', JSON.stringify(TAXONOMY))
     .replace('{STATE}', stage)
 
@@ -86,12 +89,23 @@ export async function POST(req: Request) {
       ai.nextState = stage
     }
     
-    // Force progression from GREETING when user responds positively
+    // Force progression logic based on current state and input
     if (stage === 'GREETING' && input.userText && 
         (input.userText.toLowerCase().includes('yes') || 
          input.userText.toLowerCase().includes('start') ||
          input.userText.toLowerCase().includes('go'))) {
       ai.nextState = 'SNAPSHOT'
+    }
+    
+    // If we just saved form data, ensure we progress to next state
+    if (input.formData && Object.keys(input.formData).length) {
+      if (stage === 'SNAPSHOT' && updatedProfile?.role && updatedProfile?.company) {
+        ai.nextState = 'FOCUS'
+      } else if (stage === 'FOCUS' && updatedProfile?.industries?.length && updatedProfile?.skills?.length) {
+        ai.nextState = 'INTENT'
+      } else if (stage === 'INTENT' && updatedProfile?.objectives?.length && updatedProfile?.seeking?.length) {
+        ai.nextState = 'POLISH'
+      }
     }
     
   } catch (error) {
