@@ -1,95 +1,81 @@
-export const runtime = 'nodejs'
-
+import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
     const supabase = await createSupabaseServerClient()
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
-    // Use service role to avoid RLS recursion issues
-    const serviceSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
 
-    const { data: profile, error: profileError } = await serviceSupabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', user.id)
-      .single()
-    
-    // Check if profile exists and has completed onboarding
-    const hasProfile = !profileError && !!profile
-    
-    // Check for onboarding completion based on actual data structure
-    // A profile is complete if it has the basic required fields from onboarding
-    const isOnboardingComplete = hasProfile && (
-      // Must have a name (either top-level or constructed from role/company)
-      profile.name &&
-      // Must have interests (top-level array)
-      profile.interests && Array.isArray(profile.interests) && profile.interests.length > 0 &&
-      // Must have career goals (top-level field)
-      profile.career_goals &&
-      // Must have contact preferences (indicates completed onboarding flow)
-      profile.contact_prefs && typeof profile.contact_prefs === 'object'
-    )
+      .maybeSingle()
 
-    console.log('Profile check debug:', {
-      hasProfile,
-      profileExists: !!profile,
-      profileError: profileError?.message,
-      name: profile?.name,
-      interests: profile?.interests,
-      interestsLength: profile?.interests?.length,
-      career_goals: profile?.career_goals,
-      contact_prefs_exists: !!profile?.contact_prefs,
-      isOnboardingComplete
-    })
-    
-    return NextResponse.json({ 
-      hasProfile, 
-      isOnboardingComplete,
-      userId: user.id,
-      profile: hasProfile ? profile : null
-    })
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    return NextResponse.json({ profile: profile || null })
   } catch (error) {
-    console.error('Profile check error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-export async function PATCH() {
+export async function PUT(req: NextRequest) {
   try {
     const supabase = await createSupabaseServerClient()
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
-    // This would handle profile updates
-    // For now, return a placeholder response
-    return NextResponse.json({ 
-      success: true,
-      message: 'Profile update endpoint ready for implementation'
-    })
+
+    const body = await req.json()
+
+    // Basic server-side validation
+    const sanitize = (s?: string) => (typeof s === 'string' ? s.trim() : null)
+    const isUrl = (u?: string) => !u || /^https?:\/\/\S+$/i.test(u)
+
+    // Validate URL fields
+    if (!isUrl(body.linkedin_url)) {
+      return NextResponse.json({ error: 'Invalid LinkedIn URL' }, { status: 400 })
+    }
+
+    // Normalize arrays
+    const asArray = (v: unknown) => Array.isArray(v) ? v : []
+
+    const update = {
+      user_id: user.id,
+      first_name: sanitize(body.first_name) || '',
+      last_name: sanitize(body.last_name) || '',
+      avatar_url: sanitize(body.avatar_url) || null,
+      role: body.role || null,
+      industries: asArray(body.industries),
+      networking_goals: asArray(body.networking_goals),
+      connection_preferences: asArray(body.connection_preferences),
+      bio: sanitize(body.bio) || null,
+      skills: asArray(body.skills),
+      linkedin_url: sanitize(body.linkedin_url) || null,
+      updated_at: new Date().toISOString()
+    }
+
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .upsert(update)
+      .select('*')
+      .single()
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    return NextResponse.json({ profile })
   } catch (error) {
-    console.error('Profile update error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
