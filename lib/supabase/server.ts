@@ -32,20 +32,19 @@ export function supabaseServer() {
   );
 }
 
-export const createSupabaseServerClient = async () => {
+export async function supabaseServer() {
   const jar = await cookies()
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () => jar.getAll(),
-        setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            jar.set(name, value, options)
-          })
-        },
-      }
+        get: (name) => jar.get(name)?.value,
+        set: (name, value, options) => { jar.set(name, value, options) },
+        remove: (name, options) => { jar.set(name, '', options) },
+      },
     }
   )
 }
+
+export const createSupabaseServerClient = supabaseServer
