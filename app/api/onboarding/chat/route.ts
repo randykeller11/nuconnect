@@ -248,7 +248,6 @@ export async function POST(req: Request) {
   
   // If completing onboarding, also set completion fields
   if (ai.nextState === 'DONE') {
-    update.onboarding_completed_at = new Date().toISOString()
     update.profile_completion_score = calculateProfileCompletionScore(updatedProfile)
   }
   
