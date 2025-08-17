@@ -26,3 +26,12 @@ export function getAvatarUrl(path: string | null) {
   const { data } = supabase.storage.from('avatars').getPublicUrl(path)
   return data.publicUrl
 }
+
+// Legacy storage object for backward compatibility
+export const storage = {
+  async validateUser(email: string, password: string) {
+    // This is a legacy method that's no longer used
+    // The app now uses Supabase auth instead
+    throw new Error('Legacy auth method no longer supported. Please use Supabase auth.')
+  }
+}
