@@ -22,7 +22,7 @@ interface MatchCardProps {
 
 export default function MatchCard({ data, onShare, onSkip }: MatchCardProps) {
   return (
-    <Card className="bg-white shadow-xl border-0 rounded-2xl max-w-md mx-auto">
+    <Card className="bg-white shadow-xl border-0 rounded-2xl max-w-lg mx-auto">
       <CardHeader className="text-center pb-4">
         <div className="flex items-center justify-center mb-4">
           <div className="w-20 h-20 bg-inkwell/10 rounded-full flex items-center justify-center relative">
@@ -53,7 +53,7 @@ export default function MatchCard({ data, onShare, onSkip }: MatchCardProps) {
           {data.rationale}
         </p>
         
-        {(data.shared?.interests?.length || data.shared?.skills?.length) && (
+        {(data.shared?.interests?.length || data.shared?.skills?.length) ? (
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-lunar">Shared interests & skills:</h4>
             <div className="flex flex-wrap gap-1">
@@ -68,6 +68,13 @@ export default function MatchCard({ data, onShare, onSkip }: MatchCardProps) {
                 </Badge>
               ))}
             </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-lunar">Why connect:</h4>
+            <p className="text-xs text-lunar italic">
+              Shared interests and potential collaboration fit.
+            </p>
           </div>
         )}
         

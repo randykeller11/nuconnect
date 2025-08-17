@@ -92,38 +92,54 @@ export default function RoomClient({ room, isMember }: RoomClientProps) {
 
   return (
     <div className="space-y-6">
-      {/* Room Header Card */}
-      <Card className="bg-white shadow-xl border-0 rounded-2xl">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-inkwell text-2xl">{room.name}</CardTitle>
-              {room.tagline && <p className="text-lunar mt-1">{room.tagline}</p>}
+      {/* Room Header Card - Hide when showing matches */}
+      {!showMatches && (
+        <Card className="bg-white shadow-xl border-0 rounded-2xl">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-inkwell text-2xl">{room.name}</CardTitle>
+                {room.tagline && <p className="text-lunar mt-1">{room.tagline}</p>}
+              </div>
+              <div className="flex items-center gap-2 text-lunar">
+                <Users className="w-5 h-5" />
+                <span className="font-medium">{room.member_count} members</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-lunar">
-              <Users className="w-5 h-5" />
-              <span className="font-medium">{room.member_count} members</span>
-            </div>
+          </CardHeader>
+          <CardContent>
+            {!isMember ? (
+              <div className="text-center py-4">
+                <p className="text-lunar mb-4">Join this room to start discovering matches</p>
+                <PrimaryButton onClick={handleJoinRoom} loading={loading}>
+                  Join Room
+                </PrimaryButton>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-lunar mb-4">You're a member of this room!</p>
+                <PrimaryButton onClick={handleGetMatches} loading={loading}>
+                  Get Matches
+                </PrimaryButton>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Compact header when showing matches */}
+      {showMatches && (
+        <div className="flex items-center justify-between py-4">
+          <div>
+            <h2 className="text-xl font-bold text-inkwell">{room.name}</h2>
+            <p className="text-sm text-lunar">Finding your perfect matches</p>
           </div>
-        </CardHeader>
-        <CardContent>
-          {!isMember ? (
-            <div className="text-center py-4">
-              <p className="text-lunar mb-4">Join this room to start discovering matches</p>
-              <PrimaryButton onClick={handleJoinRoom} loading={loading}>
-                Join Room
-              </PrimaryButton>
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              <p className="text-lunar mb-4">You're a member of this room!</p>
-              <PrimaryButton onClick={handleGetMatches} loading={loading}>
-                Get Matches
-              </PrimaryButton>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-2 text-lunar text-sm">
+            <Users className="w-4 h-4" />
+            <span>{room.member_count} members</span>
+          </div>
+        </div>
+      )}
 
       {/* Match Deck */}
       {showMatches && (

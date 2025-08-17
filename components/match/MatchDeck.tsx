@@ -93,16 +93,26 @@ export default function MatchDeck({ matches, roomId }: MatchDeckProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="text-center text-sm text-lunar">
-        {currentIndex + 1} of {matches.length} matches
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="text-sm text-lunar mb-2">
+          {currentIndex + 1} of {matches.length} matches
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
+          <div 
+            className="bg-gradient-to-r from-inkwell to-lunar h-2 rounded-full transition-all duration-300"
+            style={{ width: `${((currentIndex + 1) / matches.length) * 100}%` }}
+          />
+        </div>
       </div>
       
-      <MatchCard
-        data={currentMatch}
-        onShare={handleShare}
-        onSkip={handleSkip}
-      />
+      <div className="flex justify-center">
+        <MatchCard
+          data={currentMatch}
+          onShare={handleShare}
+          onSkip={handleSkip}
+        />
+      </div>
 
       <MatchCelebrationModal
         open={celebrationData.open}
