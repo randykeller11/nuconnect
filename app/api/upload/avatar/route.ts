@@ -31,14 +31,15 @@ export async function POST(req: NextRequest) {
     )
 
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const path = `avatars/${user.id}.${Date.now()}.${ext}`
+    const objectKey = `${user.id}.${Date.now()}.${ext}` // bucket-relative
 
     // Upload file using service role
     const { error: uploadError } = await serviceSupabase.storage
       .from('avatars')
-      .upload(path, file, {
+      .upload(objectKey, file, {
         cacheControl: '3600',
         upsert: true,
+        contentType: file.type, // ensure correct MIME
       })
 
     if (uploadError) {
@@ -47,15 +48,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Get public URL
-    const { data } = serviceSupabase.storage.from('avatars').getPublicUrl(path)
+    const { data } = serviceSupabase.storage.from('avatars').getPublicUrl(objectKey)
     const publicUrl = data.publicUrl
 
     // Update profile with new avatar URL using service role
     const { error: updateError } = await serviceSupabase
       .from('profiles')
-      .update({ 
-        profile_photo_url: publicUrl,
-        avatar_url: path,
+      .update({
+        profile_photo_url: publicUrl, // full URL for rendering
+        avatar_url: objectKey,        // bucket-relative key for storage ops
         updated_at: new Date().toISOString()
       })
       .eq('user_id', user.id)
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ 
-      path,
+      path: objectKey,
       url: publicUrl
     })
   } catch (error) {

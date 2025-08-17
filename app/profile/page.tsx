@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Edit, MapPin, Building, Globe, Linkedin, Mail } from 'lucide-react'
+import { getAvatarUrl } from '@/lib/storage'
 
 export default function ProfilePage() {
   const router = useRouter()

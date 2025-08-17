@@ -18,6 +18,7 @@ import {
   Plus,
   CheckCircle
 } from 'lucide-react'
+import { getAvatarUrl } from '@/lib/storage'
 
 interface Profile {
   name: string
@@ -125,7 +126,7 @@ export default function HomePage() {
           <div className="flex items-center gap-4">
             {profile?.profile_photo_url || profile?.avatar_url ? (
               <img
-                src={profile.profile_photo_url || profile.avatar_url}
+                src={profile.profile_photo_url || getAvatarUrl(profile.avatar_url) || ''}
                 alt={profile.name}
                 className="w-16 h-16 rounded-full object-cover"
               />
