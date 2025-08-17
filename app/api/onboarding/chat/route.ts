@@ -194,8 +194,7 @@ export async function POST(req: Request) {
         message: "Excellent! What are your networking goals?",
         ask: {
           fields: [
-            { key: 'networking_goals', label: 'Networking Goals', type: 'multi-select', options: NETWORKING_GOALS, max: 4 },
-            { key: 'connection_preferences', label: 'Who You Want to Meet', type: 'multi-select', options: CONNECTION_PREFERENCES, max: 4 }
+            { key: 'networking_goals', label: 'Networking Goals', type: 'multi-select', options: NETWORKING_GOALS, max: 4 }
           ],
           cta: 'Continue'
         },
