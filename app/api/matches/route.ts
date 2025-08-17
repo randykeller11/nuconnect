@@ -42,15 +42,23 @@ export async function POST(req: Request) {
       let why = whySimple(me, p, score)
       
       // Try OpenRouter for better rationale
+      console.log('Attempting OpenRouter call for match:', p.name, 'with score:', score)
+      console.log('OpenRouter API key present:', !!process.env.OPENROUTER_API_KEY)
+      
       try {
         const maybeLLM = await explainMatchLLM(
           { me: pickForLLM(me), other: pickForLLM(p), score }
         )
+        console.log('OpenRouter response:', maybeLLM)
+        
         if (maybeLLM && maybeLLM.length > 10) {
           why = maybeLLM
+          console.log('Using OpenRouter rationale:', why)
+        } else {
+          console.log('OpenRouter response too short or empty, using fallback')
         }
       } catch (error) {
-        console.log('OpenRouter failed, using fallback rationale:', error)
+        console.error('OpenRouter failed with error:', error)
       }
 
       return {

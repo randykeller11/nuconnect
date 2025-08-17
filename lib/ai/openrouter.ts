@@ -6,10 +6,18 @@ export async function explainMatchLLM(
   payload: { me: any; other: any; score: number },
   model = 'openai/gpt-4o-mini'
 ) {
+  console.log('explainMatchLLM called with payload:', {
+    me: payload.me,
+    other: payload.other,
+    score: payload.score
+  })
+
   if (!process.env.OPENROUTER_API_KEY) {
     console.log('OPENROUTER_API_KEY not found, using fallback rationale')
     return null
   }
+
+  console.log('OpenRouter API key found, making request...')
 
   const prompt = `Write a compelling 1-2 sentence rationale for why these two professionals should connect. Focus on specific shared interests, complementary skills, or collaboration opportunities. Be conversational and specific. Keep under 140 characters.
 
@@ -22,7 +30,18 @@ Examples:
 - "Your product management experience could complement their engineering background in fintech."
 - "Both passionate about sustainability and have complementary skills in policy and technology."`
 
+  console.log('Sending prompt to OpenRouter:', prompt.substring(0, 200) + '...')
+
   try {
+    const requestBody = {
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 60,
+    }
+
+    console.log('Request body:', JSON.stringify(requestBody, null, 2))
+
     const res = await fetch(`${OR_BASE}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -31,26 +50,29 @@ Examples:
         'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
         'X-Title': 'NuConnect Matching'
       },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-        max_tokens: 60,
-      }),
+      body: JSON.stringify(requestBody),
     })
 
+    console.log('OpenRouter response status:', res.status)
+
     if (!res.ok) {
-      console.error('OpenRouter API error:', res.status, await res.text())
+      const errorText = await res.text()
+      console.error('OpenRouter API error:', res.status, errorText)
       return null
     }
 
     const json = await res.json()
+    console.log('OpenRouter response JSON:', JSON.stringify(json, null, 2))
+    
     const content = json?.choices?.[0]?.message?.content?.trim()
+    console.log('Extracted content:', content)
     
     if (content && content.length > 10) {
+      console.log('Returning OpenRouter content:', content)
       return content
     }
     
+    console.log('Content too short or empty, returning null')
     return null
   } catch (error) {
     console.error('OpenRouter request failed:', error)
