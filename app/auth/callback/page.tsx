@@ -36,21 +36,29 @@ export default function Callback() {
           /* ignore quota / SSR issues */
         }
         
-        // Check if user has completed onboarding
-        const res = await fetch('/api/me/profile')
-        const data = await res.json()
-        
-        if (!res.ok) {
-          console.error('Profile check failed:', data.error)
-          router.replace('/onboarding')
-          return
-        }
-        
-        const { hasProfile, isOnboardingComplete } = data
-        
-        if (hasProfile && isOnboardingComplete) {
-          router.replace('/home')
-        } else {
+        // Check if user has completed onboarding by querying the profile directly
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('onboarding_stage, name')
+            .eq('user_id', user.id)
+            .single()
+          
+          if (profileError && profileError.code !== 'PGRST116') {
+            console.error('Profile query error:', profileError)
+            router.replace('/onboarding')
+            return
+          }
+          
+          // If profile exists and onboarding is complete, go to home
+          if (profile && profile.onboarding_stage === 'complete') {
+            router.replace('/home')
+          } else {
+            // No profile or incomplete onboarding, go to onboarding
+            router.replace('/onboarding')
+          }
+        } catch (error) {
+          console.error('Profile check error:', error)
           router.replace('/onboarding')
         }
       } catch (error) {
