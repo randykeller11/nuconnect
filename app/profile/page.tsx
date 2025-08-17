@@ -66,16 +66,16 @@ export default function ProfilePage() {
         <Card className="bg-white shadow-xl border-0 rounded-2xl mb-8">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start gap-6">
-              {profile?.avatar_url ? (
+              {profile?.profile_photo_url || profile?.avatar_url ? (
                 <img
-                  src={profile.avatar_url}
-                  alt={`${profile.first_name} ${profile.last_name}`}
+                  src={profile.profile_photo_url || profile.avatar_url}
+                  alt={profile.name}
                   className="w-24 h-24 rounded-full object-cover"
                 />
               ) : (
                 <div className="w-24 h-24 bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center">
                   <span className="text-3xl font-bold text-aulait">
-                    {profile?.first_name?.charAt(0) || profile?.name?.charAt(0) || 'U'}
+                    {profile?.name?.charAt(0) || 'U'}
                   </span>
                 </div>
               )}
