@@ -96,12 +96,15 @@ export default function RoomClient({ room, isMember }: RoomClientProps) {
       {!showMatches && (
         <Card className="bg-white shadow-xl border-0 rounded-2xl">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-inkwell text-2xl">{room.name}</CardTitle>
-                {room.tagline && <p className="text-lunar mt-1">{room.tagline}</p>}
-              </div>
-              <div className="flex items-center gap-2 text-lunar">
+            <div className="text-center">
+              <CardTitle className="text-inkwell text-3xl mb-2">{room.name}</CardTitle>
+              {room.tagline && <p className="text-lunar text-lg mb-4">{room.tagline}</p>}
+              {room.topic && (
+                <span className="inline-block px-3 py-1 bg-inkwell/10 text-inkwell rounded-full text-sm mb-4">
+                  {room.topic}
+                </span>
+              )}
+              <div className="flex items-center justify-center gap-2 text-lunar">
                 <Users className="w-5 h-5" />
                 <span className="font-medium">{room.member_count} members</span>
               </div>
@@ -129,11 +132,7 @@ export default function RoomClient({ room, isMember }: RoomClientProps) {
 
       {/* Compact header when showing matches */}
       {showMatches && (
-        <div className="flex items-center justify-between py-4">
-          <div>
-            <h2 className="text-xl font-bold text-inkwell">{room.name}</h2>
-            <p className="text-sm text-lunar">Finding your perfect matches</p>
-          </div>
+        <div className="flex items-center justify-between py-2">
           <div className="flex items-center gap-2 text-lunar text-sm">
             <Users className="w-4 h-4" />
             <span>{room.member_count} members</span>

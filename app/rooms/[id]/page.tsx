@@ -38,16 +38,6 @@ export default async function RoomPage({ params }: RoomPageProps) {
   return (
     <div className="min-h-screen bg-aulait">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-inkwell mb-2">{room.name}</h1>
-          {room.tagline && <p className="text-lunar text-lg">{room.tagline}</p>}
-          {room.topic && (
-            <span className="inline-block mt-2 px-3 py-1 bg-inkwell/10 text-inkwell rounded-full text-sm">
-              {room.topic}
-            </span>
-          )}
-        </div>
-        
         <RoomClient room={room} isMember={isMember} />
       </div>
     </div>
