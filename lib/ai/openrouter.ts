@@ -18,6 +18,7 @@ export async function explainMatchLLM(
   }
 
   console.log('OpenRouter API key found, making request...')
+  console.log('API key starts with:', process.env.OPENROUTER_API_KEY?.substring(0, 10) + '...')
 
   const prompt = `Write a compelling 1-2 sentence rationale for why these two professionals should connect. Focus on specific shared interests, complementary skills, or collaboration opportunities. Be conversational and specific. Keep under 140 characters.
 
@@ -45,10 +46,10 @@ Examples:
     const res = await fetch(`${OR_BASE}/chat/completions`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-        'X-Title': 'NuConnect Matching'
+        'HTTP-Referer': 'http://localhost:3000',
+        'X-Title': 'NuConnect'
       },
       body: JSON.stringify(requestBody),
     })
