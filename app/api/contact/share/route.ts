@@ -60,5 +60,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ mutual: true, message: "It's a match! Contact info exchanged." })
   }
 
-  return NextResponse.json({ mutual: false, message: 'Contact info shared. We'll notify you if they share back.' })
+  return NextResponse.json({ mutual: false, message: 'Contact info shared. We\'ll notify you if they share back.' })
 }
