@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-
+import { createClient } from '@supabase/supabase-js'
 
 export async function GET() {
   try {
@@ -11,8 +11,19 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Try to get profile with better error handling for RLS issues
-    const { data: profile, error } = await supabase
+    // Use service role client to bypass RLS policies completely
+    const serviceSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
+
+    const { data: profile, error } = await serviceSupabase
       .from('profiles')
       .select('*')
       .eq('user_id', user.id)
@@ -20,13 +31,6 @@ export async function GET() {
 
     if (error) {
       console.error('Profile fetch error:', error)
-      // If it's an RLS policy error, return empty profile instead of failing
-      if (error.message.includes('infinite recursion') || 
-          error.message.includes('policy') || 
-          error.code === '42P17') {
-        console.log('RLS policy issue detected, returning null profile')
-        return NextResponse.json({ profile: null })
-      }
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
@@ -45,6 +49,18 @@ export async function PUT(req: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Use service role client to bypass RLS policies
+    const serviceSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
 
     const body = await req.json()
 
@@ -72,11 +88,11 @@ export async function PUT(req: NextRequest) {
       bio: sanitize(body.bio) || null,
       skills: asArray(body.skills),
       linkedin_url: sanitize(body.linkedin_url) || null,
+      name: `${sanitize(body.first_name) || ''} ${sanitize(body.last_name) || ''}`.trim() || 'User',
       updated_at: new Date().toISOString()
     }
-    
 
-    const { data: profile, error } = await supabase
+    const { data: profile, error } = await serviceSupabase
       .from('profiles')
       .upsert(update)
       .select('*')
