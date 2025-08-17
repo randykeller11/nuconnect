@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     console.log('🔍 DEBUG: User ID:', user.id)
     console.log('🔍 DEBUG: Existing profile:', profile ? 'exists' : 'null')
     
-    const patch = { 
+    const patch: any = { 
       user_id: user.id,
       ...input.formData, 
       updated_at: new Date().toISOString(), 
