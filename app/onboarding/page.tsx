@@ -43,11 +43,6 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
       finalData.role = customRole.trim()
     }
     
-    // Handle LinkedIn username conversion to full URL
-    if (finalData.linkedin_url && !finalData.linkedin_url.startsWith('http')) {
-      finalData.linkedin_url = `https://linkedin.com/in/${finalData.linkedin_url}`
-    }
-    
     onSubmit(finalData)
   }
 
@@ -97,7 +92,48 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
   return (
     <div className="max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-8">
-        {ask.fields.map((field) => (
+        {/* Profile Photo Upload - Always at top if present */}
+        {ask.fields.find(f => f.key === 'profile_photo') && (
+          <div className="space-y-4 mb-8">
+            <div className="text-center mb-6">
+              <label className="block text-xl font-semibold text-inkwell mb-2">
+                Profile Photo (optional)
+              </label>
+              <p className="text-sm text-lunar">Add a photo to help people recognize you</p>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div className="w-40 h-40 rounded-full bg-lunar/20 overflow-hidden border-4 border-white shadow-lg mb-6">
+                {formData.profile_photo_url ? (
+                  <img 
+                    src={formData.profile_photo_url} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-lunar">
+                    <span className="text-5xl">📷</span>
+                  </div>
+                )}
+              </div>
+              <label className="cursor-pointer">
+                <span className="inline-flex items-center px-8 py-4 bg-inkwell text-aulait rounded-xl hover:bg-lunar transition-colors text-lg font-medium">
+                  {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
+                </span>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handlePhotoUpload} 
+                  className="hidden" 
+                  disabled={uploadingPhoto}
+                />
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Other Fields */}
+        {ask.fields.filter(f => f.key !== 'profile_photo').map((field) => (
           <div key={field.key} className="space-y-4">
             <div className="text-center mb-6">
               <label className="block text-xl font-semibold text-inkwell mb-2">
@@ -108,37 +144,7 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
               )}
             </div>
             
-            {field.key === 'profile_photo' ? (
-              <div className="space-y-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-32 h-32 rounded-full bg-lunar/20 overflow-hidden border-4 border-white shadow-lg mb-4">
-                    {formData.profile_photo_url ? (
-                      <img 
-                        src={formData.profile_photo_url} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover" 
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-lunar">
-                        <span className="text-4xl">📷</span>
-                      </div>
-                    )}
-                  </div>
-                  <label className="cursor-pointer">
-                    <span className="inline-flex items-center px-6 py-3 bg-inkwell text-aulait rounded-xl hover:bg-lunar transition-colors">
-                      {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
-                    </span>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handlePhotoUpload} 
-                      className="hidden" 
-                      disabled={uploadingPhoto}
-                    />
-                  </label>
-                </div>
-              </div>
-            ) : field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
+            {field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
               <Input
                 type={field.type === 'url' ? 'url' : 'text'}
                 placeholder={field.placeholder}
