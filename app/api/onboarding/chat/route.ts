@@ -64,7 +64,17 @@ export async function POST(req: Request) {
       user_id: user.id,
       ...input.formData, 
       updated_at: new Date().toISOString(), 
-      onboarding_stage: 'in_progress' 
+      onboarding_stage: 'in_progress'
+    }
+    
+    // Ensure required name field is provided
+    if (input.formData.first_name || input.formData.last_name) {
+      patch.name = `${input.formData.first_name || ''} ${input.formData.last_name || ''}`.trim()
+    }
+    
+    // Provide default name if none exists
+    if (!patch.name) {
+      patch.name = 'User' // Default name to satisfy NOT NULL constraint
     }
     
     console.log('🔍 DEBUG: Patch data to upsert:', JSON.stringify(patch, null, 2))
@@ -272,7 +282,8 @@ export async function POST(req: Request) {
   const update: any = { 
     user_id: user.id,
     onboarding_stage: ai.nextState === 'DONE' ? 'complete' : 'in_progress',
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    name: updatedProfile?.name || 'User' // Ensure name field is always provided
   }
   
   console.log('🔍 DEBUG: Final update data:', JSON.stringify(update, null, 2))
