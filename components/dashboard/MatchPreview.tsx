@@ -2,6 +2,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PrimaryButton } from '@/components/PrimaryButton'
+import { useRouter } from 'next/navigation'
 
 export type MatchPreview = {
   user_id: string
@@ -14,10 +15,10 @@ export type MatchPreview = {
 
 interface MatchPreviewProps {
   items: MatchPreview[]
-  onOpenDeck: () => void
 }
 
-export default function MatchPreview({ items, onOpenDeck }: MatchPreviewProps) {
+export default function MatchPreview({ items }: MatchPreviewProps) {
+  const router = useRouter()
   if (!items.length) {
     return (
       <Card className="bg-white shadow-xl border-0 rounded-2xl">
@@ -26,7 +27,7 @@ export default function MatchPreview({ items, onOpenDeck }: MatchPreviewProps) {
         </CardHeader>
         <CardContent>
           <p className="text-lunar mb-4">Join a room to see potential matches</p>
-          <PrimaryButton onClick={onOpenDeck} size="default">
+          <PrimaryButton onClick={() => router.push('/rooms')} size="default">
             Browse Rooms
           </PrimaryButton>
         </CardContent>
@@ -74,7 +75,7 @@ export default function MatchPreview({ items, onOpenDeck }: MatchPreviewProps) {
             </div>
           </div>
         ))}
-        <PrimaryButton onClick={onOpenDeck} className="w-full mt-4">
+        <PrimaryButton onClick={() => router.push('/rooms')} className="w-full mt-4">
           View All Matches
         </PrimaryButton>
       </CardContent>

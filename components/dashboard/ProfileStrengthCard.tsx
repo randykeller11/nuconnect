@@ -1,6 +1,7 @@
 'use client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PrimaryButton } from '@/components/PrimaryButton'
+import { useRouter } from 'next/navigation'
 
 export type ProfileStrengthResult = {
   score: number
@@ -10,10 +11,10 @@ export type ProfileStrengthResult = {
 
 interface ProfileStrengthCardProps {
   strength: ProfileStrengthResult | null
-  onImprove: () => void
 }
 
-export default function ProfileStrengthCard({ strength, onImprove }: ProfileStrengthCardProps) {
+export default function ProfileStrengthCard({ strength }: ProfileStrengthCardProps) {
+  const router = useRouter()
   const score = strength?.score ?? 0
   const maxScore = strength?.maxScore ?? 100
   const percentage = Math.round((score / maxScore) * 100)
@@ -38,7 +39,7 @@ export default function ProfileStrengthCard({ strength, onImprove }: ProfileStre
           </div>
         </div>
         <p className="text-sm text-lunar mb-4">{suggestion}</p>
-        <PrimaryButton onClick={onImprove} className="w-full">
+        <PrimaryButton onClick={() => router.push('/profile/edit')} className="w-full">
           Improve Profile
         </PrimaryButton>
       </CardContent>
