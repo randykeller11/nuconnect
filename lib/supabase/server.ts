@@ -8,9 +8,12 @@ export const createSupabaseServerClient = async () => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (k) => jar.get(k)?.value,
-        set: (k, v, o) => jar.set(k, v, o as any),
-        remove: (k, o) => jar.set(k, '', { ...o, maxAge: 0 } as any),
+        getAll: () => jar.getAll(),
+        setAll: (cookiesToSet) => {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            jar.set(name, value, options)
+          })
+        },
       }
     }
   )

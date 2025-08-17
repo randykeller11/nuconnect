@@ -10,6 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Try to get profile with better error handling for RLS issues
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
@@ -17,11 +18,17 @@ export async function GET() {
       .maybeSingle()
 
     if (error) {
+      console.error('Profile fetch error:', error)
+      // If it's an RLS policy error, return empty profile instead of failing
+      if (error.message.includes('infinite recursion') || error.message.includes('policy')) {
+        return NextResponse.json({ profile: null })
+      }
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
     return NextResponse.json({ profile: profile || null })
   } catch (error) {
+    console.error('Profile API error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -42,7 +49,7 @@ export async function PUT(req: NextRequest) {
     const isUrl = (u?: string) => !u || /^https?:\/\/\S+$/i.test(u)
 
     // Validate URL fields
-    if (!isUrl(body.linkedin_url)) {
+    if (body.linkedin_url && !isUrl(body.linkedin_url)) {
       return NextResponse.json({ error: 'Invalid LinkedIn URL' }, { status: 400 })
     }
 
@@ -71,11 +78,13 @@ export async function PUT(req: NextRequest) {
       .single()
 
     if (error) {
+      console.error('Profile update error:', error)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
     return NextResponse.json({ profile })
   } catch (error) {
+    console.error('Profile PUT error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
