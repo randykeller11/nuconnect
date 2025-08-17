@@ -20,7 +20,10 @@ export async function GET() {
     if (error) {
       console.error('Profile fetch error:', error)
       // If it's an RLS policy error, return empty profile instead of failing
-      if (error.message.includes('infinite recursion') || error.message.includes('policy')) {
+      if (error.message.includes('infinite recursion') || 
+          error.message.includes('policy') || 
+          error.code === '42P17') {
+        console.log('RLS policy issue detected, returning null profile')
         return NextResponse.json({ profile: null })
       }
       return NextResponse.json({ error: error.message }, { status: 400 })

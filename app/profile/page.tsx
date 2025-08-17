@@ -20,6 +20,8 @@ export default function ProfilePage() {
         if (response.ok) {
           const data = await response.json()
           setProfile(data.profile)
+        } else {
+          console.error('Profile API error:', response.status, response.statusText)
         }
       } catch (error) {
         console.error('Failed to fetch profile:', error)

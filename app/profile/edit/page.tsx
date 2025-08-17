@@ -64,10 +64,13 @@ export default function ProfileEditPage() {
               skills: profile.skills || [],
               linkedin_url: profile.linkedin_url || ''
             })
+          } else {
+            console.log('No profile found, starting with empty form')
+            // Profile is null, keep default empty form
           }
         } else {
           console.error('Failed to load profile:', res.status, res.statusText)
-          // Continue with empty form if profile load fails
+          toast.error('Failed to load profile data')
         }
       } catch (error) {
         toast.error('Failed to load profile')
