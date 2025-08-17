@@ -48,7 +48,20 @@ export default function ProfileEditPage() {
         const json = await res.json()
         
         if (json?.profile) {
-          setForm({ ...form, ...json.profile })
+          // Map the profile data to form fields, handling different field names
+          const profile = json.profile
+          setForm({
+            first_name: profile.first_name || '',
+            last_name: profile.last_name || '',
+            avatar_url: profile.avatar_url || '',
+            role: profile.role || '',
+            industries: profile.industries || [],
+            networking_goals: profile.networking_goals || [],
+            connection_preferences: profile.connection_preferences || [],
+            bio: profile.bio || '',
+            skills: profile.skills || [],
+            linkedin_url: profile.linkedin_url || ''
+          })
         }
       } catch (error) {
         toast.error('Failed to load profile')

@@ -64,39 +64,35 @@ export default function ProfilePage() {
         <Card className="bg-white shadow-xl border-0 rounded-2xl mb-8">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start gap-6">
-              {profile?.profile_photo_url ? (
+              {profile?.avatar_url ? (
                 <img
-                  src={profile.profile_photo_url}
-                  alt={profile.name}
+                  src={profile.avatar_url}
+                  alt={`${profile.first_name} ${profile.last_name}`}
                   className="w-24 h-24 rounded-full object-cover"
                 />
               ) : (
                 <div className="w-24 h-24 bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center">
                   <span className="text-3xl font-bold text-aulait">
-                    {profile?.name?.charAt(0) || 'U'}
+                    {profile?.first_name?.charAt(0) || profile?.name?.charAt(0) || 'U'}
                   </span>
                 </div>
               )}
               
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-inkwell mb-2">
-                  {profile?.name || 'Your Name'}
+                  {profile?.first_name && profile?.last_name 
+                    ? `${profile.first_name} ${profile.last_name}` 
+                    : profile?.name || 'Your Name'}
                 </h2>
-                {profile?.headline && (
-                  <p className="text-lg text-lunar mb-4">{profile.headline}</p>
+                {profile?.bio && (
+                  <p className="text-lg text-lunar mb-4">{profile.bio}</p>
                 )}
                 
                 <div className="flex flex-wrap gap-4 text-sm text-lunar">
-                  {profile?.contact_prefs?.role && profile?.contact_prefs?.company && (
+                  {profile?.role && (
                     <div className="flex items-center gap-1">
                       <Building className="w-4 h-4" />
-                      <span>{profile.contact_prefs.role} at {profile.contact_prefs.company}</span>
-                    </div>
-                  )}
-                  {profile?.contact_prefs?.location && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      <span>{profile.contact_prefs.location}</span>
+                      <span>{profile.role}</span>
                     </div>
                   )}
                 </div>
@@ -112,24 +108,11 @@ export default function ProfilePage() {
               <CardTitle className="text-inkwell">Professional Focus</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {profile?.interests && profile.interests.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-lunar mb-2">Interests</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {profile.interests.map((interest: string) => (
-                      <Badge key={interest} variant="outline">
-                        {interest}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {profile?.contact_prefs?.skills && profile.contact_prefs.skills.length > 0 && (
+              {profile?.skills && profile.skills.length > 0 && (
                 <div>
                   <h4 className="font-medium text-lunar mb-2">Skills</h4>
                   <div className="flex flex-wrap gap-1">
-                    {profile.contact_prefs.skills.map((skill: string) => (
+                    {profile.skills.map((skill: string) => (
                       <Badge key={skill} variant="outline" className="bg-lunar/10">
                         {skill}
                       </Badge>
@@ -138,11 +121,11 @@ export default function ProfilePage() {
                 </div>
               )}
               
-              {profile?.contact_prefs?.industries && profile.contact_prefs.industries.length > 0 && (
+              {profile?.industries && profile.industries.length > 0 && (
                 <div>
                   <h4 className="font-medium text-lunar mb-2">Industries</h4>
                   <div className="flex flex-wrap gap-1">
-                    {profile.contact_prefs.industries.map((industry: string) => (
+                    {profile.industries.map((industry: string) => (
                       <Badge key={industry} variant="outline" className="bg-creme/10">
                         {industry}
                       </Badge>
@@ -159,26 +142,26 @@ export default function ProfilePage() {
               <CardTitle className="text-inkwell">Networking Intent</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {profile?.contact_prefs?.objectives && profile.contact_prefs.objectives.length > 0 && (
+              {profile?.networking_goals && profile.networking_goals.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-lunar mb-2">Objectives</h4>
+                  <h4 className="font-medium text-lunar mb-2">Networking Goals</h4>
                   <div className="flex flex-wrap gap-1">
-                    {profile.contact_prefs.objectives.map((objective: string) => (
-                      <Badge key={objective} variant="outline" className="bg-inkwell/10">
-                        {objective}
+                    {profile.networking_goals.map((goal: string) => (
+                      <Badge key={goal} variant="outline" className="bg-inkwell/10">
+                        {goal}
                       </Badge>
                     ))}
                   </div>
                 </div>
               )}
               
-              {profile?.contact_prefs?.seeking && profile.contact_prefs.seeking.length > 0 && (
+              {profile?.connection_preferences && profile.connection_preferences.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-lunar mb-2">Seeking</h4>
+                  <h4 className="font-medium text-lunar mb-2">Who You Want to Meet</h4>
                   <div className="flex flex-wrap gap-1">
-                    {profile.contact_prefs.seeking.map((item: string) => (
-                      <Badge key={item} variant="outline" className="bg-lunar/10">
-                        {item}
+                    {profile.connection_preferences.map((pref: string) => (
+                      <Badge key={pref} variant="outline" className="bg-lunar/10">
+                        {pref}
                       </Badge>
                     ))}
                   </div>
