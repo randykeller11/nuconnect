@@ -269,7 +269,7 @@ export async function POST(req: Request) {
         message: "Perfect! Now let's set up your profile photo and links.",
         ask: {
           fields: [
-            { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' },
+            { key: 'linkedin_url', label: 'LinkedIn Username (optional)', type: 'text', placeholder: 'yourname' },
             { key: 'website_url', label: 'Website URL (optional)', type: 'url', placeholder: 'https://yourwebsite.com' },
             { key: 'twitter_url', label: 'Twitter/X URL (optional)', type: 'url', placeholder: 'https://twitter.com/yourusername' },
             { key: 'github_url', label: 'GitHub URL (optional)', type: 'url', placeholder: 'https://github.com/yourusername' }
@@ -304,7 +304,7 @@ export async function POST(req: Request) {
         ask: {
           fields: [
             { key: 'profile_photo', label: 'Profile Photo (optional)', type: 'file' },
-            { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' },
+            { key: 'linkedin_url', label: 'LinkedIn Username (optional)', type: 'text', placeholder: 'yourname' },
             { key: 'website_url', label: 'Website URL (optional)', type: 'url', placeholder: 'https://yourwebsite.com' },
             { key: 'twitter_url', label: 'Twitter/X URL (optional)', type: 'url', placeholder: 'https://twitter.com/yourusername' },
             { key: 'github_url', label: 'GitHub URL (optional)', type: 'url', placeholder: 'https://github.com/yourusername' }

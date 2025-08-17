@@ -43,6 +43,11 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
       finalData.role = customRole.trim()
     }
     
+    // Handle LinkedIn username conversion to full URL
+    if (finalData.linkedin_url && !finalData.linkedin_url.startsWith('http')) {
+      finalData.linkedin_url = `https://linkedin.com/in/${finalData.linkedin_url}`
+    }
+    
     onSubmit(finalData)
   }
 
