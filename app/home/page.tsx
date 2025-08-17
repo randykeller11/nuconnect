@@ -123,9 +123,9 @@ export default function HomePage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            {profile?.profile_photo_url ? (
+            {profile?.profile_photo_url || profile?.avatar_url ? (
               <img
-                src={profile.profile_photo_url}
+                src={profile.profile_photo_url || profile.avatar_url}
                 alt={profile.name}
                 className="w-16 h-16 rounded-full object-cover"
               />
