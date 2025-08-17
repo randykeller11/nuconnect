@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 
 export async function GET() {
   try {
-    const supabase = await createSupabaseServerClient()
+    const supabase = await supabaseServer()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -34,7 +34,9 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ profile: profile || null })
+    const hasProfile = !!profile
+    const isOnboardingComplete = profile?.onboarding_stage === 'complete'
+    return NextResponse.json({ profile: profile || null, hasProfile, isOnboardingComplete })
   } catch (error) {
     console.error('Profile API error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -43,7 +45,7 @@ export async function GET() {
 
 export async function PUT(req: NextRequest) {
   try {
-    const supabase = await createSupabaseServerClient()
+    const supabase = await supabaseServer()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {

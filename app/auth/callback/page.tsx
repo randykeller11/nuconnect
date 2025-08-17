@@ -37,7 +37,7 @@ export default function Callback() {
         }
         
         // Check if user has completed onboarding
-        const res = await fetch('/api/me/profile')
+        const res = await fetch('/api/me/profile', { cache: 'no-store' })
         const data = await res.json()
         
         if (!res.ok) {
