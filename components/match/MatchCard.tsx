@@ -53,7 +53,8 @@ export default function MatchCard({ data, onShare, onSkip }: MatchCardProps) {
           {data.rationale}
         </p>
         
-        {(data.shared?.interests?.length || data.shared?.skills?.length) && (
+        {((data.shared?.interests && data.shared.interests.length > 0) || 
+          (data.shared?.skills && data.shared.skills.length > 0)) && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-lunar">Shared:</h4>
             <div className="flex flex-wrap gap-1">
