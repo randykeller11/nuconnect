@@ -19,33 +19,6 @@ const STATE_PROGRESSION = {
   'PERSONALIZATION': 'DONE'
 } as const
 
-// Calculate profile completion score based on filled fields
-function calculateProfileCompletionScore(profile: any): number {
-  if (!profile) return 0
-  
-  let score = 0
-  const maxScore = 100
-  
-  // Basic identity (30 points)
-  if (profile.first_name) score += 10
-  if (profile.last_name) score += 10
-  if (profile.avatar_url) score += 10
-  
-  // Professional info (40 points)
-  if (profile.role) score += 15
-  if (profile.industries && profile.industries.length > 0) score += 15
-  if (profile.bio) score += 10
-  
-  // Networking goals (20 points)
-  if (profile.networking_goals && profile.networking_goals.length > 0) score += 10
-  if (profile.connection_preferences && profile.connection_preferences.length > 0) score += 10
-  
-  // Skills and extras (10 points)
-  if (profile.skills && profile.skills.length > 0) score += 5
-  if (profile.linkedin_url) score += 5
-  
-  return Math.min(score, maxScore)
-}
 
 export async function POST(req: Request) {
   const sb = await createSupabaseServerClient()
@@ -58,12 +31,18 @@ export async function POST(req: Request) {
   // Merge formData into profile if present (autosave)
   let updatedProfile = profile
   if (input.formData && Object.keys(input.formData).length) {
+    console.log('🔍 DEBUG: Attempting to save form data:', JSON.stringify(input.formData, null, 2))
+    console.log('🔍 DEBUG: User ID:', user.id)
+    console.log('🔍 DEBUG: Existing profile:', profile ? 'exists' : 'null')
+    
     const patch = { 
       user_id: user.id,
       ...input.formData, 
       updated_at: new Date().toISOString(), 
       onboarding_stage: 'in_progress' 
     }
+    
+    console.log('🔍 DEBUG: Patch data to upsert:', JSON.stringify(patch, null, 2))
     
     // Use upsert to create profile if it doesn't exist
     const { data: updated, error: upsertError } = await sb
@@ -73,7 +52,11 @@ export async function POST(req: Request) {
       .single()
     
     if (upsertError) {
-      console.error('Profile upsert error:', upsertError)
+      console.error('❌ Profile upsert error:', upsertError)
+      console.error('❌ Full error object:', JSON.stringify(upsertError, null, 2))
+    } else {
+      console.log('✅ Profile upsert successful!')
+      console.log('✅ Updated profile data:', JSON.stringify(updated, null, 2))
     }
     
     updatedProfile = updated || { ...profile, ...patch }
@@ -244,20 +227,22 @@ export async function POST(req: Request) {
     updated_at: new Date().toISOString()
   }
   
-  // If completing onboarding, also set completion fields
-  if (ai.nextState === 'DONE') {
-    update.profile_completion_score = calculateProfileCompletionScore(updatedProfile)
-  }
+  console.log('🔍 DEBUG: Final update data:', JSON.stringify(update, null, 2))
+  console.log('🔍 DEBUG: AI next state:', ai.nextState)
   
   // Use upsert to ensure profile exists
-  const { error: finalUpdateError } = await sb
+  const { data: finalData, error: finalUpdateError } = await sb
     .from('profiles')
     .upsert(update)
     .select()
     .single()
   
   if (finalUpdateError) {
-    console.error('Final profile update error:', finalUpdateError)
+    console.error('❌ Final profile update error:', finalUpdateError)
+    console.error('❌ Full final error object:', JSON.stringify(finalUpdateError, null, 2))
+  } else {
+    console.log('✅ Final profile update successful!')
+    console.log('✅ Final profile data:', JSON.stringify(finalData, null, 2))
   }
 
   return NextResponse.json(ai)

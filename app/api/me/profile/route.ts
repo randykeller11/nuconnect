@@ -1,33 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
-// Calculate profile completion score based on filled fields
-function calculateProfileCompletionScore(profile: any): number {
-  if (!profile) return 0
-  
-  let score = 0
-  const maxScore = 100
-  
-  // Basic identity (30 points)
-  if (profile.first_name) score += 10
-  if (profile.last_name) score += 10
-  if (profile.avatar_url) score += 10
-  
-  // Professional info (40 points)
-  if (profile.role) score += 15
-  if (profile.industries && profile.industries.length > 0) score += 15
-  if (profile.bio) score += 10
-  
-  // Networking goals (20 points)
-  if (profile.networking_goals && profile.networking_goals.length > 0) score += 10
-  if (profile.connection_preferences && profile.connection_preferences.length > 0) score += 10
-  
-  // Skills and extras (10 points)
-  if (profile.skills && profile.skills.length > 0) score += 5
-  if (profile.linkedin_url) score += 5
-  
-  return Math.min(score, maxScore)
-}
 
 export async function GET() {
   try {
@@ -102,11 +75,6 @@ export async function PUT(req: NextRequest) {
       updated_at: new Date().toISOString()
     }
     
-    // Calculate and include completion score if the column exists
-    const completionScore = calculateProfileCompletionScore(update)
-    if (completionScore > 0) {
-      update.profile_completion_score = completionScore
-    }
 
     const { data: profile, error } = await supabase
       .from('profiles')
