@@ -40,10 +40,18 @@ export async function POST(req: Request) {
     candidates.map(async (p) => {
       const score = scoreMatch(me, p)
       let why = whySimple(me, p, score)
-      const maybeLLM = await explainMatchLLM(
-        { me: pickForLLM(me), other: pickForLLM(p), score }
-      )
-      if (maybeLLM) why = maybeLLM
+      
+      // Try OpenRouter for better rationale
+      try {
+        const maybeLLM = await explainMatchLLM(
+          { me: pickForLLM(me), other: pickForLLM(p), score }
+        )
+        if (maybeLLM && maybeLLM.length > 10) {
+          why = maybeLLM
+        }
+      } catch (error) {
+        console.log('OpenRouter failed, using fallback rationale:', error)
+      }
 
       return {
         user_id: p.user_id,
