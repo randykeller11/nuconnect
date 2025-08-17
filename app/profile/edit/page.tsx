@@ -87,8 +87,21 @@ export default function ProfileEditPage() {
     if (!file || !userId) return
 
     try {
-      const path = await uploadAvatar(file, userId)
-      setForm((f: any) => ({ ...f, avatar_url: path }))
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Upload failed')
+      }
+
+      const { path, url } = await response.json()
+      setForm((f: any) => ({ ...f, avatar_url: path, profile_photo_url: url }))
       toast.success('Avatar updated')
     } catch (err: any) {
       toast.error('Upload failed: ' + err.message)
@@ -148,9 +161,9 @@ export default function ProfileEditPage() {
               {/* Avatar */}
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-32 h-32 rounded-full bg-lunar/20 overflow-hidden border-4 border-white shadow-lg">
-                  {form.avatar_url ? (
+                  {form.profile_photo_url || form.avatar_url ? (
                     <img 
-                      src={getAvatarUrl(form.avatar_url) || ''} 
+                      src={form.profile_photo_url || getAvatarUrl(form.avatar_url) || ''} 
                       alt="Avatar" 
                       className="w-full h-full object-cover" 
                     />

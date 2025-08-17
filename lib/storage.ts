@@ -1,11 +1,11 @@
-import { createSupabaseBrowserClient } from '@/lib/supabase/browser'
+import { supabaseBrowser } from '@/lib/supabase/browser'
 
 export function sbBrowser() {
-  return createSupabaseBrowserClient()
+  return supabaseBrowser()
 }
 
 export async function uploadAvatar(file: File, userId: string) {
-  const supabase = sbBrowser()
+  const supabase = supabaseBrowser()
   const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
   const path = `avatars/${userId}.${Date.now()}.${ext}`
 
@@ -22,7 +22,7 @@ export async function uploadAvatar(file: File, userId: string) {
 
 export function getAvatarUrl(path: string | null) {
   if (!path) return null
-  const supabase = sbBrowser()
+  const supabase = supabaseBrowser()
   const { data } = supabase.storage.from('avatars').getPublicUrl(path)
   return data.publicUrl
 }
