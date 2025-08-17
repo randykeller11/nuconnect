@@ -57,14 +57,7 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    // Calculate completion score if profile exists
-    let profileWithScore = profile
-    if (profile) {
-      const completionScore = calculateProfileCompletionScore(profile)
-      profileWithScore = { ...profile, completion_score: completionScore }
-    }
-    
-    return NextResponse.json({ profile: profileWithScore })
+    return NextResponse.json({ profile: profile || null })
   } catch (error) {
     console.error('Profile API error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -109,8 +102,11 @@ export async function PUT(req: NextRequest) {
       updated_at: new Date().toISOString()
     }
     
-    // Calculate and include completion score
-    update.profile_completion_score = calculateProfileCompletionScore(update)
+    // Calculate and include completion score if the column exists
+    const completionScore = calculateProfileCompletionScore(update)
+    if (completionScore > 0) {
+      update.profile_completion_score = completionScore
+    }
 
     const { data: profile, error } = await supabase
       .from('profiles')

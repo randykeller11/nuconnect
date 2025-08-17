@@ -79,8 +79,8 @@ export async function POST(req: Request) {
     updatedProfile = updated || { ...profile, ...patch }
   }
 
-  // Use explicit state from input, or get from profile, or default to GREETING
-  const stage = input.state || updatedProfile?.onboarding_current_state || 'GREETING'
+  // Use explicit state from input, or default to GREETING
+  const stage = input.state || 'GREETING'
   const TAXONOMY = { ROLES, INDUSTRIES, NETWORKING_GOALS, CONNECTION_PREFERENCES, SKILLS }
   const promptPath = path.join(process.cwd(), 'prompts', 'onboarding-convo.md')
   const base = await fs.readFile(promptPath, 'utf8')
@@ -237,12 +237,10 @@ export async function POST(req: Request) {
     meta: { quickReplies: ai.quickReplies, ask: ai.ask } 
   })
 
-  // Save current state and transcript
+  // Save transcript and stage only - remove non-existent columns
   const update: any = { 
     user_id: user.id,
-    onboarding_transcript: transcript, 
     onboarding_stage: ai.nextState === 'DONE' ? 'complete' : 'in_progress',
-    onboarding_current_state: ai.nextState, // Track current state explicitly
     updated_at: new Date().toISOString()
   }
   
