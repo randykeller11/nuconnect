@@ -58,8 +58,24 @@ export async function POST(req: Request) {
   // Merge formData into profile if present (autosave)
   let updatedProfile = profile
   if (input.formData && Object.keys(input.formData).length) {
-    const patch = { ...input.formData, updated_at: new Date().toISOString(), onboarding_stage: 'in_progress' }
-    const { data: updated } = await sb.from('profiles').update(patch).eq('user_id', user.id).select().single()
+    const patch = { 
+      user_id: user.id,
+      ...input.formData, 
+      updated_at: new Date().toISOString(), 
+      onboarding_stage: 'in_progress' 
+    }
+    
+    // Use upsert to create profile if it doesn't exist
+    const { data: updated, error: upsertError } = await sb
+      .from('profiles')
+      .upsert(patch)
+      .select()
+      .single()
+    
+    if (upsertError) {
+      console.error('Profile upsert error:', upsertError)
+    }
+    
     updatedProfile = updated || { ...profile, ...patch }
   }
 
@@ -223,6 +239,7 @@ export async function POST(req: Request) {
 
   // Save current state and transcript
   const update: any = { 
+    user_id: user.id,
     onboarding_transcript: transcript, 
     onboarding_stage: ai.nextState === 'DONE' ? 'complete' : 'in_progress',
     onboarding_current_state: ai.nextState, // Track current state explicitly
@@ -235,7 +252,16 @@ export async function POST(req: Request) {
     update.profile_completion_score = calculateProfileCompletionScore(updatedProfile)
   }
   
-  await sb.from('profiles').update(update).eq('user_id', user.id)
+  // Use upsert to ensure profile exists
+  const { error: finalUpdateError } = await sb
+    .from('profiles')
+    .upsert(update)
+    .select()
+    .single()
+  
+  if (finalUpdateError) {
+    console.error('Final profile update error:', finalUpdateError)
+  }
 
   return NextResponse.json(ai)
 }
