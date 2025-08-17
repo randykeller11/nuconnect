@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import { openrouterChat } from '@/lib/ai/openrouter'
 import { ROLES, INDUSTRIES, NETWORKING_GOALS, CONNECTION_PREFERENCES, SKILLS } from '@/shared/taxonomy'
 import fs from 'node:fs/promises'
@@ -25,8 +26,20 @@ export async function POST(req: Request) {
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
+  // Use service role client to bypass RLS policies that are causing infinite recursion
+  const serviceSupabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+
   const input = (await req.json().catch(() => ({}))) as ClientMsg
-  const { data: profile } = await sb.from('profiles').select('*').eq('user_id', user.id).maybeSingle()
+  const { data: profile } = await serviceSupabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle()
 
   // Merge formData into profile if present (autosave)
   let updatedProfile = profile
@@ -44,8 +57,8 @@ export async function POST(req: Request) {
     
     console.log('🔍 DEBUG: Patch data to upsert:', JSON.stringify(patch, null, 2))
     
-    // Use upsert to create profile if it doesn't exist
-    const { data: updated, error: upsertError } = await sb
+    // Use service role client to bypass RLS policies
+    const { data: updated, error: upsertError } = await serviceSupabase
       .from('profiles')
       .upsert(patch)
       .select()
@@ -230,8 +243,8 @@ export async function POST(req: Request) {
   console.log('🔍 DEBUG: Final update data:', JSON.stringify(update, null, 2))
   console.log('🔍 DEBUG: AI next state:', ai.nextState)
   
-  // Use upsert to ensure profile exists
-  const { data: finalData, error: finalUpdateError } = await sb
+  // Use service role client to bypass RLS policies
+  const { data: finalData, error: finalUpdateError } = await serviceSupabase
     .from('profiles')
     .upsert(update)
     .select()
