@@ -354,7 +354,7 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
                       <button
                         key={option}
                         type="button"
-                        disabled={!isSelected && isMaxReached}
+                        disabled={!isSelected && !!isMaxReached}
                         onClick={() => {
                           if (isSelected) {
                             setFormData(prev => ({
