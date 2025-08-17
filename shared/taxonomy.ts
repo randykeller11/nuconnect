@@ -1,82 +1,91 @@
+export const ROLES = [
+  'Founder',
+  'CEO / Executive',
+  'Manager',
+  'Team Lead',
+  'Engineer (Frontend)',
+  'Engineer (Backend)',
+  'Engineer (Fullstack)',
+  'Engineer (Data)',
+  'Engineer (AI/ML)',
+  'Engineer (DevOps)',
+  'Sales / Business Development',
+  'Marketing',
+  'Product Manager',
+  'Designer (UI/UX)',
+  'Designer (Graphic)',
+  'Designer (Product)',
+  'Recruiter / Talent',
+  'Student / Recent Graduate',
+  'Career Transition / Job Seeker',
+  'Other'
+]
+
 export const INDUSTRIES = [
-  'Technology',
-  'Healthcare',
-  'Finance',
-  'Education',
-  'Manufacturing',
-  'Retail',
-  'Consulting',
+  'Technology (Software)',
+  'Technology (AI/ML)',
+  'Technology (Cloud)',
+  'Technology (Cybersecurity)',
+  'Technology (Fintech)',
+  'Sales & Marketing',
+  'Finance & Accounting',
+  'Healthcare & Biotech',
+  'Education & Training',
+  'Government & Policy',
+  'Nonprofit / Social Impact',
   'Media & Entertainment',
   'Real Estate',
-  'Non-profit',
-  'Government',
-  'Energy',
-  'Transportation',
-  'Food & Beverage',
-  'Fashion',
-  'Sports',
-  'Travel & Hospitality',
-  'Legal',
-  'Marketing & Advertising',
-  'Construction'
+  'Consumer Goods & Retail',
+  'Logistics & Transportation',
+  'Other'
+]
+
+export const NETWORKING_GOALS = [
+  'Meet potential collaborators',
+  'Find new clients/customers',
+  'Explore career opportunities',
+  'Learn from others in my industry',
+  'Gain mentorship / guidance',
+  'Expand general network',
+  'Promote my product/service',
+  'Just browsing / open to connections'
+]
+
+export const CONNECTION_PREFERENCES = [
+  'Entrepreneurs / Founders',
+  'Investors',
+  'Engineers / Developers',
+  'Sales & Marketing Professionals',
+  'Designers',
+  'Students / Early Career Professionals',
+  'Recruiters / Hiring Managers',
+  'Other'
 ]
 
 export const SKILLS = [
-  'Leadership',
-  'Project Management',
-  'Data Analysis',
-  'Software Development',
+  'AI',
+  'Machine Learning',
+  'Data Science',
+  'Frontend Development',
+  'Backend Development',
+  'Mobile Development',
+  'Product Management',
+  'UI/UX Design',
   'Marketing',
   'Sales',
-  'Design',
+  'Business Development',
+  'Leadership',
+  'Public Speaking',
+  'Writing',
   'Strategy',
   'Operations',
   'Finance',
-  'HR',
-  'Communication',
-  'Problem Solving',
-  'Team Building',
-  'Innovation',
-  'Customer Service',
-  'Research',
-  'Writing',
-  'Public Speaking',
-  'Negotiation'
+  'Recruiting',
+  'Project Management',
+  'Communication'
 ]
 
-export const OBJECTIVES = [
-  'Find new job opportunities',
-  'Expand professional network',
-  'Learn industry trends',
-  'Find mentors',
-  'Discover partnerships',
-  'Share expertise',
-  'Find investors',
-  'Recruit talent',
-  'Build brand awareness',
-  'Explore collaborations'
-]
-
-export const SEEKING = [
-  'Senior executives',
-  'Industry peers',
-  'Potential mentors',
-  'Job recruiters',
-  'Startup founders',
-  'Investors',
-  'Potential clients',
-  'Business partners',
-  'Subject matter experts',
-  'Career changers'
-]
-
-export const SENIORITY = [
-  'Entry Level',
-  'Mid Level',
-  'Senior Level',
-  'Manager',
-  'Director',
-  'VP',
-  'C-Level',
-  'Founder'
-]
+// Legacy exports for backward compatibility
+export const OBJECTIVES = NETWORKING_GOALS
+export const SEEKING = CONNECTION_PREFERENCES
+export const SENIORITY = ROLES

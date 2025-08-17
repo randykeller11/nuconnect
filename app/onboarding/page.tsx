@@ -23,7 +23,7 @@ type AiReply = {
     }>
     cta: string
   }
-  nextState: 'GREETING' | 'SNAPSHOT' | 'FOCUS' | 'INTENT' | 'POLISH' | 'DONE'
+  nextState: 'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'PERSONALIZATION' | 'DONE'
 }
 
 function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: Record<string, any>) => void }) {
@@ -37,87 +37,121 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
   }
 
   return (
-    <Card className="mt-4">
-      <CardContent className="p-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {ask.fields.map((field) => (
-            <div key={field.key}>
-              <label className="block text-sm font-medium mb-1">{field.label}</label>
-              {field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
-                <Input
-                  type={field.type === 'url' ? 'url' : 'text'}
-                  placeholder={field.placeholder}
-                  value={formData[field.key] || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                />
-              ) : field.type === 'select' ? (
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2"
-                  value={formData[field.key] || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                >
-                  <option value="">Select...</option>
-                  {field.options?.map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              ) : field.type === 'multi-select' ? (
-                <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    {(formData[field.key] || []).map((item: string) => (
-                      <Badge key={item} variant="secondary" className="cursor-pointer" onClick={() => {
-                        setFormData(prev => ({
-                          ...prev,
-                          [field.key]: (prev[field.key] || []).filter((i: string) => i !== item)
-                        }))
-                      }}>
-                        {item} ×
-                      </Badge>
-                    ))}
-                  </div>
-                  <select
-                    className="w-full rounded-md border border-input bg-background px-3 py-2"
-                    value=""
-                    onChange={(e) => {
-                      if (e.target.value && !(formData[field.key] || []).includes(e.target.value)) {
-                        const current = formData[field.key] || []
-                        if (!field.max || current.length < field.max) {
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid gap-6">
+        {ask.fields.map((field) => (
+          <div key={field.key} className="space-y-2">
+            <label className="block text-base font-medium text-inkwell">
+              {field.label}
+              {field.max && (
+                <span className="text-sm text-lunar ml-1">(max {field.max})</span>
+              )}
+            </label>
+            
+            {field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
+              <Input
+                type={field.type === 'url' ? 'url' : 'text'}
+                placeholder={field.placeholder}
+                value={formData[field.key] || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                className="h-12 text-base border-2 border-lunar/20 focus:border-inkwell rounded-lg"
+              />
+            ) : field.type === 'select' ? (
+              <select
+                className="w-full h-12 text-base rounded-lg border-2 border-lunar/20 focus:border-inkwell bg-background px-4"
+                value={formData[field.key] || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+              >
+                <option value="">Select...</option>
+                {field.options?.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            ) : field.type === 'multi-select' ? (
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2 min-h-[3rem] p-3 border-2 border-lunar/20 rounded-lg bg-background">
+                  {(formData[field.key] || []).length === 0 ? (
+                    <span className="text-lunar italic">Click options below to add them</span>
+                  ) : (
+                    (formData[field.key] || []).map((item: string) => (
+                      <Badge 
+                        key={item} 
+                        variant="secondary" 
+                        className="cursor-pointer bg-inkwell text-aulait hover:bg-lunar px-3 py-1 text-sm" 
+                        onClick={() => {
                           setFormData(prev => ({
                             ...prev,
-                            [field.key]: [...current, e.target.value]
+                            [field.key]: (prev[field.key] || []).filter((i: string) => i !== item)
                           }))
-                        }
-                      }
-                    }}
-                  >
-                    <option value="">Add {field.label.toLowerCase()}...</option>
-                    {field.options?.map(option => (
-                      <option key={option} value={option} disabled={(formData[field.key] || []).includes(option)}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                  {field.max && (
-                    <p className="text-xs text-muted-foreground">
-                      {(formData[field.key] || []).length} / {field.max} selected
-                    </p>
+                        }}
+                      >
+                        {item} ×
+                      </Badge>
+                    ))
                   )}
                 </div>
-              ) : null}
-            </div>
-          ))}
-          <Button type="submit" className="w-full">
-            {ask.cta}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+                
+                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                  {field.options?.map(option => {
+                    const isSelected = (formData[field.key] || []).includes(option)
+                    const isMaxReached = field.max && (formData[field.key] || []).length >= field.max
+                    
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        disabled={!isSelected && isMaxReached}
+                        onClick={() => {
+                          if (isSelected) {
+                            setFormData(prev => ({
+                              ...prev,
+                              [field.key]: (prev[field.key] || []).filter((i: string) => i !== option)
+                            }))
+                          } else if (!isMaxReached) {
+                            setFormData(prev => ({
+                              ...prev,
+                              [field.key]: [...(prev[field.key] || []), option]
+                            }))
+                          }
+                        }}
+                        className={`p-3 text-sm rounded-lg border-2 transition-all text-left ${
+                          isSelected 
+                            ? 'border-inkwell bg-inkwell text-aulait' 
+                            : isMaxReached
+                            ? 'border-lunar/20 bg-lunar/10 text-lunar/50 cursor-not-allowed'
+                            : 'border-lunar/20 bg-background text-inkwell hover:border-inkwell hover:bg-inkwell/5'
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    )
+                  })}
+                </div>
+                
+                {field.max && (
+                  <p className="text-sm text-lunar text-center">
+                    {(formData[field.key] || []).length} / {field.max} selected
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+      
+      <Button 
+        type="submit" 
+        className="w-full h-14 text-lg bg-gradient-to-r from-inkwell to-lunar hover:from-lunar hover:to-inkwell text-aulait rounded-xl shadow-lg transition-all duration-300"
+      >
+        {ask.cta}
+      </Button>
+    </form>
   )
 }
 
 export default function OnboardingChat() {
   const [ai, setAi] = useState<AiReply | null>(null)
-  const [state, setState] = useState<'GREETING' | 'SNAPSHOT' | 'FOCUS' | 'INTENT' | 'POLISH' | 'DONE'>('GREETING')
+  const [state, setState] = useState<'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'PERSONALIZATION' | 'DONE'>('GREETING')
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [transcript, setTranscript] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
@@ -205,113 +239,137 @@ export default function OnboardingChat() {
     await call({ formData, state })
   }
 
-  const progressSteps = ['GREETING', 'SNAPSHOT', 'FOCUS', 'INTENT', 'POLISH']
+  const progressSteps = ['IDENTITY', 'PROFESSIONAL', 'GOALS', 'PERSONALIZATION']
   const currentStepIndex = progressSteps.indexOf(state)
 
+  const stepTitles = {
+    'GREETING': 'Welcome',
+    'IDENTITY': 'Basic Identity',
+    'PROFESSIONAL': 'Professional Info',
+    'GOALS': 'Networking Goals',
+    'PERSONALIZATION': 'Personal Touches',
+    'DONE': 'Complete'
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-aulait to-aulait/80 p-4">
-      <div className="mx-auto max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-aulait to-aulait/80 p-6">
+      <div className="mx-auto max-w-4xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 mx-auto bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center shadow-lg mb-6">
+            <span className="text-3xl font-bold text-aulait">N</span>
+          </div>
+          <h1 className="text-3xl font-bold text-inkwell mb-2">Create Your Profile</h1>
+          <p className="text-xl text-lunar">Let's get you connected with the right professionals</p>
+        </div>
+
         {/* Progress indicator */}
-        <div className="mb-6 flex justify-center">
-          <div className="flex space-x-2">
-            {progressSteps.map((step, index) => (
-              <div
-                key={step}
-                className={`h-2 w-8 rounded-full ${
-                  index <= currentStepIndex ? 'bg-inkwell' : 'bg-lunar/30'
-                }`}
+        {state !== 'GREETING' && state !== 'DONE' && (
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-sm font-medium text-lunar">
+                Step {currentStepIndex + 1} of {progressSteps.length}
+              </span>
+              <span className="text-sm font-medium text-lunar">
+                {stepTitles[state]}
+              </span>
+            </div>
+            <div className="w-full bg-lunar/20 rounded-full h-3">
+              <div 
+                className="bg-gradient-to-r from-inkwell to-lunar h-3 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${((currentStepIndex + 1) / progressSteps.length) * 100}%` }}
               />
-            ))}
-          </div>
-        </div>
-
-        {/* Welcome header for first state */}
-        {state === 'GREETING' && transcript.length === 0 && (
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto bg-gradient-to-br from-inkwell to-lunar rounded-full flex items-center justify-center shadow-lg mb-4">
-              <span className="text-2xl font-bold text-aulait">N</span>
             </div>
-            <h1 className="text-2xl font-bold text-inkwell mb-2">Welcome to NuConnect</h1>
-            <p className="text-lunar">Let's create your networking profile</p>
           </div>
         )}
 
-        {/* Chat messages */}
-        <div className="space-y-4 mb-6">
-          {transcript.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-2xl p-4 ${
-                msg.role === 'user' 
-                  ? 'bg-inkwell text-aulait' 
-                  : 'bg-white text-inkwell shadow-sm'
-              }`}>
-                <p className="text-[15px] leading-6">{msg.content}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Current AI message with quick replies */}
-        {ai?.message && (
-          <Card className="mb-4 shadow-lg">
-            <CardContent className="p-4">
-              <p className="text-[15px] leading-6 mb-3">{ai.message}</p>
-              {ai.quickReplies && ai.quickReplies.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {ai.quickReplies.map((reply) => (
-                    <Button
-                      key={reply}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onQuick(reply)}
-                      disabled={busy}
-                      className="rounded-full"
-                    >
-                      {reply}
-                    </Button>
-                  ))}
+        {/* Main content card */}
+        <Card className="shadow-2xl border-0 rounded-2xl overflow-hidden">
+          <CardContent className="p-8">
+            {/* Welcome state */}
+            {state === 'GREETING' && (
+              <div className="text-center space-y-6">
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold text-inkwell">{ai?.message}</h2>
+                  <p className="text-lg text-lunar">This will only take a few minutes</p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Dynamic form */}
-        {ai?.ask && (
-          <DynamicForm ask={ai.ask} onSubmit={onSubmitForm} />
-        )}
-
-        {/* Text input */}
-        {state !== 'DONE' && (
-          <Card className="mt-4">
-            <CardContent className="p-4">
-              <div className="flex gap-2">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type a reply…"
-                  className="flex-1"
-                  onKeyPress={(e) => e.key === 'Enter' && onSubmitText()}
-                  disabled={busy}
-                />
-                <Button 
-                  onClick={onSubmitText} 
-                  disabled={busy || !input.trim()}
-                  className="bg-inkwell hover:bg-inkwell/90 text-aulait"
-                >
-                  Send
-                </Button>
+                {ai?.quickReplies && (
+                  <div className="flex justify-center gap-4">
+                    {ai.quickReplies.map((reply) => (
+                      <Button
+                        key={reply}
+                        onClick={() => onQuick(reply)}
+                        disabled={busy}
+                        className="px-8 py-3 text-lg bg-gradient-to-r from-inkwell to-lunar hover:from-lunar hover:to-inkwell text-aulait rounded-xl shadow-lg transition-all duration-300"
+                      >
+                        {reply}
+                      </Button>
+                    ))}
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            )}
+
+            {/* Form states */}
+            {state !== 'GREETING' && state !== 'DONE' && (
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-bold text-inkwell">{ai?.message}</h2>
+                  {state === 'IDENTITY' && (
+                    <p className="text-lunar">Let's start with the basics</p>
+                  )}
+                  {state === 'PROFESSIONAL' && (
+                    <p className="text-lunar">Tell us about your work</p>
+                  )}
+                  {state === 'GOALS' && (
+                    <p className="text-lunar">What do you want to achieve?</p>
+                  )}
+                  {state === 'PERSONALIZATION' && (
+                    <p className="text-lunar">Add some personal touches</p>
+                  )}
+                </div>
+                
+                {ai?.ask && (
+                  <DynamicForm ask={ai.ask} onSubmit={onSubmitForm} />
+                )}
+              </div>
+            )}
+
+            {/* Completion state */}
+            {state === 'DONE' && (
+              <div className="text-center space-y-6">
+                <div className="w-24 h-24 mx-auto bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg mb-6">
+                  <span className="text-4xl">🎉</span>
+                </div>
+                <div className="space-y-4">
+                  <h2 className="text-3xl font-bold text-inkwell">{ai?.message}</h2>
+                  <p className="text-lg text-lunar">Your profile is ready to help you make meaningful connections</p>
+                </div>
+                {ai?.quickReplies && (
+                  <div className="flex justify-center gap-4">
+                    {ai.quickReplies.map((reply) => (
+                      <Button
+                        key={reply}
+                        onClick={() => onQuick(reply)}
+                        disabled={busy}
+                        className="px-8 py-3 text-lg bg-gradient-to-r from-inkwell to-lunar hover:from-lunar hover:to-inkwell text-aulait rounded-xl shadow-lg transition-all duration-300"
+                      >
+                        {reply}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Loading indicator */}
         {busy && (
-          <div className="text-center mt-4">
-            <div className="inline-flex items-center px-4 py-2 bg-white rounded-full shadow-sm">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-inkwell mr-2"></div>
-              <span className="text-sm text-lunar">Thinking...</span>
+          <div className="text-center mt-6">
+            <div className="inline-flex items-center px-6 py-3 bg-white rounded-full shadow-lg">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-inkwell mr-3"></div>
+              <span className="text-base text-lunar font-medium">Processing...</span>
             </div>
           </div>
         )}

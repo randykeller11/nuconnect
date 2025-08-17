@@ -4,19 +4,19 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { openrouterChat } from '@/lib/ai/openrouter'
-import { INDUSTRIES, SKILLS, OBJECTIVES, SEEKING, SENIORITY } from '@/shared/taxonomy'
+import { ROLES, INDUSTRIES, NETWORKING_GOALS, CONNECTION_PREFERENCES, SKILLS } from '@/shared/taxonomy'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
 type ClientMsg = { userText?: string; formData?: Record<string, any>; state?: string }
 
-// Simple state progression map
+// 4-step onboarding progression
 const STATE_PROGRESSION = {
-  'GREETING': 'SNAPSHOT',
-  'SNAPSHOT': 'FOCUS', 
-  'FOCUS': 'INTENT',
-  'INTENT': 'POLISH',
-  'POLISH': 'DONE'
+  'GREETING': 'IDENTITY',
+  'IDENTITY': 'PROFESSIONAL', 
+  'PROFESSIONAL': 'GOALS',
+  'GOALS': 'PERSONALIZATION',
+  'PERSONALIZATION': 'DONE'
 } as const
 
 export async function POST(req: Request) {
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
   // Use explicit state from input, or get from profile, or default to GREETING
   const stage = input.state || updatedProfile?.onboarding_current_state || 'GREETING'
-  const TAXONOMY = { INDUSTRIES, SKILLS, OBJECTIVES, SEEKING, SENIORITY }
+  const TAXONOMY = { ROLES, INDUSTRIES, NETWORKING_GOALS, CONNECTION_PREFERENCES, SKILLS }
   const promptPath = path.join(process.cwd(), 'prompts', 'onboarding-convo.md')
   const base = await fs.readFile(promptPath, 'utf8')
 
@@ -55,114 +55,116 @@ export async function POST(req: Request) {
     transcript.push({ id: crypto.randomUUID(), role: 'user', content: input.userText, ts: new Date().toISOString() })
   }
 
-  // Deterministic state machine - no AI calls
+  // 4-step deterministic onboarding flow
   if (stage === 'GREETING') {
     if (input.userText) {
       ai = { 
-        message: "Perfect! Let's start with the basics. What's your current role and company?", 
+        message: "Perfect! Let's start with your basic identity.", 
         ask: {
           fields: [
-            { key: 'role', label: 'Your Role', type: 'text', placeholder: 'e.g. Software Engineer' },
-            { key: 'company', label: 'Company', type: 'text', placeholder: 'e.g. Google' },
-            { key: 'location', label: 'Location', type: 'text', placeholder: 'e.g. San Francisco, CA' }
+            { key: 'first_name', label: 'First Name', type: 'text', placeholder: 'Your first name' },
+            { key: 'last_name', label: 'Last Name', type: 'text', placeholder: 'Your last name' }
           ],
           cta: 'Continue'
         },
-        nextState: 'SNAPSHOT' 
+        nextState: 'IDENTITY' 
       }
     } else {
       ai = { 
-        message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
-        quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
+        message: "Welcome to NuConnect! Let's create your networking profile in just a few quick steps.", 
+        quickReplies: ['Get Started', 'Tell me more'], 
         nextState: 'GREETING' 
       }
     }
-  } else if (stage === 'SNAPSHOT') {
+  } else if (stage === 'IDENTITY') {
     if (input.formData && Object.keys(input.formData).length) {
-      // Form submitted, move to next state
       ai = {
-        message: "Great! Now let's focus on your expertise. Select your industries and key skills.",
+        message: "Great! Now tell us about your professional background.",
         ask: {
           fields: [
-            { key: 'industries', label: 'Industries (max 3)', type: 'multi-select', options: INDUSTRIES, max: 3 },
-            { key: 'skills', label: 'Key Skills (max 5)', type: 'multi-select', options: SKILLS, max: 5 }
+            { key: 'role', label: 'Current Role', type: 'select', options: ROLES },
+            { key: 'industries', label: 'Industries', type: 'multi-select', options: INDUSTRIES, max: 3 }
           ],
           cta: 'Continue'
         },
-        nextState: 'FOCUS'
+        nextState: 'PROFESSIONAL'
       }
     } else {
       ai = { 
-        message: "Let's start with the basics. What's your current role and company?", 
+        message: "Let's start with your basic identity.", 
         ask: {
           fields: [
-            { key: 'role', label: 'Your Role', type: 'text', placeholder: 'e.g. Software Engineer' },
-            { key: 'company', label: 'Company', type: 'text', placeholder: 'e.g. Google' },
-            { key: 'location', label: 'Location', type: 'text', placeholder: 'e.g. San Francisco, CA' }
+            { key: 'first_name', label: 'First Name', type: 'text', placeholder: 'Your first name' },
+            { key: 'last_name', label: 'Last Name', type: 'text', placeholder: 'Your last name' }
           ],
           cta: 'Continue'
         },
-        nextState: 'SNAPSHOT' 
+        nextState: 'IDENTITY' 
       }
     }
-  } else if (stage === 'FOCUS') {
+  } else if (stage === 'PROFESSIONAL') {
     if (input.formData && Object.keys(input.formData).length) {
-      // Form submitted, move to next state
       ai = {
-        message: "Excellent! What are your networking goals? What type of people do you want to meet?",
+        message: "Excellent! What are your networking goals?",
         ask: {
           fields: [
-            { key: 'objectives', label: 'Your Objectives', type: 'multi-select', options: OBJECTIVES, max: 3 },
-            { key: 'seeking', label: 'Who You Want to Meet', type: 'multi-select', options: SEEKING, max: 3 }
+            { key: 'networking_goals', label: 'Networking Goals', type: 'multi-select', options: NETWORKING_GOALS, max: 4 },
+            { key: 'connection_preferences', label: 'Who You Want to Meet', type: 'multi-select', options: CONNECTION_PREFERENCES, max: 4 }
           ],
           cta: 'Continue'
         },
-        nextState: 'INTENT'
+        nextState: 'GOALS'
       }
     } else {
       ai = {
-        message: "Now let's focus on your expertise. Select your industries and key skills.",
+        message: "Tell us about your professional background.",
         ask: {
           fields: [
-            { key: 'industries', label: 'Industries (max 3)', type: 'multi-select', options: INDUSTRIES, max: 3 },
-            { key: 'skills', label: 'Key Skills (max 5)', type: 'multi-select', options: SKILLS, max: 5 }
+            { key: 'role', label: 'Current Role', type: 'select', options: ROLES },
+            { key: 'industries', label: 'Industries', type: 'multi-select', options: INDUSTRIES, max: 3 }
           ],
           cta: 'Continue'
         },
-        nextState: 'FOCUS'
+        nextState: 'PROFESSIONAL'
       }
     }
-  } else if (stage === 'INTENT') {
+  } else if (stage === 'GOALS') {
     if (input.formData && Object.keys(input.formData).length) {
-      // Form submitted, move to final state
       ai = {
-        message: "Perfect! Your profile is almost ready. Let me create a headline and bio for you.",
-        quickReplies: ['Generate my profile', 'Let me review first'],
-        nextState: 'POLISH'
+        message: "Almost done! Add some personal touches to your profile.",
+        ask: {
+          fields: [
+            { key: 'bio', label: 'Short Bio (optional)', type: 'text', placeholder: 'Tell us about yourself in a few words...' },
+            { key: 'skills', label: 'Skills & Interests', type: 'multi-select', options: SKILLS, max: 8 },
+            { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' }
+          ],
+          cta: 'Finish Profile'
+        },
+        nextState: 'PERSONALIZATION'
       }
     } else {
       ai = {
-        message: "What are your networking goals? What type of people do you want to meet?",
+        message: "What are your networking goals?",
         ask: {
           fields: [
-            { key: 'objectives', label: 'Your Objectives', type: 'multi-select', options: OBJECTIVES, max: 3 },
-            { key: 'seeking', label: 'Who You Want to Meet', type: 'multi-select', options: SEEKING, max: 3 }
+            { key: 'networking_goals', label: 'Networking Goals', type: 'multi-select', options: NETWORKING_GOALS, max: 4 },
+            { key: 'connection_preferences', label: 'Who You Want to Meet', type: 'multi-select', options: CONNECTION_PREFERENCES, max: 4 }
           ],
           cta: 'Continue'
         },
-        nextState: 'INTENT'
+        nextState: 'GOALS'
       }
     }
-  } else if (stage === 'POLISH') {
+  } else if (stage === 'PERSONALIZATION') {
     ai = {
-      message: "All set! Your profile is complete and ready to help you make great connections.",
-      quickReplies: ['Start networking!'],
+      message: "🎉 Your profile is complete! You're ready to start making meaningful connections.",
+      quickReplies: ['View My Profile', 'Start Networking'],
       nextState: 'DONE'
     }
   } else {
     ai = { 
-      message: "Welcome to NuConnect! I'll help you create a great profile in just 60-90 seconds. Ready to get started?", 
-      quickReplies: ['Yes, let\'s go!', 'Tell me more'], 
+      message: "Welcome to NuConnect! Let's create your networking profile in just a few quick steps.", 
+      quickReplies: ['Get Started', 'Tell me more'], 
       nextState: 'GREETING' 
     }
   }
