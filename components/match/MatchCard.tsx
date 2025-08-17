@@ -53,16 +53,16 @@ export default function MatchCard({ data, onShare, onSkip }: MatchCardProps) {
           {data.rationale}
         </p>
         
-        {(data.shared?.interests?.length > 0 || data.shared?.skills?.length > 0) && (
+        {((data.shared?.interests?.length ?? 0) > 0 || (data.shared?.skills?.length ?? 0) > 0) && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-lunar">Shared:</h4>
             <div className="flex flex-wrap gap-1">
-              {data.shared.interests?.map((interest) => (
+              {data.shared?.interests?.map((interest) => (
                 <Badge key={interest} variant="outline" className="text-xs bg-blue-50 text-blue-700">
                   {interest}
                 </Badge>
               ))}
-              {data.shared.skills?.map((skill) => (
+              {data.shared?.skills?.map((skill) => (
                 <Badge key={skill} variant="outline" className="text-xs bg-purple-50 text-purple-700">
                   {skill}
                 </Badge>

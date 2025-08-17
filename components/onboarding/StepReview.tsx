@@ -26,6 +26,8 @@ interface StepReviewProps {
     showCompany?: boolean
     linkedin_url?: string
     profile_photo_url?: string
+    primarySkill?: string
+    icebreakerTone?: string
   }
   onChange: (data: any) => void
   onEditStep: (step: number) => void

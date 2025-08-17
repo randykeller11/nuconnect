@@ -152,7 +152,7 @@ export default function MatchDeck({ matches, roomId }: MatchDeckProps) {
           onKeyDown={(e) => {
             if (e.key === 'ArrowRight' || e.key === ' ') {
               e.preventDefault()
-              handleSkip(currentMatch.user_id)
+              handleSkip()
             } else if (e.key === 'Enter') {
               e.preventDefault()
               handleShare(currentMatch.user_id)
