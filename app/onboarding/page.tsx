@@ -195,7 +195,12 @@ export default function OnboardingChat() {
         
         if (j.nextState === 'DONE') {
           toast.success('Onboarding complete!')
-          setTimeout(() => router.push('/home'), 2000)
+          // Redirect based on quick reply selection
+          if (body.userText === 'View My Profile') {
+            setTimeout(() => router.push('/profile'), 1500)
+          } else {
+            setTimeout(() => router.push('/home'), 1500)
+          }
         }
       } else {
         toast.error('Something went wrong. Please try again.')

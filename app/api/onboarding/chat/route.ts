@@ -19,6 +19,34 @@ const STATE_PROGRESSION = {
   'PERSONALIZATION': 'DONE'
 } as const
 
+// Calculate profile completion score based on filled fields
+function calculateProfileCompletionScore(profile: any): number {
+  if (!profile) return 0
+  
+  let score = 0
+  const maxScore = 100
+  
+  // Basic identity (30 points)
+  if (profile.first_name) score += 10
+  if (profile.last_name) score += 10
+  if (profile.avatar_url) score += 10
+  
+  // Professional info (40 points)
+  if (profile.role) score += 15
+  if (profile.industries && profile.industries.length > 0) score += 15
+  if (profile.bio) score += 10
+  
+  // Networking goals (20 points)
+  if (profile.networking_goals && profile.networking_goals.length > 0) score += 10
+  if (profile.connection_preferences && profile.connection_preferences.length > 0) score += 10
+  
+  // Skills and extras (10 points)
+  if (profile.skills && profile.skills.length > 0) score += 5
+  if (profile.linkedin_url) score += 5
+  
+  return Math.min(score, maxScore)
+}
+
 export async function POST(req: Request) {
   const sb = await createSupabaseServerClient()
   const { data: { user } } = await sb.auth.getUser()
@@ -156,10 +184,25 @@ export async function POST(req: Request) {
       }
     }
   } else if (stage === 'PERSONALIZATION') {
-    ai = {
-      message: "🎉 Your profile is complete! You're ready to start making meaningful connections.",
-      quickReplies: ['View My Profile', 'Start Networking'],
-      nextState: 'DONE'
+    if (input.formData && Object.keys(input.formData).length) {
+      ai = {
+        message: "🎉 Your profile is complete! You're ready to start making meaningful connections.",
+        quickReplies: ['View My Profile', 'Start Networking'],
+        nextState: 'DONE'
+      }
+    } else {
+      ai = {
+        message: "Almost done! Add some personal touches to your profile.",
+        ask: {
+          fields: [
+            { key: 'bio', label: 'Short Bio (optional)', type: 'text', placeholder: 'Tell us about yourself in a few words...' },
+            { key: 'skills', label: 'Skills & Interests', type: 'multi-select', options: SKILLS, max: 8 },
+            { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' }
+          ],
+          cta: 'Finish Profile'
+        },
+        nextState: 'PERSONALIZATION'
+      }
     }
   } else {
     ai = { 
@@ -183,8 +226,15 @@ export async function POST(req: Request) {
     onboarding_transcript: transcript, 
     onboarding_stage: ai.nextState === 'DONE' ? 'complete' : 'in_progress',
     onboarding_current_state: ai.nextState, // Track current state explicitly
-    updated_at: new Date().toISOString() 
+    updated_at: new Date().toISOString()
   }
+  
+  // If completing onboarding, also set completion fields
+  if (ai.nextState === 'DONE') {
+    update.onboarding_completed_at = new Date().toISOString()
+    update.profile_completion_score = calculateProfileCompletionScore(updatedProfile)
+  }
+  
   await sb.from('profiles').update(update).eq('user_id', user.id)
 
   return NextResponse.json(ai)
