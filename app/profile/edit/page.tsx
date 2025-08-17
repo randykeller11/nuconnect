@@ -233,16 +233,12 @@ export default function ProfileEditPage() {
               {/* Role */}
               <div>
                 <label className="block text-base font-medium text-inkwell mb-2">Current Role</label>
-                <select
-                  className="w-full h-12 text-base rounded-lg border-2 border-lunar/20 focus:border-inkwell bg-background px-4"
+                <Input
+                  placeholder="e.g. Software Engineer, Product Manager, CEO"
                   value={form.role || ''}
                   onChange={e => setForm({ ...form, role: e.target.value })}
-                >
-                  <option value="">Select your role</option>
-                  {ROLES.map(role => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
+                  className="h-12 text-base border-2 border-lunar/20 focus:border-inkwell rounded-lg"
+                />
               </div>
 
               {/* Industries */}

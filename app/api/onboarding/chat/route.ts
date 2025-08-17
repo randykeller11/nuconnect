@@ -169,7 +169,7 @@ export async function POST(req: Request) {
         message: "Great! Now tell us about your professional background.",
         ask: {
           fields: [
-            { key: 'role', label: 'Current Role', type: 'select', options: ROLES },
+            { key: 'role', label: 'Current Role', type: 'text', placeholder: 'e.g. Software Engineer, Product Manager, CEO' },
             { key: 'industries', label: 'Industries', type: 'multi-select', options: INDUSTRIES, max: 3 }
           ],
           cta: 'Continue'
@@ -206,7 +206,7 @@ export async function POST(req: Request) {
         message: "Tell us about your professional background.",
         ask: {
           fields: [
-            { key: 'role', label: 'Current Role', type: 'select', options: ROLES },
+            { key: 'role', label: 'Current Role', type: 'text', placeholder: 'e.g. Software Engineer, Product Manager, CEO' },
             { key: 'industries', label: 'Industries', type: 'multi-select', options: INDUSTRIES, max: 3 }
           ],
           cta: 'Continue'

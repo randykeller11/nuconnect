@@ -194,34 +194,15 @@ function SocialLinksInput({ value, onChange }: {
 
 function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: Record<string, any>) => void }) {
   const [formData, setFormData] = useState<Record<string, any>>({})
-  const [customRole, setCustomRole] = useState('')
-  const [showCustomRole, setShowCustomRole] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
   if (!ask) return null
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const finalData = { ...formData }
-    
-    // Handle custom role input
-    if (showCustomRole && customRole.trim()) {
-      finalData.role = customRole.trim()
-    }
-    
-    onSubmit(finalData)
+    onSubmit(formData)
   }
 
-  const handleRoleChange = (value: string) => {
-    if (value === 'Other') {
-      setShowCustomRole(true)
-      setFormData(prev => ({ ...prev, role: '' }))
-    } else {
-      setShowCustomRole(false)
-      setCustomRole('')
-      setFormData(prev => ({ ...prev, role: value }))
-    }
-  }
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -324,29 +305,16 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
                 className="h-14 text-lg border-2 border-lunar/20 focus:border-inkwell rounded-xl px-6"
               />
             ) : field.type === 'select' ? (
-              <div className="space-y-4">
-                <select
-                  className="w-full h-14 text-lg rounded-xl border-2 border-lunar/20 focus:border-inkwell bg-background px-6 appearance-none cursor-pointer"
-                  value={formData[field.key] || ''}
-                  onChange={(e) => handleRoleChange(e.target.value)}
-                >
-                  <option value="">Select your role...</option>
-                  {field.options?.slice(0, 8).map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                  <option value="Other">Other (type your own)</option>
-                </select>
-                
-                {showCustomRole && (
-                  <Input
-                    placeholder="Type your role here..."
-                    value={customRole}
-                    onChange={(e) => setCustomRole(e.target.value)}
-                    className="h-14 text-lg border-2 border-inkwell/50 focus:border-inkwell rounded-xl px-6 bg-inkwell/5"
-                    autoFocus
-                  />
-                )}
-              </div>
+              <select
+                className="w-full h-14 text-lg rounded-xl border-2 border-lunar/20 focus:border-inkwell bg-background px-6 appearance-none cursor-pointer"
+                value={formData[field.key] || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+              >
+                <option value="">Select...</option>
+                {field.options?.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
             ) : field.type === 'multi-select' ? (
               <div className="space-y-6">
                 {/* Selected items display */}
