@@ -73,7 +73,6 @@ export function useToast() {
   }
   return context
 }
-"use client"
 
 import * as React from "react"
 
