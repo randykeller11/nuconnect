@@ -11,14 +11,15 @@ import path from 'node:path'
 
 type ClientMsg = { userText?: string; formData?: Record<string, any>; state?: string }
 
-// 5-step onboarding progression
+// 6-step onboarding progression
 const STATE_PROGRESSION = {
   'GREETING': 'IDENTITY',
   'IDENTITY': 'PROFESSIONAL', 
   'PROFESSIONAL': 'GOALS',
   'GOALS': 'CONNECTIONS',
   'CONNECTIONS': 'PERSONALIZATION',
-  'PERSONALIZATION': 'DONE'
+  'PERSONALIZATION': 'PROFILE_SETUP',
+  'PROFILE_SETUP': 'DONE'
 } as const
 
 
@@ -240,14 +241,13 @@ export async function POST(req: Request) {
   } else if (stage === 'CONNECTIONS') {
     if (input.formData && Object.keys(input.formData).length) {
       ai = {
-        message: "Almost done! Add some personal touches to your profile.",
+        message: "Great! Add some personal touches to your profile.",
         ask: {
           fields: [
             { key: 'bio', label: 'Short Bio (optional)', type: 'text', placeholder: 'Tell us about yourself in a few words...' },
-            { key: 'skills', label: 'Skills & Interests', type: 'multi-select', options: SKILLS, max: 8 },
-            { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' }
+            { key: 'skills', label: 'Skills & Interests', type: 'multi-select', options: SKILLS, max: 8 }
           ],
-          cta: 'Finish Profile'
+          cta: 'Continue'
         },
         nextState: 'PERSONALIZATION'
       }
@@ -266,22 +266,52 @@ export async function POST(req: Request) {
   } else if (stage === 'PERSONALIZATION') {
     if (input.formData && Object.keys(input.formData).length) {
       ai = {
+        message: "Perfect! Now let's set up your profile photo and links.",
+        ask: {
+          fields: [
+            { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' },
+            { key: 'website_url', label: 'Website URL (optional)', type: 'url', placeholder: 'https://yourwebsite.com' },
+            { key: 'twitter_url', label: 'Twitter/X URL (optional)', type: 'url', placeholder: 'https://twitter.com/yourusername' },
+            { key: 'github_url', label: 'GitHub URL (optional)', type: 'url', placeholder: 'https://github.com/yourusername' }
+          ],
+          cta: 'Finish Profile'
+        },
+        nextState: 'PROFILE_SETUP'
+      }
+    } else {
+      ai = {
+        message: "Add some personal touches to your profile.",
+        ask: {
+          fields: [
+            { key: 'bio', label: 'Short Bio (optional)', type: 'text', placeholder: 'Tell us about yourself in a few words...' },
+            { key: 'skills', label: 'Skills & Interests', type: 'multi-select', options: SKILLS, max: 8 }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'PERSONALIZATION'
+      }
+    }
+  } else if (stage === 'PROFILE_SETUP') {
+    if (input.formData && Object.keys(input.formData).length) {
+      ai = {
         message: "🎉 Your profile is complete! You're ready to start making meaningful connections.",
         quickReplies: ['View My Profile', 'Start Networking'],
         nextState: 'DONE'
       }
     } else {
       ai = {
-        message: "Almost done! Add some personal touches to your profile.",
+        message: "Finally, add your profile photo and social links.",
         ask: {
           fields: [
-            { key: 'bio', label: 'Short Bio (optional)', type: 'text', placeholder: 'Tell us about yourself in a few words...' },
-            { key: 'skills', label: 'Skills & Interests', type: 'multi-select', options: SKILLS, max: 8 },
-            { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' }
+            { key: 'profile_photo', label: 'Profile Photo (optional)', type: 'file' },
+            { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' },
+            { key: 'website_url', label: 'Website URL (optional)', type: 'url', placeholder: 'https://yourwebsite.com' },
+            { key: 'twitter_url', label: 'Twitter/X URL (optional)', type: 'url', placeholder: 'https://twitter.com/yourusername' },
+            { key: 'github_url', label: 'GitHub URL (optional)', type: 'url', placeholder: 'https://github.com/yourusername' }
           ],
           cta: 'Finish Profile'
         },
-        nextState: 'PERSONALIZATION'
+        nextState: 'PROFILE_SETUP'
       }
     }
   } else {

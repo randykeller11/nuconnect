@@ -16,20 +16,21 @@ type AiReply = {
     fields: Array<{
       key: string
       label: string
-      type: 'text' | 'select' | 'multi-select' | 'location' | 'url'
+      type: 'text' | 'select' | 'multi-select' | 'location' | 'url' | 'file'
       options?: string[]
       max?: number
       placeholder?: string
     }>
     cta: string
   }
-  nextState: 'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'CONNECTIONS' | 'PERSONALIZATION' | 'DONE'
+  nextState: 'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'CONNECTIONS' | 'PERSONALIZATION' | 'PROFILE_SETUP' | 'DONE'
 }
 
 function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: Record<string, any>) => void }) {
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [customRole, setCustomRole] = useState('')
   const [showCustomRole, setShowCustomRole] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
   if (!ask) return null
 
@@ -56,6 +57,38 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
     }
   }
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingPhoto(true)
+    try {
+      const formDataUpload = new FormData()
+      formDataUpload.append('file', file)
+
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: formDataUpload
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Upload failed')
+      }
+
+      const { path, url } = await response.json()
+      setFormData(prev => ({ 
+        ...prev, 
+        avatar_url: path, 
+        profile_photo_url: url 
+      }))
+    } catch (error: any) {
+      console.error('Photo upload failed:', error.message)
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -70,7 +103,37 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
               )}
             </div>
             
-            {field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
+            {field.key === 'profile_photo' ? (
+              <div className="space-y-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-32 h-32 rounded-full bg-lunar/20 overflow-hidden border-4 border-white shadow-lg mb-4">
+                    {formData.profile_photo_url ? (
+                      <img 
+                        src={formData.profile_photo_url} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-lunar">
+                        <span className="text-4xl">📷</span>
+                      </div>
+                    )}
+                  </div>
+                  <label className="cursor-pointer">
+                    <span className="inline-flex items-center px-6 py-3 bg-inkwell text-aulait rounded-xl hover:bg-lunar transition-colors">
+                      {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
+                    </span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handlePhotoUpload} 
+                      className="hidden" 
+                      disabled={uploadingPhoto}
+                    />
+                  </label>
+                </div>
+              </div>
+            ) : field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
               <Input
                 type={field.type === 'url' ? 'url' : 'text'}
                 placeholder={field.placeholder}
@@ -198,7 +261,7 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
 
 export default function OnboardingChat() {
   const [ai, setAi] = useState<AiReply | null>(null)
-  const [state, setState] = useState<'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'CONNECTIONS' | 'PERSONALIZATION' | 'DONE'>('GREETING')
+  const [state, setState] = useState<'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'CONNECTIONS' | 'PERSONALIZATION' | 'PROFILE_SETUP' | 'DONE'>('GREETING')
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [transcript, setTranscript] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
@@ -297,7 +360,7 @@ export default function OnboardingChat() {
     await call({ formData, state })
   }
 
-  const progressSteps = ['IDENTITY', 'PROFESSIONAL', 'GOALS', 'CONNECTIONS', 'PERSONALIZATION']
+  const progressSteps = ['IDENTITY', 'PROFESSIONAL', 'GOALS', 'CONNECTIONS', 'PERSONALIZATION', 'PROFILE_SETUP']
   const currentStepIndex = progressSteps.indexOf(state)
 
   const stepTitles = {
@@ -307,6 +370,7 @@ export default function OnboardingChat() {
     'GOALS': 'Networking Goals',
     'CONNECTIONS': 'Connection Preferences',
     'PERSONALIZATION': 'Personal Touches',
+    'PROFILE_SETUP': 'Profile & Links',
     'DONE': 'Complete'
   }
 
@@ -388,6 +452,9 @@ export default function OnboardingChat() {
                   )}
                   {state === 'PERSONALIZATION' && (
                     <p className="text-xl text-lunar">Add some personal touches</p>
+                  )}
+                  {state === 'PROFILE_SETUP' && (
+                    <p className="text-xl text-lunar">Complete your profile setup</p>
                   )}
                 </div>
                 
