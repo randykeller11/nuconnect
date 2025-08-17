@@ -28,25 +28,47 @@ type AiReply = {
 
 function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: Record<string, any>) => void }) {
   const [formData, setFormData] = useState<Record<string, any>>({})
+  const [customRole, setCustomRole] = useState('')
+  const [showCustomRole, setShowCustomRole] = useState(false)
 
   if (!ask) return null
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData)
+    const finalData = { ...formData }
+    
+    // Handle custom role input
+    if (showCustomRole && customRole.trim()) {
+      finalData.role = customRole.trim()
+    }
+    
+    onSubmit(finalData)
+  }
+
+  const handleRoleChange = (value: string) => {
+    if (value === 'Other') {
+      setShowCustomRole(true)
+      setFormData(prev => ({ ...prev, role: '' }))
+    } else {
+      setShowCustomRole(false)
+      setCustomRole('')
+      setFormData(prev => ({ ...prev, role: value }))
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-6">
+    <div className="max-w-2xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {ask.fields.map((field) => (
-          <div key={field.key} className="space-y-2">
-            <label className="block text-base font-medium text-inkwell">
-              {field.label}
+          <div key={field.key} className="space-y-4">
+            <div className="text-center mb-6">
+              <label className="block text-xl font-semibold text-inkwell mb-2">
+                {field.label}
+              </label>
               {field.max && (
-                <span className="text-sm text-lunar ml-1">(max {field.max})</span>
+                <p className="text-sm text-lunar">Choose up to {field.max} options</p>
               )}
-            </label>
+            </div>
             
             {field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
               <Input
@@ -54,44 +76,63 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
                 placeholder={field.placeholder}
                 value={formData[field.key] || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                className="h-12 text-base border-2 border-lunar/20 focus:border-inkwell rounded-lg"
+                className="h-14 text-lg border-2 border-lunar/20 focus:border-inkwell rounded-xl px-6"
               />
             ) : field.type === 'select' ? (
-              <select
-                className="w-full h-12 text-base rounded-lg border-2 border-lunar/20 focus:border-inkwell bg-background px-4"
-                value={formData[field.key] || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
-              >
-                <option value="">Select...</option>
-                {field.options?.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+              <div className="space-y-4">
+                <select
+                  className="w-full h-14 text-lg rounded-xl border-2 border-lunar/20 focus:border-inkwell bg-background px-6 appearance-none cursor-pointer"
+                  value={formData[field.key] || ''}
+                  onChange={(e) => handleRoleChange(e.target.value)}
+                >
+                  <option value="">Select your role...</option>
+                  {field.options?.slice(0, 8).map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                  <option value="Other">Other (type your own)</option>
+                </select>
+                
+                {showCustomRole && (
+                  <Input
+                    placeholder="Type your role here..."
+                    value={customRole}
+                    onChange={(e) => setCustomRole(e.target.value)}
+                    className="h-14 text-lg border-2 border-inkwell/50 focus:border-inkwell rounded-xl px-6 bg-inkwell/5"
+                    autoFocus
+                  />
+                )}
+              </div>
             ) : field.type === 'multi-select' ? (
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2 min-h-[3rem] p-3 border-2 border-lunar/20 rounded-lg bg-background">
+              <div className="space-y-6">
+                {/* Selected items display */}
+                <div className="min-h-[4rem] p-6 border-2 border-lunar/20 rounded-xl bg-gradient-to-r from-aulait to-white/50">
                   {(formData[field.key] || []).length === 0 ? (
-                    <span className="text-lunar italic">Click options below to add them</span>
+                    <div className="flex items-center justify-center h-full">
+                      <span className="text-lunar text-lg">Your selections will appear here</span>
+                    </div>
                   ) : (
-                    (formData[field.key] || []).map((item: string) => (
-                      <Badge 
-                        key={item} 
-                        variant="secondary" 
-                        className="cursor-pointer bg-inkwell text-aulait hover:bg-lunar px-3 py-1 text-sm" 
-                        onClick={() => {
-                          setFormData(prev => ({
-                            ...prev,
-                            [field.key]: (prev[field.key] || []).filter((i: string) => i !== item)
-                          }))
-                        }}
-                      >
-                        {item} ×
-                      </Badge>
-                    ))
+                    <div className="flex flex-wrap gap-3">
+                      {(formData[field.key] || []).map((item: string) => (
+                        <Badge 
+                          key={item} 
+                          variant="secondary" 
+                          className="cursor-pointer bg-inkwell text-aulait hover:bg-lunar px-4 py-2 text-base rounded-full transition-all duration-200 hover:scale-105" 
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              [field.key]: (prev[field.key] || []).filter((i: string) => i !== item)
+                            }))
+                          }}
+                        >
+                          {item} ×
+                        </Badge>
+                      ))}
+                    </div>
                   )}
                 </div>
                 
-                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                {/* Options grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2">
                   {field.options?.map(option => {
                     const isSelected = (formData[field.key] || []).includes(option)
                     const isMaxReached = field.max && (formData[field.key] || []).length >= field.max
@@ -114,12 +155,12 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
                             }))
                           }
                         }}
-                        className={`p-3 text-sm rounded-lg border-2 transition-all text-left ${
+                        className={`p-4 text-base rounded-xl border-2 transition-all duration-200 text-left font-medium ${
                           isSelected 
-                            ? 'border-inkwell bg-inkwell text-aulait' 
+                            ? 'border-inkwell bg-inkwell text-aulait shadow-lg transform scale-105' 
                             : isMaxReached
-                            ? 'border-lunar/20 bg-lunar/10 text-lunar/50 cursor-not-allowed'
-                            : 'border-lunar/20 bg-background text-inkwell hover:border-inkwell hover:bg-inkwell/5'
+                            ? 'border-lunar/20 bg-lunar/5 text-lunar/50 cursor-not-allowed'
+                            : 'border-lunar/30 bg-white text-inkwell hover:border-inkwell hover:bg-inkwell/5 hover:shadow-md hover:scale-102'
                         }`}
                       >
                         {option}
@@ -129,23 +170,29 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
                 </div>
                 
                 {field.max && (
-                  <p className="text-sm text-lunar text-center">
-                    {(formData[field.key] || []).length} / {field.max} selected
-                  </p>
+                  <div className="text-center">
+                    <span className={`text-lg font-medium ${
+                      (formData[field.key] || []).length >= field.max ? 'text-inkwell' : 'text-lunar'
+                    }`}>
+                      {(formData[field.key] || []).length} / {field.max} selected
+                    </span>
+                  </div>
                 )}
               </div>
             ) : null}
           </div>
         ))}
-      </div>
-      
-      <Button 
-        type="submit" 
-        className="w-full h-14 text-lg bg-gradient-to-r from-inkwell to-lunar hover:from-lunar hover:to-inkwell text-aulait rounded-xl shadow-lg transition-all duration-300"
-      >
-        {ask.cta}
-      </Button>
-    </form>
+        
+        <div className="pt-8">
+          <Button 
+            type="submit" 
+            className="w-full h-16 text-xl bg-gradient-to-r from-inkwell to-lunar hover:from-lunar hover:to-inkwell text-aulait rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-105"
+          >
+            {ask.cta}
+          </Button>
+        </div>
+      </form>
+    </div>
   )
 }
 
@@ -276,18 +323,18 @@ export default function OnboardingChat() {
 
         {/* Progress indicator */}
         {state !== 'GREETING' && state !== 'DONE' && (
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-sm font-medium text-lunar">
+          <div className="mb-12">
+            <div className="flex justify-between items-center mb-6">
+              <span className="text-base font-semibold text-lunar">
                 Step {currentStepIndex + 1} of {progressSteps.length}
               </span>
-              <span className="text-sm font-medium text-lunar">
+              <span className="text-base font-semibold text-lunar">
                 {stepTitles[state]}
               </span>
             </div>
-            <div className="w-full bg-lunar/20 rounded-full h-3">
+            <div className="w-full bg-lunar/20 rounded-full h-4 shadow-inner">
               <div 
-                className="bg-gradient-to-r from-inkwell to-lunar h-3 rounded-full transition-all duration-500 ease-out"
+                className="bg-gradient-to-r from-inkwell to-lunar h-4 rounded-full transition-all duration-700 ease-out shadow-lg"
                 style={{ width: `${((currentStepIndex + 1) / progressSteps.length) * 100}%` }}
               />
             </div>
@@ -295,8 +342,8 @@ export default function OnboardingChat() {
         )}
 
         {/* Main content card */}
-        <Card className="shadow-2xl border-0 rounded-2xl overflow-hidden">
-          <CardContent className="p-8">
+        <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden max-w-5xl mx-auto">
+          <CardContent className="p-12">
             {/* Welcome state */}
             {state === 'GREETING' && (
               <div className="text-center space-y-6">
@@ -323,20 +370,20 @@ export default function OnboardingChat() {
 
             {/* Form states */}
             {state !== 'GREETING' && state !== 'DONE' && (
-              <div className="space-y-6">
-                <div className="text-center space-y-2">
-                  <h2 className="text-2xl font-bold text-inkwell">{ai?.message}</h2>
+              <div className="space-y-8">
+                <div className="text-center space-y-4 mb-12">
+                  <h2 className="text-3xl font-bold text-inkwell">{ai?.message}</h2>
                   {state === 'IDENTITY' && (
-                    <p className="text-lunar">Let's start with the basics</p>
+                    <p className="text-xl text-lunar">Let's start with the basics</p>
                   )}
                   {state === 'PROFESSIONAL' && (
-                    <p className="text-lunar">Tell us about your work</p>
+                    <p className="text-xl text-lunar">Tell us about your work</p>
                   )}
                   {state === 'GOALS' && (
-                    <p className="text-lunar">What do you want to achieve?</p>
+                    <p className="text-xl text-lunar">What do you want to achieve?</p>
                   )}
                   {state === 'PERSONALIZATION' && (
-                    <p className="text-lunar">Add some personal touches</p>
+                    <p className="text-xl text-lunar">Add some personal touches</p>
                   )}
                 </div>
                 
