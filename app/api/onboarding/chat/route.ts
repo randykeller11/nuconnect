@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
 
-  // Use service role client to bypass RLS policies that are causing infinite recursion
+  // Use service role client to bypass ALL RLS policies
   const serviceSupabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -34,12 +34,24 @@ export async function POST(req: Request) {
       auth: {
         autoRefreshToken: false,
         persistSession: false
+      },
+      db: {
+        schema: 'public'
       }
     }
   )
 
   const input = (await req.json().catch(() => ({}))) as ClientMsg
-  const { data: profile } = await serviceSupabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle()
+  
+  // Try to get existing profile, but don't fail if it doesn't exist
+  let profile = null
+  try {
+    const { data } = await serviceSupabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle()
+    profile = data
+  } catch (error) {
+    console.log('Profile fetch failed, will create new:', error)
+    profile = null
+  }
 
   // Merge formData into profile if present (autosave)
   let updatedProfile = profile
@@ -57,12 +69,35 @@ export async function POST(req: Request) {
     
     console.log('🔍 DEBUG: Patch data to upsert:', JSON.stringify(patch, null, 2))
     
-    // Use service role client to bypass RLS policies
-    const { data: updated, error: upsertError } = await serviceSupabase
-      .from('profiles')
-      .upsert(patch)
-      .select()
-      .single()
+    // Use direct insert/update to avoid RLS policy issues completely
+    let updated = null
+    let upsertError = null
+    
+    try {
+      if (profile) {
+        // Update existing profile
+        const { data, error } = await serviceSupabase
+          .from('profiles')
+          .update(patch)
+          .eq('user_id', user.id)
+          .select()
+          .single()
+        updated = data
+        upsertError = error
+      } else {
+        // Insert new profile
+        const { data, error } = await serviceSupabase
+          .from('profiles')
+          .insert(patch)
+          .select()
+          .single()
+        updated = data
+        upsertError = error
+      }
+    } catch (error) {
+      console.error('❌ Direct database operation failed:', error)
+      upsertError = error
+    }
     
     if (upsertError) {
       console.error('❌ Profile upsert error:', upsertError)
@@ -243,12 +278,36 @@ export async function POST(req: Request) {
   console.log('🔍 DEBUG: Final update data:', JSON.stringify(update, null, 2))
   console.log('🔍 DEBUG: AI next state:', ai.nextState)
   
-  // Use service role client to bypass RLS policies
-  const { data: finalData, error: finalUpdateError } = await serviceSupabase
-    .from('profiles')
-    .upsert(update)
-    .select()
-    .single()
+  // Use direct update to avoid any RLS policy interference
+  let finalData = null
+  let finalUpdateError = null
+  
+  try {
+    if (updatedProfile) {
+      // Update existing profile
+      const { data, error } = await serviceSupabase
+        .from('profiles')
+        .update(update)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+      finalData = data
+      finalUpdateError = error
+    } else {
+      // Insert new profile with combined data
+      const combinedData = { ...update }
+      const { data, error } = await serviceSupabase
+        .from('profiles')
+        .insert(combinedData)
+        .select()
+        .single()
+      finalData = data
+      finalUpdateError = error
+    }
+  } catch (error) {
+    console.error('❌ Final database operation failed:', error)
+    finalUpdateError = error
+  }
   
   if (finalUpdateError) {
     console.error('❌ Final profile update error:', finalUpdateError)
