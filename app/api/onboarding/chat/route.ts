@@ -272,7 +272,7 @@ export async function POST(req: Request) {
             { key: 'profile_photo', label: 'Profile Photo (optional)', type: 'file' },
             { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' },
             { key: 'website_url', label: 'Website URL (optional)', type: 'url', placeholder: 'https://yourwebsite.com' },
-            { key: 'social_links', label: 'Other Social Links (optional)', type: 'text', placeholder: 'Twitter, Instagram, etc.' }
+            { key: 'social_links', label: 'Social Media Links (optional)', type: 'social-links' }
           ],
           cta: 'Finish Profile'
         },
@@ -306,7 +306,7 @@ export async function POST(req: Request) {
             { key: 'profile_photo', label: 'Profile Photo (optional)', type: 'file' },
             { key: 'linkedin_url', label: 'LinkedIn URL (optional)', type: 'url', placeholder: 'https://linkedin.com/in/yourname' },
             { key: 'website_url', label: 'Website URL (optional)', type: 'url', placeholder: 'https://yourwebsite.com' },
-            { key: 'social_links', label: 'Other Social Links (optional)', type: 'text', placeholder: 'Twitter, Instagram, etc.' }
+            { key: 'social_links', label: 'Social Media Links (optional)', type: 'social-links' }
           ],
           cta: 'Finish Profile'
         },

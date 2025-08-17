@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { Plus, X, Github, Twitter, Instagram, Music, Linkedin } from 'lucide-react'
 
 type AiReply = {
   message: string
@@ -16,7 +17,7 @@ type AiReply = {
     fields: Array<{
       key: string
       label: string
-      type: 'text' | 'select' | 'multi-select' | 'location' | 'url' | 'file'
+      type: 'text' | 'select' | 'multi-select' | 'location' | 'url' | 'file' | 'social-links'
       options?: string[]
       max?: number
       placeholder?: string
@@ -144,7 +145,12 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
               )}
             </div>
             
-            {field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
+            {field.key === 'social_links' ? (
+              <SocialLinksInput
+                value={formData[field.key] || []}
+                onChange={(links) => setFormData(prev => ({ ...prev, [field.key]: links }))}
+              />
+            ) : field.type === 'text' || field.type === 'location' || field.type === 'url' ? (
               <Input
                 type={field.type === 'url' ? 'url' : 'text'}
                 placeholder={field.placeholder}
