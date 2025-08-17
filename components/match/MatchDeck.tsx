@@ -1,0 +1,114 @@
+'use client'
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import MatchCard from './MatchCard'
+import MatchCelebrationModal from './MatchCelebrationModal'
+
+export type MatchData = {
+  user_id: string
+  name: string
+  headline?: string
+  avatar?: string
+  score: number
+  shared?: { interests?: string[]; skills?: string[] }
+  rationale: string
+}
+
+interface MatchDeckProps {
+  matches: MatchData[]
+  roomId: string
+}
+
+export default function MatchDeck({ matches, roomId }: MatchDeckProps) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [celebrationData, setCelebrationData] = useState<{
+    open: boolean
+    other: any
+  }>({ open: false, other: null })
+
+  const currentMatch = matches[currentIndex]
+
+  const handleShare = async (userId: string) => {
+    try {
+      const res = await fetch('/api/contact/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toUserId: userId, roomId })
+      })
+
+      const data = await res.json()
+
+      if (data.mutual) {
+        setCelebrationData({
+          open: true,
+          other: currentMatch
+        })
+      }
+
+      // Move to next match
+      setCurrentIndex(prev => prev + 1)
+    } catch (error) {
+      console.error('Failed to share contact:', error)
+    }
+  }
+
+  const handleSkip = () => {
+    setCurrentIndex(prev => prev + 1)
+  }
+
+  if (!matches.length) {
+    return (
+      <Card className="bg-white shadow-xl border-0 rounded-2xl">
+        <CardHeader>
+          <CardTitle className="text-inkwell">No Matches Found</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-lunar mb-4">No matches found in this room yet.</p>
+            <p className="text-sm text-lunar">
+              Try updating your profile with more interests and skills, or check back later as more members join.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (currentIndex >= matches.length) {
+    return (
+      <Card className="bg-white shadow-xl border-0 rounded-2xl">
+        <CardHeader>
+          <CardTitle className="text-inkwell">All Done!</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-lunar mb-4">You've seen all available matches in this room.</p>
+            <p className="text-sm text-lunar">
+              Check back later for new members or try joining other rooms.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="text-center text-sm text-lunar">
+        {currentIndex + 1} of {matches.length} matches
+      </div>
+      
+      <MatchCard
+        data={currentMatch}
+        onShare={handleShare}
+        onSkip={handleSkip}
+      />
+
+      <MatchCelebrationModal
+        open={celebrationData.open}
+        onOpenChange={(open) => setCelebrationData({ ...celebrationData, open })}
+        other={celebrationData.other}
+      />
+    </div>
+  )
+}
