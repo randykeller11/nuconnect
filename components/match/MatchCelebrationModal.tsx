@@ -69,6 +69,7 @@ export default function MatchCelebrationModal({
                 variant="outline"
                 className="w-full"
                 onClick={() => window.open(other.linkedin_url, '_blank')}
+                aria-label={`View ${other.name}'s LinkedIn profile`}
               >
                 View LinkedIn Profile
               </Button>
@@ -78,6 +79,7 @@ export default function MatchCelebrationModal({
                 variant="outline"
                 className="w-full"
                 onClick={() => window.open(`mailto:${other.email}`, '_blank')}
+                aria-label={`Send email to ${other.name}`}
               >
                 Send Email
               </Button>
