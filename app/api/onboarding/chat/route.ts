@@ -220,7 +220,7 @@ export async function POST(req: Request) {
     meta: { quickReplies: ai.quickReplies, ask: ai.ask } 
   })
 
-  // Save transcript and stage only - remove non-existent columns
+  // Only save basic stage info - no transcript or non-existent columns
   const update: any = { 
     user_id: user.id,
     onboarding_stage: ai.nextState === 'DONE' ? 'complete' : 'in_progress',

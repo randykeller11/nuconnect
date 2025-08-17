@@ -195,12 +195,7 @@ export default function OnboardingChat() {
         
         if (j.nextState === 'DONE') {
           toast.success('Onboarding complete!')
-          // Redirect based on quick reply selection
-          if (body.userText === 'View My Profile') {
-            setTimeout(() => router.push('/profile'), 1500)
-          } else {
-            setTimeout(() => router.push('/home'), 1500)
-          }
+          // Don't auto-redirect - let user use the onscreen buttons
         }
       } else {
         toast.error('Something went wrong. Please try again.')
@@ -228,6 +223,17 @@ export default function OnboardingChat() {
   }, [])
 
   function onQuick(r: string) { 
+    // Handle completion buttons manually
+    if (state === 'DONE') {
+      if (r === 'View My Profile') {
+        router.push('/profile')
+        return
+      } else if (r === 'Start Networking') {
+        router.push('/home')
+        return
+      }
+    }
+    
     // Pass current state explicitly with user text
     call({ userText: r, state }) 
   }
