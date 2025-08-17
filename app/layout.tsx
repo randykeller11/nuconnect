@@ -1,44 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { QueryProvider } from '../lib/query-provider'
-import { Toaster } from 'sonner'
-import { ReactNode } from 'react'
-
-const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
-  title: 'NuConnect - Professional Networking',
-  description: 'Connect with professionals and build meaningful business relationships through intelligent matching.',
-  keywords: 'professional networking, business connections, AI matching, career development',
-  authors: [{ name: 'NuConnect' }],
-  openGraph: {
-    title: 'NuConnect - Professional Networking',
-    description: 'Connect with professionals and build meaningful business relationships through intelligent matching.',
-    type: 'website',
-    locale: 'en_US',
-  },
-}
-
-export default function RootLayout({
-  children,
-}: {
-  children: ReactNode
-}) {
-  return (
-    <html lang="en">
-      <body className={inter.className}>
-        <QueryProvider>
-          {children}
-          <Toaster position="top-center" />
-        </QueryProvider>
-      </body>
-    </html>
-  )
-}
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
