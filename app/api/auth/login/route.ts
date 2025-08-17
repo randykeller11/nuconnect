@@ -12,20 +12,11 @@ export async function POST(request: NextRequest) {
     // Validate the incoming data
     const validatedData = loginUserSchema.parse(body)
     
-    // Validate user credentials
-    const user = await storage.validateUser(validatedData.email, validatedData.password)
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
-    }
-    
-    // Don't return password in response
-    const { password, ...userWithoutPassword } = user
-    
-    return NextResponse.json(userWithoutPassword)
+    // This is a legacy auth route - the app now uses Supabase auth
+    return NextResponse.json(
+      { error: 'Legacy auth method no longer supported. Please use Supabase auth.' },
+      { status: 400 }
+    )
   } catch (error) {
     console.error('Error logging in user:', error)
     
