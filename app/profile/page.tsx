@@ -69,7 +69,7 @@ export default function ProfilePage() {
             <div className="flex flex-col md:flex-row items-start gap-6">
               {profile?.profile_photo_url || profile?.avatar_url ? (
                 <img
-                  src={profile.profile_photo_url || profile.avatar_url}
+                  src={profile.profile_photo_url || getAvatarUrl(profile.avatar_url) || ''}
                   alt={profile.name}
                   className="w-24 h-24 rounded-full object-cover"
                 />
