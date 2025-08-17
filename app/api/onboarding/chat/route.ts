@@ -11,12 +11,13 @@ import path from 'node:path'
 
 type ClientMsg = { userText?: string; formData?: Record<string, any>; state?: string }
 
-// 4-step onboarding progression
+// 5-step onboarding progression
 const STATE_PROGRESSION = {
   'GREETING': 'IDENTITY',
   'IDENTITY': 'PROFESSIONAL', 
   'PROFESSIONAL': 'GOALS',
-  'GOALS': 'PERSONALIZATION',
+  'GOALS': 'CONNECTIONS',
+  'CONNECTIONS': 'PERSONALIZATION',
   'PERSONALIZATION': 'DONE'
 } as const
 
@@ -216,6 +217,30 @@ export async function POST(req: Request) {
   } else if (stage === 'GOALS') {
     if (input.formData && Object.keys(input.formData).length) {
       ai = {
+        message: "Great! Now who would you like to connect with?",
+        ask: {
+          fields: [
+            { key: 'connection_preferences', label: 'Who You Want to Meet', type: 'multi-select', options: CONNECTION_PREFERENCES, max: 4 }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'CONNECTIONS'
+      }
+    } else {
+      ai = {
+        message: "What are your networking goals?",
+        ask: {
+          fields: [
+            { key: 'networking_goals', label: 'Networking Goals', type: 'multi-select', options: NETWORKING_GOALS, max: 4 }
+          ],
+          cta: 'Continue'
+        },
+        nextState: 'GOALS'
+      }
+    }
+  } else if (stage === 'CONNECTIONS') {
+    if (input.formData && Object.keys(input.formData).length) {
+      ai = {
         message: "Almost done! Add some personal touches to your profile.",
         ask: {
           fields: [
@@ -229,15 +254,14 @@ export async function POST(req: Request) {
       }
     } else {
       ai = {
-        message: "What are your networking goals?",
+        message: "Who would you like to connect with?",
         ask: {
           fields: [
-            { key: 'networking_goals', label: 'Networking Goals', type: 'multi-select', options: NETWORKING_GOALS, max: 4 },
             { key: 'connection_preferences', label: 'Who You Want to Meet', type: 'multi-select', options: CONNECTION_PREFERENCES, max: 4 }
           ],
           cta: 'Continue'
         },
-        nextState: 'GOALS'
+        nextState: 'CONNECTIONS'
       }
     }
   } else if (stage === 'PERSONALIZATION') {

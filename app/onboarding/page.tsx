@@ -23,7 +23,7 @@ type AiReply = {
     }>
     cta: string
   }
-  nextState: 'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'PERSONALIZATION' | 'DONE'
+  nextState: 'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'CONNECTIONS' | 'PERSONALIZATION' | 'DONE'
 }
 
 function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: Record<string, any>) => void }) {
@@ -198,7 +198,7 @@ function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: 
 
 export default function OnboardingChat() {
   const [ai, setAi] = useState<AiReply | null>(null)
-  const [state, setState] = useState<'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'PERSONALIZATION' | 'DONE'>('GREETING')
+  const [state, setState] = useState<'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'CONNECTIONS' | 'PERSONALIZATION' | 'DONE'>('GREETING')
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
   const [transcript, setTranscript] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
@@ -297,7 +297,7 @@ export default function OnboardingChat() {
     await call({ formData, state })
   }
 
-  const progressSteps = ['IDENTITY', 'PROFESSIONAL', 'GOALS', 'PERSONALIZATION']
+  const progressSteps = ['IDENTITY', 'PROFESSIONAL', 'GOALS', 'CONNECTIONS', 'PERSONALIZATION']
   const currentStepIndex = progressSteps.indexOf(state)
 
   const stepTitles = {
@@ -305,6 +305,7 @@ export default function OnboardingChat() {
     'IDENTITY': 'Basic Identity',
     'PROFESSIONAL': 'Professional Info',
     'GOALS': 'Networking Goals',
+    'CONNECTIONS': 'Connection Preferences',
     'PERSONALIZATION': 'Personal Touches',
     'DONE': 'Complete'
   }
@@ -381,6 +382,9 @@ export default function OnboardingChat() {
                   )}
                   {state === 'GOALS' && (
                     <p className="text-xl text-lunar">What do you want to achieve?</p>
+                  )}
+                  {state === 'CONNECTIONS' && (
+                    <p className="text-xl text-lunar">Who would you like to meet?</p>
                   )}
                   {state === 'PERSONALIZATION' && (
                     <p className="text-xl text-lunar">Add some personal touches</p>
