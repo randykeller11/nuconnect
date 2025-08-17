@@ -146,7 +146,14 @@ export default function ProfileEditPage() {
     <div className="min-h-screen bg-gradient-to-br from-aulait to-aulait/80 p-6">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/home')}
+            className="absolute left-0 top-0 px-4 py-2 border-2 border-lunar/20 hover:border-inkwell rounded-lg"
+          >
+            ← Back to Home
+          </Button>
           <h1 className="text-3xl font-bold text-inkwell mb-2">Edit Your Profile</h1>
           <p className="text-xl text-lunar">Keep your networking profile up to date</p>
         </div>
