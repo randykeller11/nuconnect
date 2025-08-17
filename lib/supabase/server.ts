@@ -9,6 +9,24 @@ export function supabaseServer() {
     {
       cookies: {
         get: (key) => cookieStore.get(key)?.value,
+        set: (key, value, options) => {
+          try {
+            cookieStore.set(key, value, options);
+          } catch {
+            // The `set` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+        remove: (key, options) => {
+          try {
+            cookieStore.set(key, '', options);
+          } catch {
+            // The `remove` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
       },
     }
   );
