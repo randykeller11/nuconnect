@@ -1,6 +1,9 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
 import MatchCard from './MatchCard'
 import MatchCelebrationModal from './MatchCelebrationModal'
 
@@ -20,6 +23,7 @@ interface MatchDeckProps {
 }
 
 export default function MatchDeck({ matches, roomId }: MatchDeckProps) {
+  const router = useRouter()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [celebrationData, setCelebrationData] = useState<{
     open: boolean
@@ -83,14 +87,30 @@ export default function MatchDeck({ matches, roomId }: MatchDeckProps) {
     return (
       <Card className="bg-white shadow-xl border-0 rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-inkwell">All Done!</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-inkwell">All Done!</CardTitle>
+            <Button
+              variant="outline"
+              onClick={() => router.push('/rooms')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Rooms
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <p className="text-lunar mb-4">You've seen all available matches in this room.</p>
-            <p className="text-sm text-lunar">
+            <p className="text-sm text-lunar mb-6">
               Check back later for new members or try joining other rooms.
             </p>
+            <Button
+              onClick={() => router.push('/rooms')}
+              className="bg-inkwell text-aulait hover:bg-lunar"
+            >
+              Explore More Rooms
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -99,21 +119,32 @@ export default function MatchDeck({ matches, roomId }: MatchDeckProps) {
 
   return (
     <div className="space-y-6" role="region" aria-label="Match deck">
-      <div className="text-center">
-        <div className="text-sm text-lunar mb-2" aria-live="polite">
-          {currentIndex + 1} of {matches.length} matches
+      <div className="flex items-center justify-between">
+        <Button
+          variant="outline"
+          onClick={() => router.push('/rooms')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Rooms
+        </Button>
+        <div className="text-center flex-1">
+          <div className="text-sm text-lunar mb-2" aria-live="polite">
+            {currentIndex + 1} of {matches.length} matches
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
+            <div 
+              className="bg-gradient-to-r from-inkwell to-lunar h-2 rounded-full transition-all duration-300"
+              style={{ width: `${((currentIndex + 1) / matches.length) * 100}%` }}
+              role="progressbar"
+              aria-valuenow={currentIndex + 1}
+              aria-valuemin={1}
+              aria-valuemax={matches.length}
+              aria-label={`Match ${currentIndex + 1} of ${matches.length}`}
+            />
+          </div>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 max-w-md mx-auto">
-          <div 
-            className="bg-gradient-to-r from-inkwell to-lunar h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentIndex + 1) / matches.length) * 100}%` }}
-            role="progressbar"
-            aria-valuenow={currentIndex + 1}
-            aria-valuemin={1}
-            aria-valuemax={matches.length}
-            aria-label={`Match ${currentIndex + 1} of ${matches.length}`}
-          />
-        </div>
+        <div className="w-[120px]"></div> {/* Spacer for balance */}
       </div>
       
       <div className="flex justify-center">
