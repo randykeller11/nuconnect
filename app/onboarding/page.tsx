@@ -27,6 +27,171 @@ type AiReply = {
   nextState: 'GREETING' | 'IDENTITY' | 'PROFESSIONAL' | 'GOALS' | 'CONNECTIONS' | 'PERSONALIZATION' | 'PROFILE_SETUP' | 'DONE'
 }
 
+// Social Links Input Component
+function SocialLinksInput({ value, onChange }: { 
+  value: Array<{platform: string, url: string}>, 
+  onChange: (links: Array<{platform: string, url: string}>) => void 
+}) {
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [selectedPlatform, setSelectedPlatform] = useState('')
+  const [inputUrl, setInputUrl] = useState('')
+
+  const socialPlatforms = [
+    { id: 'github', name: 'GitHub', icon: Github, placeholder: 'https://github.com/username' },
+    { id: 'twitter', name: 'X (Twitter)', icon: Twitter, placeholder: 'https://x.com/username' },
+    { id: 'instagram', name: 'Instagram', icon: Instagram, placeholder: 'https://instagram.com/username' },
+    { id: 'tiktok', name: 'TikTok', icon: Music, placeholder: 'https://tiktok.com/@username' }
+  ]
+
+  const handleAddLink = () => {
+    if (!selectedPlatform || !inputUrl.trim()) return
+    
+    const newLink = { platform: selectedPlatform, url: inputUrl.trim() }
+    onChange([...value, newLink])
+    
+    // Reset form
+    setSelectedPlatform('')
+    setInputUrl('')
+    setShowAddForm(false)
+  }
+
+  const handleRemoveLink = (index: number) => {
+    onChange(value.filter((_, i) => i !== index))
+  }
+
+  const getPlatformInfo = (platformId: string) => {
+    return socialPlatforms.find(p => p.id === platformId)
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Existing Links */}
+      {value.length > 0 && (
+        <div className="space-y-3">
+          {value.map((link, index) => {
+            const platform = getPlatformInfo(link.platform)
+            const Icon = platform?.icon || Linkedin
+            
+            return (
+              <div key={index} className="flex items-center gap-3 p-4 bg-white border-2 border-lunar/20 rounded-xl">
+                <Icon className="w-5 h-5 text-lunar" />
+                <div className="flex-1">
+                  <div className="font-medium text-inkwell">{platform?.name || link.platform}</div>
+                  <div className="text-sm text-lunar truncate">{link.url}</div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemoveLink(index)}
+                  className="text-lunar hover:text-red-500 hover:bg-red-50"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Add New Link */}
+      {!showAddForm ? (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setShowAddForm(true)}
+          className="w-full h-14 border-2 border-dashed border-lunar/30 hover:border-inkwell text-lunar hover:text-inkwell rounded-xl"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Add Social Media Link
+        </Button>
+      ) : (
+        <div className="p-6 bg-gradient-to-r from-aulait to-white/50 border-2 border-lunar/20 rounded-xl space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium text-inkwell">Add Social Media Link</h4>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShowAddForm(false)
+                setSelectedPlatform('')
+                setInputUrl('')
+              }}
+              className="text-lunar hover:text-inkwell"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Platform Selection */}
+          <div className="grid grid-cols-2 gap-3">
+            {socialPlatforms.map((platform) => {
+              const Icon = platform.icon
+              const isSelected = selectedPlatform === platform.id
+              const isAlreadyAdded = value.some(link => link.platform === platform.id)
+              
+              return (
+                <button
+                  key={platform.id}
+                  type="button"
+                  disabled={isAlreadyAdded}
+                  onClick={() => setSelectedPlatform(platform.id)}
+                  className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 text-left ${
+                    isSelected
+                      ? 'border-inkwell bg-inkwell text-aulait'
+                      : isAlreadyAdded
+                      ? 'border-lunar/20 bg-lunar/5 text-lunar/50 cursor-not-allowed'
+                      : 'border-lunar/30 hover:border-inkwell hover:bg-inkwell/5 text-inkwell'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{platform.name}</span>
+                  {isAlreadyAdded && <span className="text-xs">(Added)</span>}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* URL Input */}
+          {selectedPlatform && (
+            <div className="space-y-3">
+              <Input
+                type="url"
+                placeholder={getPlatformInfo(selectedPlatform)?.placeholder}
+                value={inputUrl}
+                onChange={(e) => setInputUrl(e.target.value)}
+                className="h-12 border-2 border-lunar/20 focus:border-inkwell rounded-lg"
+              />
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  onClick={handleAddLink}
+                  disabled={!inputUrl.trim()}
+                  className="flex-1 bg-inkwell text-aulait hover:bg-lunar"
+                >
+                  Add Link
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedPlatform('')
+                    setInputUrl('')
+                  }}
+                  className="border-lunar/30 text-lunar hover:border-inkwell hover:text-inkwell"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function DynamicForm({ ask, onSubmit }: { ask: AiReply['ask'], onSubmit: (data: Record<string, any>) => void }) {
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [customRole, setCustomRole] = useState('')
