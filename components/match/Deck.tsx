@@ -65,18 +65,10 @@ export default function Deck({ roomId }: DeckProps) {
     if (currentIndex < cards.length - 1) {
       setCurrentIndex(currentIndex + 1)
     } else {
-      // All matches completed - show toast and redirect
-      const toastDiv = document.createElement('div')
-      toastDiv.className = 'fixed top-4 right-4 bg-inkwell text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      toastDiv.textContent = "You've seen all potential matches! Redirecting back to room..."
-      document.body.appendChild(toastDiv)
-      
-      setTimeout(() => {
-        document.body.removeChild(toastDiv)
-        window.location.href = `/rooms/${roomId}`
-      }, 2000)
+      // All matches completed - show completion state
+      setCurrentIndex(cards.length) // This will trigger the completion UI
     }
-  }, [currentIndex, cards.length, roomId])
+  }, [currentIndex, cards.length])
 
   const handleConnect = useCallback(async () => {
     if (!cards[currentIndex]) return
@@ -177,10 +169,36 @@ export default function Deck({ roomId }: DeckProps) {
     )
   }
 
-  // Auto-redirect when all matches are done (this shouldn't render due to handleSkip logic)
+  // Show completion message when all matches are done
   if (currentIndex >= cards.length) {
-    return null
+    return (
+      <Card className="bg-white rounded-2xl shadow-md border max-w-md mx-auto">
+        <CardContent className="p-8 text-center">
+          <div className="w-16 h-16 bg-inkwell/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">✨</span>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">All Done!</h3>
+          <p className="text-lunar mb-4">
+            You've seen all potential matches in this room. Great job connecting with others!
+          </p>
+          <p className="text-sm text-lunar mb-4">
+            Redirecting you back to the room...
+          </p>
+          <div className="animate-spin w-6 h-6 border-2 border-inkwell border-t-transparent rounded-full mx-auto"></div>
+        </CardContent>
+      </Card>
+    )
   }
+
+  // Auto-redirect after showing completion message
+  useEffect(() => {
+    if (currentIndex >= cards.length && cards.length > 0) {
+      const timer = setTimeout(() => {
+        window.location.href = `/rooms/${roomId}`
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [currentIndex, cards.length, roomId])
 
   const currentCard = cards[currentIndex]
   const progress = ((currentIndex + 1) / cards.length) * 100
