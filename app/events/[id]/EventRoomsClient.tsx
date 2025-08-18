@@ -40,9 +40,16 @@ export default function EventRoomsClient({ room, isMember }: EventRoomsClientPro
       if (res.ok) {
         router.push(`/rooms/${room.id}`)
       } else {
-        const errorData = await res.json()
+        let errorData = {}
+        try {
+          errorData = await res.json()
+        } catch (e) {
+          // Response might not be JSON
+          errorData = { error: `HTTP ${res.status}: ${res.statusText}` }
+        }
         console.error('Failed to join room:', errorData)
-        toast.error('Failed to join room. Please try again.')
+        const errorMessage = errorData.error || 'Failed to join room. Please try again.'
+        toast.error(errorMessage)
       }
     } catch (error) {
       console.error('Failed to join room:', error)
