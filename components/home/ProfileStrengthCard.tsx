@@ -13,7 +13,7 @@ interface ProfileStrengthCardProps {
   strength: ProfileStrengthResult
 }
 
-export function ProfileStrengthCard({ strength }: ProfileStrengthCardProps) {
+export default function ProfileStrengthCard({ strength }: ProfileStrengthCardProps) {
   const router = useRouter()
 
   const getLevelColor = (level: string) => {
