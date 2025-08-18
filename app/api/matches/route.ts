@@ -35,6 +35,18 @@ export async function POST(req: Request) {
     candidates = others || []
   }
 
+  // Check for existing contact shares to filter out already connected users
+  const { data: existingShares } = await supabase
+    .from('contact_shares')
+    .select('to_user_id')
+    .eq('from_user_id', user.id)
+    .in('to_user_id', othersIds)
+
+  const connectedUserIds = new Set(existingShares?.map(s => s.to_user_id) || [])
+
+  // Filter out already connected users
+  candidates = candidates.filter(p => !connectedUserIds.has(p.user_id))
+
   // 3) Compute scores + rationale
   const results = await Promise.all(
     candidates.map(async (p) => {
@@ -42,20 +54,13 @@ export async function POST(req: Request) {
       let why = whySimple(me, p, score)
       
       // Try OpenRouter for better rationale
-      console.log('Attempting OpenRouter call for match:', p.name, 'with score:', score)
-      console.log('OpenRouter API key present:', !!process.env.OPENROUTER_API_KEY)
-      
       try {
         const maybeLLM = await explainMatchLLM(
           { me: pickForLLM(me), other: pickForLLM(p), score }
         )
-        console.log('OpenRouter response:', maybeLLM)
         
         if (maybeLLM && maybeLLM.length > 10) {
           why = maybeLLM
-          console.log('Using OpenRouter rationale:', why)
-        } else {
-          console.log('OpenRouter response too short or empty, using fallback')
         }
       } catch (error) {
         console.error('OpenRouter failed with error:', error)
@@ -63,21 +68,31 @@ export async function POST(req: Request) {
 
       return {
         user_id: p.user_id,
-        name: p.name ?? `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim(),
         headline: p.headline ?? p.role ?? '',
-        avatar: p.profile_photo_url || null,
+        role: p.role,
+        industries: p.industries || [],
+        skills: p.skills || [],
+        interests: p.interests || [],
+        networking_goals: p.networking_goals || [],
+        rationale: why,
         score,
+        avatar: p.profile_photo_url || null,
         shared: {
           interests: topOverlap(me?.interests, p?.interests),
           skills: topOverlap(me?.skills, p?.skills),
+          industries: topOverlap(me?.industries, p?.industries),
         },
-        rationale: why,
       }
     })
   )
 
-  results.sort((a, b) => b.score - a.score)
-  return NextResponse.json({ matches: results.slice(0, 10) })
+  // Filter by minimum score and sort
+  const filteredResults = results
+    .filter(match => match.score > 20)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 20)
+
+  return NextResponse.json({ matches: filteredResults })
 }
 
 function topOverlap(a?: string[], b?: string[], n = 3) {

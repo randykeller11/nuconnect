@@ -1,23 +1,24 @@
 import { NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { supabaseServer } from '@/lib/supabase/server'
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const sb = await createSupabaseServerClient()
+    const { id } = await params
+    const supabase = await supabaseServer()
     
-    const { data, error } = await sb
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('user_id', params.id)
+      .eq('user_id', id)
       .single()
-    
-    if (error || !data) {
-      return NextResponse.json({ error: 'not_found' }, { status: 404 })
+
+    if (error || !profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
-    
-    return NextResponse.json({ profile: data })
+
+    return NextResponse.json({ profile })
   } catch (error) {
-    console.error('Unexpected error in /api/profile/by-user/[id]:', error)
+    console.error('Error in /api/profile/by-user:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
