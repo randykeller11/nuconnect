@@ -113,22 +113,22 @@ export default async function HomePage() {
               {/* Quick Actions Card */}
               <div className="bg-white rounded-2xl p-4 shadow-md border">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">Quick Actions</h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <a 
                     href="/events"
-                    className="block w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm text-white bg-inkwell hover:bg-inkwell/90 rounded-full transition-colors"
                   >
                     Browse All Events →
                   </a>
                   <a 
                     href="/profile/edit"
-                    className="block w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm text-inkwell border border-inkwell hover:bg-inkwell/5 rounded-full transition-colors"
                   >
                     Edit Profile →
                   </a>
                   <a 
                     href="/connections"
-                    className="block w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm text-inkwell border border-inkwell hover:bg-inkwell/5 rounded-full transition-colors"
                   >
                     View Connections →
                   </a>
