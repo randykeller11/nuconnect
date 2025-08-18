@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import MatchDeck from '@/components/match/MatchDeck'
+import Deck from '@/components/match/Deck'
 
 interface MatchesPageProps {
   params: Promise<{ id: string }>
@@ -56,8 +56,8 @@ export default async function MatchesPage({ params }: MatchesPageProps) {
             <h1 className="text-2xl font-bold text-gray-800">Matches in {room.name}</h1>
           </div>
 
-          {/* Match Deck */}
-          <MatchDeck matches={[]} roomId={id} />
+          {/* Anonymous Match Deck */}
+          <Deck roomId={id} />
         </div>
       </div>
     </div>
