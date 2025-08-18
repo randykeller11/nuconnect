@@ -1,17 +1,18 @@
 'use client'
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PrimaryButton } from '@/components/PrimaryButton'
-import { Users } from 'lucide-react'
-import { useToast } from '@/lib/hooks/use-toast'
-import MatchDeck from '@/components/match/MatchDeck'
 
-type Room = {
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
+interface Room {
   id: string
   name: string
-  tagline?: string
-  topic?: string
+  slug: string
+  tagline?: string | null
+  topic?: string | null
   member_count: number
+  is_public: boolean
 }
 
 interface RoomClientProps {
@@ -20,130 +21,70 @@ interface RoomClientProps {
 }
 
 export default function RoomClient({ room, isMember }: RoomClientProps) {
-  const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
-  const [matches, setMatches] = useState<any[]>([])
-  const [showMatches, setShowMatches] = useState(false)
+  const router = useRouter()
+  const [isJoining, setIsJoining] = useState(false)
 
   const handleJoinRoom = async () => {
-    setLoading(true)
+    setIsJoining(true)
     try {
       const res = await fetch('/api/rooms/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId: room.id })
       })
-
-      if (!res.ok) {
-        throw new Error('Failed to join room')
+      
+      if (res.ok) {
+        router.refresh()
+      } else {
+        console.error('Failed to join room')
       }
-
-      toast({
-        title: 'Joined room successfully!',
-        description: 'You can now get matches in this room.',
-      })
-
-      // Refresh the page to update membership status
-      window.location.reload()
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to join room. Please try again.',
-        variant: 'destructive',
-      })
+      console.error('Failed to join room:', error)
     } finally {
-      setLoading(false)
+      setIsJoining(false)
     }
   }
 
-  const handleGetMatches = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/matches', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId: room.id })
-      })
-
-      if (!res.ok) {
-        throw new Error('Failed to get matches')
-      }
-
-      const data = await res.json()
-      setMatches(data.matches || [])
-      setShowMatches(true)
-
-      if (data.matches?.length === 0) {
-        toast({
-          title: 'No matches found',
-          description: 'Try joining other rooms or updating your profile.',
-        })
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to get matches. Please try again.',
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
-    }
+  const handleGetMatches = () => {
+    // This will be implemented in the next step (matching UI)
+    router.push(`/rooms/${room.id}/matches`)
   }
 
   return (
-    <div className="space-y-6">
-      {/* Room Header Card - Hide when showing matches */}
-      {!showMatches && (
-        <Card className="bg-white shadow-xl border-0 rounded-2xl">
-          <CardHeader>
-            <div className="text-center">
-              <CardTitle className="text-inkwell text-3xl mb-2">{room.name}</CardTitle>
-              {room.tagline && <p className="text-lunar text-lg mb-4">{room.tagline}</p>}
-              {room.topic && (
-                <span className="inline-block px-3 py-1 bg-inkwell/10 text-inkwell rounded-full text-sm mb-4">
-                  {room.topic}
-                </span>
-              )}
-              <div className="flex items-center justify-center gap-2 text-lunar">
-                <Users className="w-5 h-5" />
-                <span className="font-medium">{room.member_count} members</span>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {!isMember ? (
-              <div className="text-center py-4">
-                <p className="text-lunar mb-4">Join this room to start discovering matches</p>
-                <PrimaryButton onClick={handleJoinRoom} loading={loading}>
-                  Join Room
-                </PrimaryButton>
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-lunar mb-4">You're a member of this room!</p>
-                <PrimaryButton onClick={handleGetMatches} loading={loading}>
-                  Get Matches
-                </PrimaryButton>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Compact header when showing matches */}
-      {showMatches && (
-        <div className="flex items-center justify-between py-2">
-          <div className="flex items-center gap-2 text-lunar text-sm">
-            <Users className="w-4 h-4" />
-            <span>{room.member_count} members</span>
+    <Card className="bg-white rounded-2xl shadow-sm border">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-inkwell">
+          {isMember ? 'You\'re in this room!' : 'Join this room'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isMember ? (
+          <div className="space-y-4">
+            <p className="text-lunar">
+              You're a member of this room. Ready to discover meaningful connections?
+            </p>
+            <Button 
+              onClick={handleGetMatches}
+              className="w-full bg-inkwell hover:bg-inkwell/90"
+            >
+              Get Matches
+            </Button>
           </div>
-        </div>
-      )}
-
-      {/* Match Deck */}
-      {showMatches && (
-        <MatchDeck matches={matches} roomId={room.id} />
-      )}
-    </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-lunar">
+              Join this room to connect with other members and discover potential matches.
+            </p>
+            <Button 
+              onClick={handleJoinRoom}
+              disabled={isJoining}
+              className="w-full"
+            >
+              {isJoining ? 'Joining...' : 'Join Room'}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
