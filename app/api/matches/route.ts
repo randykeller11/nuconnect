@@ -54,6 +54,14 @@ export async function POST(req: Request) {
   // Filter out already connected users
   candidates = candidates.filter(p => !connectedUserIds.has(p.user_id))
 
+  // If no candidates left, user has matched with everyone
+  if (candidates.length === 0) {
+    return NextResponse.json({ 
+      matches: [], 
+      message: "You've matched with everyone in this room! Check back later for new members." 
+    })
+  }
+
   // 3) Compute scores + rationale
   const results = await Promise.all(
     candidates.map(async (p) => {
