@@ -138,6 +138,16 @@ export default function Deck({ roomId }: DeckProps) {
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [handleSkip, handleConnect])
 
+  // Auto-redirect after showing completion message
+  useEffect(() => {
+    if (currentIndex >= cards.length && cards.length > 0) {
+      const timer = setTimeout(() => {
+        window.location.href = `/rooms/${roomId}`
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [currentIndex, cards.length, roomId])
+
   const handleRevealClose = () => {
     setShowRevealModal(false)
     setMutualMatch(null)
@@ -189,16 +199,6 @@ export default function Deck({ roomId }: DeckProps) {
       </Card>
     )
   }
-
-  // Auto-redirect after showing completion message
-  useEffect(() => {
-    if (currentIndex >= cards.length && cards.length > 0) {
-      const timer = setTimeout(() => {
-        window.location.href = `/rooms/${roomId}`
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [currentIndex, cards.length, roomId])
 
   const currentCard = cards[currentIndex]
   const progress = ((currentIndex + 1) / cards.length) * 100
