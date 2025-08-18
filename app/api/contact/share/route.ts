@@ -40,8 +40,7 @@ export async function POST(req: Request) {
       from_user_id: user.id,
       to_user_id: toUserId,
       room_id: roomId,
-      status: isMutual ? 'mutual' : 'sent',
-      created_at: new Date().toISOString()
+      status: isMutual ? 'mutual' : 'sent'
     })
 
   if (insertError) {
