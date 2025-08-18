@@ -63,10 +63,13 @@ export async function POST(req: Request) {
     .in('user_id', newCandidateIds);
 
   // Score and queue candidates
+  console.log('Building queue for candidates:', newCandidateIds.length);
   const queueItems = await Promise.all(
     (candidateProfiles || []).map(async (candidate) => {
       const score = scoreMatch(myProfile, candidate);
       let rationale = whySimple(myProfile, candidate, score);
+      
+      console.log(`Scoring candidate ${candidate.user_id}: ${score}`);
       
       // Try OpenRouter for better rationale
       try {
@@ -110,13 +113,19 @@ export async function POST(req: Request) {
   );
 
   // Bulk upsert to queue
+  console.log('Upserting queue items:', queueItems.length);
   if (queueItems.length > 0) {
-    await supabase
+    const { error: upsertError } = await supabase
       .from('match_queue')
       .upsert(queueItems, {
         onConflict: 'room_id,for_user_id,candidate_user_id'
       });
+    
+    if (upsertError) {
+      console.error('Queue upsert error:', upsertError);
+    }
   }
 
+  console.log('Final queued count:', queueItems.length);
   return NextResponse.json({ queued: queueItems.length });
 }

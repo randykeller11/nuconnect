@@ -43,9 +43,13 @@ export async function POST(req: Request) {
     query = query.not('candidate_user_id', 'in', `(${interactedIds.join(',')})`);
   }
 
-  const { data: queueItems } = await query;
+  const { data: queueItems, error: queryError } = await query;
+
+  console.log('Queue query result:', { queueItems: queueItems?.length, error: queryError });
+  console.log('Interacted IDs:', interactedIds);
 
   if (!queueItems || queueItems.length === 0) {
+    console.log('No candidates found in queue');
     return NextResponse.json({ candidate: null });
   }
 
