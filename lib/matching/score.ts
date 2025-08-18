@@ -21,29 +21,14 @@ export function scoreMatch(me: any, other: any) {
 }
 
 export function whySimple(me: any, other: any, score: number) {
-  const sharedInterests = me?.interests?.filter((i: string) => 
-    other?.interests?.some((oi: string) => oi.toLowerCase() === i.toLowerCase())
-  ) || []
-  
-  const sharedSkills = me?.skills?.filter((s: string) => 
-    other?.skills?.some((os: string) => os.toLowerCase() === s.toLowerCase())
-  ) || []
+  return score >= 80
+    ? 'Strong overlap and complementary goals.'
+    : 'Shared interests and potential collaboration fit.';
+}
 
-  const sharedIndustries = me?.industries?.filter((i: string) => 
-    other?.industries?.some((oi: string) => oi.toLowerCase() === i.toLowerCase())
-  ) || []
-
-  if (sharedInterests.length > 0 && sharedSkills.length > 0) {
-    return `You both share interests in ${sharedInterests[0]} and have complementary ${sharedSkills[0]} skills.`
-  } else if (sharedInterests.length > 0) {
-    return `Both passionate about ${sharedInterests[0]} - great potential for collaboration.`
-  } else if (sharedSkills.length > 0) {
-    return `Your shared expertise in ${sharedSkills[0]} could lead to interesting discussions.`
-  } else if (sharedIndustries.length > 0) {
-    return `Both working in ${sharedIndustries[0]} with complementary backgrounds.`
-  } else if (score >= 70) {
-    return 'Strong professional alignment and complementary goals.'
-  } else {
-    return 'Interesting background differences that could spark valuable conversations.'
-  }
+export function topOverlap(a?: string[], b?: string[], n = 3) {
+  if (!a?.length || !b?.length) return [];
+  const setB = new Set((b||[]).map((x)=>x.toLowerCase()));
+  const hits = (a||[]).filter((x)=> setB.has(x.toLowerCase()));
+  return hits.slice(0,n);
 }

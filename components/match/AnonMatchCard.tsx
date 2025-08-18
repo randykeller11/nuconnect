@@ -6,9 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import { useState } from 'react'
 
-interface MatchCardData {
+interface MatchCandidate {
   user_id: string
-  headline?: string
   role?: string
   industries?: string[]
   skills?: string[]
@@ -16,22 +15,18 @@ interface MatchCardData {
   networking_goals?: string[]
   rationale: string
   score: number
-  avatar?: string | null
-  shared?: {
-    interests?: string[]
-    skills?: string[]
-    industries?: string[]
-  }
+  photo?: string | null
 }
 
 interface AnonMatchCardProps {
-  match: MatchCardData
+  match: MatchCandidate
   onSkip: () => void
   onConnect: () => void
   isConnecting?: boolean
+  isSkipping?: boolean
 }
 
-export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting }: AnonMatchCardProps) {
+export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting, isSkipping }: AnonMatchCardProps) {
   const [imageError, setImageError] = useState(false)
 
   // Get shared tags from the match data
@@ -52,20 +47,15 @@ export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting }
         {/* Blurred Avatar */}
         <div className="flex justify-center">
           <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-aulait/20">
-            {match.avatar && !imageError ? (
-              <Image
-                src={match.avatar}
+            {match.photo ? (
+              <img
+                src={match.photo}
                 alt="Anonymous profile"
-                width={80}
-                height={80}
-                className="w-full h-full object-cover"
-                style={{ filter: 'blur(6px) contrast(0.9)' }}
-                onError={() => setImageError(true)}
-                unoptimized
+                className="w-full h-full object-cover filter blur-sm"
               />
             ) : (
               <div className="w-full h-full bg-lunar/20 flex items-center justify-center">
-                <span className="text-2xl font-bold text-lunar">?</span>
+                <span className="text-2xl font-bold text-lunar filter blur-sm">?</span>
               </div>
             )}
           </div>
@@ -74,7 +64,7 @@ export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting }
         {/* Identity Row (Hidden Name) */}
         <div className="text-center">
           <div className="text-sm text-lunar">
-            {match.role || match.headline || 'Professional'}
+            {match.role || 'Professional'}
           </div>
         </div>
 
@@ -84,13 +74,13 @@ export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting }
           <p className="text-sm text-lunar leading-relaxed">{match.rationale}</p>
         </div>
 
-        {/* Shared Tags */}
+        {/* Tags */}
         <div className="space-y-2">
-          {sharedIndustries.length > 0 && (
+          {match.industries && match.industries.length > 0 && (
             <div>
-              <h5 className="text-xs font-medium text-lunar mb-1">Shared Industries</h5>
+              <h5 className="text-xs font-medium text-lunar mb-1">Industries</h5>
               <div className="flex flex-wrap gap-1">
-                {sharedIndustries.map((industry) => (
+                {match.industries.map((industry) => (
                   <span key={industry} className="px-2 py-1 bg-inkwell/10 text-inkwell rounded-full text-xs">
                     {industry}
                   </span>
@@ -99,11 +89,11 @@ export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting }
             </div>
           )}
           
-          {sharedSkills.length > 0 && (
+          {match.skills && match.skills.length > 0 && (
             <div>
-              <h5 className="text-xs font-medium text-lunar mb-1">Shared Skills</h5>
+              <h5 className="text-xs font-medium text-lunar mb-1">Skills</h5>
               <div className="flex flex-wrap gap-1">
-                {sharedSkills.map((skill) => (
+                {match.skills.map((skill) => (
                   <span key={skill} className="px-2 py-1 bg-lunar/10 text-lunar rounded-full text-xs">
                     {skill}
                   </span>
@@ -112,13 +102,26 @@ export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting }
             </div>
           )}
           
-          {sharedInterests.length > 0 && (
+          {match.interests && match.interests.length > 0 && (
             <div>
-              <h5 className="text-xs font-medium text-lunar mb-1">Shared Interests</h5>
+              <h5 className="text-xs font-medium text-lunar mb-1">Interests</h5>
               <div className="flex flex-wrap gap-1">
-                {sharedInterests.map((interest) => (
+                {match.interests.map((interest) => (
                   <span key={interest} className="px-2 py-1 bg-creme/50 text-inkwell rounded-full text-xs">
                     {interest}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {match.networking_goals && match.networking_goals.length > 0 && (
+            <div>
+              <h5 className="text-xs font-medium text-lunar mb-1">Goals</h5>
+              <div className="flex flex-wrap gap-1">
+                {match.networking_goals.map((goal) => (
+                  <span key={goal} className="px-2 py-1 bg-aulait/40 text-inkwell rounded-full text-xs">
+                    {goal}
                   </span>
                 ))}
               </div>
@@ -132,14 +135,14 @@ export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting }
             variant="outline" 
             onClick={onSkip}
             className="flex-1 rounded-full"
-            disabled={isConnecting}
+            disabled={isConnecting || isSkipping}
           >
-            Skip
+            {isSkipping ? 'Skipping...' : 'Skip'}
           </Button>
           <Button 
             onClick={onConnect}
             className="flex-1 bg-inkwell hover:bg-inkwell/90 text-white rounded-full"
-            disabled={isConnecting}
+            disabled={isConnecting || isSkipping}
           >
             {isConnecting ? 'Connecting...' : 'Connect'}
           </Button>

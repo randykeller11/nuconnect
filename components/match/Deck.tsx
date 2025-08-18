@@ -3,13 +3,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { Button } from '@/components/ui/button'
 import AnonMatchCard from './AnonMatchCard'
 import RevealModal from './RevealModal'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
 
-interface MatchCardData {
+interface MatchCandidate {
   user_id: string
-  headline?: string
   role?: string
   industries?: string[]
   skills?: string[]
@@ -17,12 +16,7 @@ interface MatchCardData {
   networking_goals?: string[]
   rationale: string
   score: number
-  avatar?: string | null
-  shared?: {
-    interests?: string[]
-    skills?: string[]
-    industries?: string[]
-  }
+  photo?: string | null
 }
 
 interface DeckProps {
@@ -30,82 +24,129 @@ interface DeckProps {
 }
 
 export default function Deck({ roomId }: DeckProps) {
-  const [cards, setCards] = useState<MatchCardData[]>([])
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [currentCandidate, setCurrentCandidate] = useState<MatchCandidate | null>(null)
   const [loading, setLoading] = useState(true)
   const [connecting, setConnecting] = useState(false)
+  const [skipping, setSkipping] = useState(false)
   const [showRevealModal, setShowRevealModal] = useState(false)
   const [mutualMatch, setMutualMatch] = useState<any>(null)
+  const [synergy, setSynergy] = useState<string>('')
+  const [status, setStatus] = useState<any>(null)
 
-  // Fetch matches on mount
+  // Initialize matching session and get first candidate
   useEffect(() => {
-    const fetchMatches = async () => {
+    const initializeMatching = async () => {
       try {
-        const res = await fetch('/api/matches', {
+        // Start matching session
+        await fetch('/api/matches/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ roomId })
         })
-        
-        if (res.ok) {
-          const data = await res.json()
-          setCards(data.matches || [])
-        }
+
+        // Get first candidate
+        await fetchNextCandidate()
+        await fetchStatus()
       } catch (error) {
-        console.error('Failed to fetch matches:', error)
+        console.error('Failed to initialize matching:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchMatches()
+    initializeMatching()
   }, [roomId])
 
-  const handleSkip = useCallback(() => {
-    if (currentIndex < cards.length - 1) {
-      setCurrentIndex(currentIndex + 1)
-    } else {
-      // All matches completed - show completion state
-      setCurrentIndex(cards.length) // This will trigger the completion UI
-    }
-  }, [currentIndex, cards.length])
-
-  const handleConnect = useCallback(async () => {
-    if (!cards[currentIndex]) return
-    
-    setConnecting(true)
+  const fetchNextCandidate = async () => {
     try {
-      const res = await fetch('/api/contact/share', {
+      const res = await fetch('/api/matches/next', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId })
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setCurrentCandidate(data.candidate)
+      }
+    } catch (error) {
+      console.error('Failed to fetch next candidate:', error)
+    }
+  }
+
+  const fetchStatus = async () => {
+    try {
+      const res = await fetch('/api/matches/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId })
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setStatus(data.status)
+      }
+    } catch (error) {
+      console.error('Failed to fetch status:', error)
+    }
+  }
+
+  const handleSkip = useCallback(async () => {
+    if (!currentCandidate) return
+    
+    setSkipping(true)
+    try {
+      await fetch('/api/matches/skip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          toUserId: cards[currentIndex].user_id,
-          roomId 
+          roomId,
+          targetUserId: currentCandidate.user_id
+        })
+      })
+      
+      await fetchNextCandidate()
+      await fetchStatus()
+    } catch (error) {
+      console.error('Failed to skip:', error)
+    } finally {
+      setSkipping(false)
+    }
+  }, [currentCandidate, roomId])
+
+  const handleConnect = useCallback(async () => {
+    if (!currentCandidate) return
+    
+    setConnecting(true)
+    try {
+      const res = await fetch('/api/matches/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          roomId,
+          targetUserId: currentCandidate.user_id
         })
       })
       
       if (res.ok) {
         const data = await res.json()
         if (data.mutual) {
-          // Fetch full profile for reveal
-          const profileRes = await fetch(`/api/profile/by-user/${cards[currentIndex].user_id}`)
-          if (profileRes.ok) {
-            const profileData = await profileRes.json()
-            setMutualMatch(profileData.profile)
-            setShowRevealModal(true)
-          }
+          setMutualMatch(data.reveal)
+          setSynergy(data.synergy)
+          setShowRevealModal(true)
         } else {
           // Show toast and move to next card
           const toastDiv = document.createElement('div')
           toastDiv.className = 'fixed top-4 right-4 bg-inkwell text-white px-4 py-2 rounded-lg shadow-lg z-50'
-          toastDiv.textContent = 'Connection request sent! We\'ll notify you if they connect back.'
+          toastDiv.textContent = 'Request sent! We\'ll reveal when it\'s mutual.'
           document.body.appendChild(toastDiv)
           
           setTimeout(() => {
             document.body.removeChild(toastDiv)
           }, 3000)
           
-          handleSkip()
+          await fetchNextCandidate()
+          await fetchStatus()
         }
       }
     } catch (error) {
@@ -113,7 +154,7 @@ export default function Deck({ roomId }: DeckProps) {
       // Show error toast
       const toastDiv = document.createElement('div')
       toastDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      toastDiv.textContent = 'Failed to send connection request. Please try again.'
+      toastDiv.textContent = 'Failed to send request. Please try again.'
       document.body.appendChild(toastDiv)
       
       setTimeout(() => {
@@ -122,7 +163,7 @@ export default function Deck({ roomId }: DeckProps) {
     } finally {
       setConnecting(false)
     }
-  }, [currentIndex, cards, roomId, handleSkip])
+  }, [currentCandidate, roomId])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -138,20 +179,30 @@ export default function Deck({ roomId }: DeckProps) {
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [handleSkip, handleConnect])
 
-  // Auto-redirect after showing completion message
-  useEffect(() => {
-    if (currentIndex >= cards.length && cards.length > 0) {
-      const timer = setTimeout(() => {
-        window.location.href = `/rooms/${roomId}`
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [currentIndex, cards.length, roomId])
-
-  const handleRevealClose = () => {
+  const handleRevealClose = async () => {
     setShowRevealModal(false)
     setMutualMatch(null)
-    handleSkip()
+    setSynergy('')
+    await fetchNextCandidate()
+    await fetchStatus()
+  }
+
+  const handleReset = async () => {
+    setLoading(true)
+    try {
+      await fetch('/api/matches/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId })
+      })
+      
+      await fetchNextCandidate()
+      await fetchStatus()
+    } catch (error) {
+      console.error('Failed to reset:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (loading) {
@@ -165,66 +216,67 @@ export default function Deck({ roomId }: DeckProps) {
     )
   }
 
-  if (cards.length === 0) {
-    return (
-      <Card className="bg-white rounded-2xl shadow-md border max-w-md mx-auto">
-        <CardContent className="p-8 text-center">
-          <div className="w-16 h-16 bg-lunar/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">🔍</span>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">No Matches Found</h3>
-          <p className="text-lunar">Try joining other rooms or updating your profile to find more connections.</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  // Show completion message when all matches are done
-  if (currentIndex >= cards.length) {
+  // Show completion message when no more candidates
+  if (!currentCandidate) {
     return (
       <Card className="bg-white rounded-2xl shadow-md border max-w-md mx-auto">
         <CardContent className="p-8 text-center">
           <div className="w-16 h-16 bg-inkwell/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl">✨</span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">All Done!</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">You've seen everyone here!</h3>
           <p className="text-lunar mb-4">
-            You've seen all potential matches in this room. Great job connecting with others!
+            {status?.mutualCount > 0 
+              ? `Great job! You made ${status.mutualCount} mutual connection${status.mutualCount !== 1 ? 's' : ''}.`
+              : 'Check back later for new members.'
+            }
           </p>
-          <p className="text-sm text-lunar mb-4">
-            Redirecting you back to the room...
-          </p>
-          <div className="animate-spin w-6 h-6 border-2 border-inkwell border-t-transparent rounded-full mx-auto"></div>
+          <div className="space-y-3">
+            <Button onClick={handleReset} className="w-full">
+              Check Again
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = `/rooms/${roomId}`}
+              className="w-full"
+            >
+              Back to Room
+            </Button>
+          </div>
         </CardContent>
       </Card>
     )
   }
 
-  const currentCard = cards[currentIndex]
-  const progress = ((currentIndex + 1) / cards.length) * 100
+  const progress = status ? ((status.totalQueued - status.remaining) / status.totalQueued) * 100 : 0
 
   return (
     <div className="space-y-4">
       {/* Progress Bar */}
-      <div className="max-w-md mx-auto">
-        <div className="flex items-center justify-between text-sm text-lunar mb-2">
-          <span>{currentIndex + 1} of {cards.length}</span>
+      {status && (
+        <div className="max-w-md mx-auto">
+          <div className="flex items-center justify-between text-sm text-lunar mb-2">
+            <span>{status.totalQueued - status.remaining} of {status.totalQueued}</span>
+            <span>{status.mutualCount} mutual{status.mutualCount !== 1 ? 's' : ''}</span>
+          </div>
+          <Progress value={progress} className="h-2" />
         </div>
-        <Progress value={progress} className="h-2" />
-      </div>
+      )}
 
       {/* Current Card */}
       <AnonMatchCard
-        match={currentCard}
+        match={currentCandidate}
         onSkip={handleSkip}
         onConnect={handleConnect}
         isConnecting={connecting}
+        isSkipping={skipping}
       />
 
       {/* Reveal Modal */}
       {showRevealModal && mutualMatch && (
         <RevealModal
           match={mutualMatch}
+          synergy={synergy}
           onClose={handleRevealClose}
         />
       )}

@@ -45,9 +45,21 @@ export default function RoomClient({ room, isMember }: RoomClientProps) {
     }
   }
 
-  const handleGetMatches = () => {
-    // This will be implemented in the next step (matching UI)
-    router.push(`/rooms/${room.id}/matches`)
+  const handleStartMatching = async () => {
+    try {
+      // Initialize matching session
+      const res = await fetch('/api/matches/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId: room.id })
+      })
+      
+      if (res.ok) {
+        router.push(`/rooms/${room.id}/matches`)
+      }
+    } catch (error) {
+      console.error('Failed to start matching:', error)
+    }
   }
 
   return (
@@ -64,10 +76,10 @@ export default function RoomClient({ room, isMember }: RoomClientProps) {
               You're a member of this room. Ready to discover meaningful connections?
             </p>
             <Button 
-              onClick={handleGetMatches}
+              onClick={handleStartMatching}
               className="w-full bg-inkwell hover:bg-inkwell/90"
             >
-              Get Matches
+              Start Matching
             </Button>
           </div>
         ) : (

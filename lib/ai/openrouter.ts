@@ -1,84 +1,60 @@
 export type ORMessage = { role:'system'|'user'|'assistant'; content:string }
 
-const OR_BASE = 'https://openrouter.ai/api/v1'
+const OR_BASE = 'https://openrouter.ai/api/v1';
 
 export async function explainMatchLLM(
   payload: { me: any; other: any; score: number },
   model = 'openai/gpt-4o-mini'
 ) {
-  console.log('explainMatchLLM called with payload:', {
-    me: payload.me,
-    other: payload.other,
-    score: payload.score
-  })
-
-  if (!process.env.OPENROUTER_API_KEY) {
-    console.log('OPENROUTER_API_KEY not found, using fallback rationale')
-    return null
-  }
-
-  console.log('OpenRouter API key found, making request...')
-  console.log('API key starts with:', process.env.OPENROUTER_API_KEY?.substring(0, 10) + '...')
-
-  const prompt = `Write a compelling 1-2 sentence rationale for why these two professionals should connect. Focus on specific shared interests, complementary skills, or collaboration opportunities. Be conversational and specific. Keep under 140 characters.
-
-Person A: ${JSON.stringify(payload.me, null, 2)}
-Person B: ${JSON.stringify(payload.other, null, 2)}
-Match Score: ${payload.score}%
-
-Examples:
-- "You both work in AI and share interests in machine learning - great potential for technical collaboration."
-- "Your product management experience could complement their engineering background in fintech."
-- "Both passionate about sustainability and have complementary skills in policy and technology."`
-
-  console.log('Sending prompt to OpenRouter:', prompt.substring(0, 200) + '...')
-
-  try {
-    const requestBody = {
+  if (!process.env.OPENROUTER_API_KEY) return null;
+  const prompt = `In <=160 chars, say why ME should connect with OTHER, using only provided facts.
+ME: ${JSON.stringify(payload.me)}
+OTHER: ${JSON.stringify(payload.other)}
+SCORE: ${payload.score}`;
+  const res = await fetch(`${OR_BASE}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
       model,
       messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 60,
-    }
+      temperature: 0.5,
+      max_tokens: 80,
+    }),
+  });
+  const json = await res.json().catch(() => null);
+  return json?.choices?.[0]?.message?.content?.trim() ?? null;
+}
 
-    console.log('Request body:', JSON.stringify(requestBody, null, 2))
+export async function explainSynergyLLM(
+  payload: { me: any; other: any; overlaps: {interests:string[]; skills:string[]; industries:string[]}; roomContext?: {event?:string; room?:string} },
+  model = 'openai/gpt-4o-mini'
+) {
+  if (!process.env.OPENROUTER_API_KEY) return null;
+  const prompt = `Write a concise 3-4 sentence professional synergy brief for two people who just mutually matched at an event.
+Use ONLY provided fields. Focus on collaboration ideas, intros, and next steps. Avoid fluff.
 
-    const res = await fetch(`${OR_BASE}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'NuConnect'
-      },
-      body: JSON.stringify(requestBody),
-    })
-
-    console.log('OpenRouter response status:', res.status)
-
-    if (!res.ok) {
-      const errorText = await res.text()
-      console.error('OpenRouter API error:', res.status, errorText)
-      return null
-    }
-
-    const json = await res.json()
-    console.log('OpenRouter response JSON:', JSON.stringify(json, null, 2))
-    
-    const content = json?.choices?.[0]?.message?.content?.trim()
-    console.log('Extracted content:', content)
-    
-    if (content && content.length > 10) {
-      console.log('Returning OpenRouter content:', content)
-      return content
-    }
-    
-    console.log('Content too short or empty, returning null')
-    return null
-  } catch (error) {
-    console.error('OpenRouter request failed:', error)
-    return null
-  }
+ME: ${JSON.stringify(payload.me)}
+OTHER: ${JSON.stringify(payload.other)}
+OVERLAPS: ${JSON.stringify(payload.overlaps)}
+CONTEXT: ${JSON.stringify(payload.roomContext || {})}`;
+  const res = await fetch(`${OR_BASE}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.4,
+      max_tokens: 280,
+    }),
+  });
+  const json = await res.json().catch(() => null);
+  return json?.choices?.[0]?.message?.content?.trim() ?? null;
 }
 
 export async function openrouterChat(

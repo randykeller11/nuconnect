@@ -9,21 +9,22 @@ import { useState } from 'react'
 
 interface RevealModalProps {
   match: {
+    user_id: string
     name?: string
-    first_name?: string
-    last_name?: string
-    profile_photo_url?: string
-    headline?: string
     role?: string
-    linkedin_url?: string
+    headline?: string
+    profile_photo_url?: string | null
+    linkedin_url?: string | null
     industries?: string[]
     skills?: string[]
+    interests?: string[]
     networking_goals?: string[]
   }
+  synergy: string
   onClose: () => void
 }
 
-export default function RevealModal({ match, onClose }: RevealModalProps) {
+export default function RevealModal({ match, synergy, onClose }: RevealModalProps) {
   const [imageError, setImageError] = useState(false)
   
   const fullName = match.name || `${match.first_name || ''} ${match.last_name || ''}`.trim() || 'Anonymous'
@@ -38,10 +39,11 @@ export default function RevealModal({ match, onClose }: RevealModalProps) {
         </DialogHeader>
         
         <div className="space-y-6 p-2">
-          {/* Celebration Message */}
-          <div className="text-center">
-            <p className="text-lunar">
-              You both want to connect! Here's who you matched with:
+          {/* Synergy Brief */}
+          <div className="bg-aulait/20 rounded-lg p-4">
+            <h4 className="font-semibold text-inkwell mb-2">Why you matched:</h4>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {synergy}
             </p>
           </div>
 
@@ -51,19 +53,15 @@ export default function RevealModal({ match, onClose }: RevealModalProps) {
             <div className="flex justify-center">
               <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-inkwell/20">
                 {match.profile_photo_url && !imageError ? (
-                  <Image
+                  <img
                     src={match.profile_photo_url}
-                    alt={fullName}
-                    width={80}
-                    height={80}
+                    alt={match.name || 'Profile'}
                     className="w-full h-full object-cover"
-                    onError={() => setImageError(true)}
-                    unoptimized
                   />
                 ) : (
                   <div className="w-full h-full bg-inkwell/10 flex items-center justify-center">
                     <span className="text-xl font-bold text-inkwell">
-                      {fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                      {(match.name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </span>
                   </div>
                 )}
@@ -72,9 +70,12 @@ export default function RevealModal({ match, onClose }: RevealModalProps) {
 
             {/* Name and Role */}
             <div className="text-center">
-              <h3 className="text-lg font-bold text-gray-800">{fullName}</h3>
-              {(match.role || match.headline) && (
-                <p className="text-sm text-lunar">{match.role || match.headline}</p>
+              <h3 className="text-lg font-bold text-gray-800">{match.name || 'Your Match'}</h3>
+              {match.role && (
+                <p className="text-sm text-lunar">{match.role}</p>
+              )}
+              {match.headline && (
+                <p className="text-sm text-gray-600 mt-1">{match.headline}</p>
               )}
             </div>
 
@@ -128,8 +129,8 @@ export default function RevealModal({ match, onClose }: RevealModalProps) {
             <Button 
               className="w-full bg-inkwell hover:bg-inkwell/90 text-white rounded-full"
               onClick={() => {
-                // Future: Open chat functionality
-                alert('Chat feature coming soon! For now, connect via LinkedIn.')
+                // TODO: Implement chat functionality
+                console.log('Open chat with:', match.user_id)
               }}
             >
               <MessageCircle className="w-4 h-4 mr-2" />
