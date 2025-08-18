@@ -114,24 +114,24 @@ export default async function HomePage() {
               <div className="bg-white rounded-2xl p-4 shadow-md border">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">Quick Actions</h3>
                 <div className="space-y-2">
-                  <button 
-                    onClick={() => window.location.assign('/events')}
-                    className="w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
+                  <a 
+                    href="/events"
+                    className="block w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
                   >
                     Browse All Events →
-                  </button>
-                  <button 
-                    onClick={() => window.location.assign('/profile/edit')}
-                    className="w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
+                  </a>
+                  <a 
+                    href="/profile/edit"
+                    className="block w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
                   >
                     Edit Profile →
-                  </button>
-                  <button 
-                    onClick={() => window.location.assign('/connections')}
-                    className="w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
+                  </a>
+                  <a 
+                    href="/connections"
+                    className="block w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
                   >
                     View Connections →
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
