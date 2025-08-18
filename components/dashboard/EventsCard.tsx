@@ -56,20 +56,20 @@ export default function EventsCard({ events }: EventsCardProps) {
   }
 
   return (
-    <Card className="bg-white rounded-2xl shadow-sm border">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold text-inkwell">Upcoming Events</CardTitle>
+    <Card className="bg-white rounded-2xl shadow-md border">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl font-semibold text-gray-800">Upcoming Events</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 pt-0">
         {events.length === 0 ? (
           <p className="text-lunar text-center py-4">No upcoming events</p>
         ) : (
           events.map((event) => (
-            <div key={event.id} className="border rounded-xl p-4 space-y-3">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-inkwell">{event.name}</h3>
+            <div key={event.id} className="border rounded-lg p-4 space-y-2">
+              <div className="space-y-1">
+                <h3 className="font-semibold text-gray-800">{event.name}</h3>
                 
-                <div className="flex items-center gap-4 text-sm text-lunar">
+                <div className="flex items-center gap-3 text-sm text-lunar">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     {formatDate(event.starts_at)}
@@ -93,7 +93,7 @@ export default function EventsCard({ events }: EventsCardProps) {
                 )}
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mt-2">
                 <Link href={`/events/${event.id}`}>
                   <Button variant="outline" size="sm">
                     View Event →
@@ -105,7 +105,7 @@ export default function EventsCard({ events }: EventsCardProps) {
               {event.rooms.length > 0 && (
                 <div className="space-y-2 pt-2 border-t">
                   <h4 className="text-sm font-medium text-lunar">Featured Rooms:</h4>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {event.rooms.slice(0, 2).map((room) => (
                       <div key={room.id} className="flex items-center justify-between text-sm">
                         <div className="flex-1">

@@ -82,8 +82,8 @@ export default async function HomePage() {
   strength.suggestions = suggestions.length ? suggestions : ['Your profile looks great!']
 
   return (
-    <div className="min-h-screen bg-aulait">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-neutral-50">
+      <div className="container mx-auto px-4 py-6">
         <div className="space-y-6">
           <WelcomeHero 
             name={profile.first_name || profile.name || 'Friend'} 
@@ -91,23 +91,23 @@ export default async function HomePage() {
             profilePhotoUrl={profile.profile_photo_url}
           />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ProfileStrengthCard 
               strength={strength} 
             />
-            <EventsCard events={eventsWithRooms} />
+            <EventsCard events={eventsWithRooms.slice(0, 3)} />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-4">
             {/* Focus & Intent Section */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border">
-              <h3 className="text-lg font-semibold text-inkwell mb-3">Focus & Intent</h3>
-              <div className="space-y-3">
+            <div className="bg-white rounded-lg p-4 shadow-md border">
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">Focus & Intent</h3>
+              <div className="space-y-2">
                 {profile.industries?.length > 0 && (
                   <div>
                     <h4 className="text-sm font-medium text-lunar mb-1">Industries</h4>
                     <div className="flex flex-wrap gap-1">
-                      {profile.industries.map((industry: string) => (
+                      {profile.industries.slice(0, 4).map((industry: string) => (
                         <span key={industry} className="px-2 py-1 bg-inkwell/10 text-inkwell rounded-full text-xs">
                           {industry}
                         </span>
@@ -120,7 +120,7 @@ export default async function HomePage() {
                   <div>
                     <h4 className="text-sm font-medium text-lunar mb-1">Skills</h4>
                     <div className="flex flex-wrap gap-1">
-                      {profile.skills.map((skill: string) => (
+                      {profile.skills.slice(0, 4).map((skill: string) => (
                         <span key={skill} className="px-2 py-1 bg-lunar/10 text-lunar rounded-full text-xs">
                           {skill}
                         </span>
@@ -133,7 +133,7 @@ export default async function HomePage() {
                   <div>
                     <h4 className="text-sm font-medium text-lunar mb-1">Networking Goals</h4>
                     <div className="flex flex-wrap gap-1">
-                      {profile.networking_goals.map((goal: string) => (
+                      {profile.networking_goals.slice(0, 3).map((goal: string) => (
                         <span key={goal} className="px-2 py-1 bg-creme/50 text-inkwell rounded-full text-xs">
                           {goal}
                         </span>
@@ -145,10 +145,10 @@ export default async function HomePage() {
             </div>
 
             {/* Value Proposition */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border">
-              <h3 className="text-lg font-semibold text-inkwell mb-3">Why NuConnect?</h3>
+            <div className="bg-white rounded-lg p-4 shadow-md border">
+              <h3 className="text-xl font-semibold text-gray-800 mb-3">Why NuConnect?</h3>
               <p className="text-lunar text-sm leading-relaxed">
-                NuConnect helps you build meaningful professional relationships through intelligent matching 
+                Build meaningful professional relationships through intelligent matching 
                 based on shared interests, complementary skills, and aligned networking goals. Join focused 
                 rooms, discover quality connections, and grow your network with purpose.
               </p>
