@@ -21,12 +21,12 @@ export default function ProfileStrengthCard({ strength }: ProfileStrengthCardPro
   const suggestion = strength?.suggestions?.[0] ?? 'Complete your profile'
 
   return (
-    <Card className="bg-white shadow-xl border-0 rounded-2xl">
-      <CardHeader>
-        <CardTitle className="text-inkwell">Profile Strength</CardTitle>
+    <Card className="bg-white shadow-sm border rounded-2xl">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg font-semibold text-inkwell">Profile Strength</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="mb-4">
+      <CardContent className="pt-0">
+        <div className="mb-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-lunar">Completeness</span>
             <span className="text-sm font-medium text-inkwell">{percentage}%</span>
@@ -38,8 +38,8 @@ export default function ProfileStrengthCard({ strength }: ProfileStrengthCardPro
             />
           </div>
         </div>
-        <p className="text-sm text-lunar mb-4">{suggestion}</p>
-        <PrimaryButton onClick={() => router.push('/profile/edit')} className="w-full">
+        <p className="text-sm text-lunar mb-3">{suggestion}</p>
+        <PrimaryButton onClick={() => router.push('/profile/edit')} size="default" className="w-full">
           Improve Profile
         </PrimaryButton>
       </CardContent>

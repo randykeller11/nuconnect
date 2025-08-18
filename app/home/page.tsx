@@ -97,59 +97,61 @@ export default async function HomePage() {
             <EventsCard events={eventsWithRooms} />
           </div>
 
-          {/* Focus & Intent Section */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl">
-            <h3 className="text-xl font-semibold text-inkwell mb-4">Focus & Intent</h3>
-            <div className="space-y-4">
-              {profile.industries?.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-lunar mb-2">Industries</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.industries.map((industry: string) => (
-                      <span key={industry} className="px-3 py-1 bg-inkwell/10 text-inkwell rounded-full text-sm">
-                        {industry}
-                      </span>
-                    ))}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Focus & Intent Section */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm border">
+              <h3 className="text-lg font-semibold text-inkwell mb-3">Focus & Intent</h3>
+              <div className="space-y-3">
+                {profile.industries?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-lunar mb-1">Industries</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {profile.industries.map((industry: string) => (
+                        <span key={industry} className="px-2 py-1 bg-inkwell/10 text-inkwell rounded-full text-xs">
+                          {industry}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-              
-              {profile.skills?.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-lunar mb-2">Skills</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill: string) => (
-                      <span key={skill} className="px-3 py-1 bg-lunar/10 text-lunar rounded-full text-sm">
-                        {skill}
-                      </span>
-                    ))}
+                )}
+                
+                {profile.skills?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-lunar mb-1">Skills</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {profile.skills.map((skill: string) => (
+                        <span key={skill} className="px-2 py-1 bg-lunar/10 text-lunar rounded-full text-xs">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-              
-              {profile.networking_goals?.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-medium text-lunar mb-2">Networking Goals</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.networking_goals.map((goal: string) => (
-                      <span key={goal} className="px-3 py-1 bg-creme/50 text-inkwell rounded-full text-sm">
-                        {goal}
-                      </span>
-                    ))}
+                )}
+                
+                {profile.networking_goals?.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-lunar mb-1">Networking Goals</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {profile.networking_goals.map((goal: string) => (
+                        <span key={goal} className="px-2 py-1 bg-creme/50 text-inkwell rounded-full text-xs">
+                          {goal}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Value Proposition */}
-          <div className="bg-white rounded-2xl p-6 shadow-xl">
-            <h3 className="text-xl font-semibold text-inkwell mb-3">Why NuConnect?</h3>
-            <p className="text-lunar">
-              NuConnect helps you build meaningful professional relationships through intelligent matching 
-              based on shared interests, complementary skills, and aligned networking goals. Join focused 
-              rooms, discover quality connections, and grow your network with purpose.
-            </p>
+            {/* Value Proposition */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm border">
+              <h3 className="text-lg font-semibold text-inkwell mb-3">Why NuConnect?</h3>
+              <p className="text-lunar text-sm leading-relaxed">
+                NuConnect helps you build meaningful professional relationships through intelligent matching 
+                based on shared interests, complementary skills, and aligned networking goals. Join focused 
+                rooms, discover quality connections, and grow your network with purpose.
+              </p>
+            </div>
           </div>
         </div>
       </div>
