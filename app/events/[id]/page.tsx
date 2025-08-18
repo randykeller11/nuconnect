@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import EventRoomsClient from './EventRoomsClient'
 
 interface EventPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function EventPage({ params }: EventPageProps) {
+  const { id } = await params
   const supabase = await supabaseServer()
   const { data: { user } } = await supabase.auth.getUser()
   
@@ -22,7 +23,7 @@ export default async function EventPage({ params }: EventPageProps) {
   const { data: event, error: eventError } = await supabase
     .from('events')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (eventError || !event) {
