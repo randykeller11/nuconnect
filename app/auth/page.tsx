@@ -56,9 +56,11 @@ export default function AuthPage() {
         })
         
         if (error) {
+          console.error('Magic link error:', error)
           toast.error('Failed to send Magic Link. Try again.')
         } else {
-          toast.success('Check your email for a magic link.')
+          console.log('Magic link sent successfully')
+          toast.success('Check your email for a magic link!')
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ 
