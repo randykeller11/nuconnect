@@ -172,13 +172,6 @@ export default function Deck({ roomId }: DeckProps) {
       <div className="max-w-md mx-auto">
         <div className="flex items-center justify-between text-sm text-lunar mb-2">
           <span>{currentIndex + 1} of {cards.length}</span>
-          <div className="flex items-center gap-2 text-xs">
-            <ArrowLeft className="w-3 h-3" />
-            <span>Skip</span>
-            <span>•</span>
-            <span>Connect</span>
-            <ArrowRight className="w-3 h-3" />
-          </div>
         </div>
         <Progress value={progress} className="h-2" />
       </div>

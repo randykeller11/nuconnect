@@ -78,9 +78,9 @@ export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting }
           </div>
         </div>
 
-        {/* About This Person */}
+        {/* Why You Should Connect */}
         <div className="bg-aulait/10 rounded-lg p-3">
-          <h4 className="text-sm font-medium text-inkwell mb-1">About this person</h4>
+          <h4 className="text-sm font-medium text-inkwell mb-1">Why you should connect</h4>
           <p className="text-sm text-lunar leading-relaxed">{match.rationale}</p>
         </div>
 
