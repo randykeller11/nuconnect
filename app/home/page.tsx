@@ -121,14 +121,8 @@ export default async function HomePage() {
                     Browse All Events →
                   </a>
                   <a 
-                    href="/profile/edit"
-                    className="flex items-center justify-center w-full px-4 py-3 text-sm text-inkwell border border-inkwell hover:bg-inkwell/5 rounded-full transition-colors"
-                  >
-                    Edit Profile →
-                  </a>
-                  <a 
                     href="/connections"
-                    className="flex items-center justify-center w-full px-4 py-3 text-sm text-inkwell border border-inkwell hover:bg-inkwell/5 rounded-full transition-colors"
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm text-white bg-lunar hover:bg-lunar/90 rounded-full transition-colors"
                   >
                     View Connections →
                   </a>
