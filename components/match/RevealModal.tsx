@@ -26,8 +26,6 @@ interface RevealModalProps {
 
 export default function RevealModal({ match, synergy, onClose }: RevealModalProps) {
   const [imageError, setImageError] = useState(false)
-  
-  const fullName = match.name || `${match.first_name || ''} ${match.last_name || ''}`.trim() || 'Anonymous'
 
   return (
     <Dialog open={true} onOpenChange={onClose}>

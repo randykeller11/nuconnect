@@ -50,7 +50,7 @@ export async function POST(req: Request) {
   }
 
   const item = queueItems[0];
-  const profile = item.profiles;
+  const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
 
   // Return anonymized candidate
   const candidate = {

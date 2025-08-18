@@ -29,11 +29,6 @@ interface AnonMatchCardProps {
 export default function AnonMatchCard({ match, onSkip, onConnect, isConnecting, isSkipping }: AnonMatchCardProps) {
   const [imageError, setImageError] = useState(false)
 
-  // Get shared tags from the match data
-  const sharedIndustries = match.shared?.industries || []
-  const sharedSkills = match.shared?.skills || []
-  const sharedInterests = match.shared?.interests || []
-
   return (
     <Card className="bg-white rounded-2xl shadow-md border max-w-md mx-auto">
       <CardContent className="p-6 space-y-4">
