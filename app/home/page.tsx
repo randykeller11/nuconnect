@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import WelcomeHero from '@/components/dashboard/WelcomeHero'
 import ProfileStrengthCard from '@/components/dashboard/ProfileStrengthCard'
 import EventsCard from '@/components/dashboard/EventsCard'
+import DemoModeToggle from '@/components/dashboard/DemoModeToggle'
 
 export default async function HomePage() {
   const supabase = await supabaseServer()
@@ -90,6 +91,11 @@ export default async function HomePage() {
             ctaHref="/events"
             profilePhotoUrl={profile.profile_photo_url}
           />
+          
+          {/* Demo Mode Toggle - Only for Randy Keller */}
+          {user.email === 'randykeller1193@gmail.com' && (
+            <DemoModeToggle />
+          )}
           
           {/* 3-Column Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
