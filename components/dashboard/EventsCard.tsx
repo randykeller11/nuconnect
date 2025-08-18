@@ -93,14 +93,31 @@ export default function EventsCard({ events }: EventsCardProps) {
       router.push(`/rooms/${roomId}`)
     } else {
       try {
-        const res = await fetch('/api/rooms/join', {
+        // 1) Ensure we're a member (safe if already joined)
+        await fetch('/api/rooms/join', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId })
+        })
+
+        // 2) Start matching
+        const res = await fetch('/api/matches/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ roomId })
         })
         
         if (res.ok) {
+          const data = await res.json()
+          if (data.queued === 0) {
+            toast.error('No one here yet. Try another room or invite people to join.')
+            return
+          }
           router.push(`/rooms/${roomId}/matches`)
+        } else {
+          const errorData = await res.json()
+          console.error('match start failed', errorData)
+          toast.error('Failed to start matching. Please try again.')
         }
       } catch (error) {
         console.error('Failed to join room:', error)

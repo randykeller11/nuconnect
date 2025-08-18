@@ -1,45 +1,19 @@
-import { NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server';
+import { supabaseServer } from '@/lib/supabase/server';
+import { resolveRoomId } from '@/lib/rooms/resolve';
+import { ensureMembership } from '@/lib/rooms/membership';
 
 export async function POST(req: Request) {
-  try {
-    const { roomId } = await req.json()
-    const sb = await createSupabaseServerClient()
-    
-    const { data: { user }, error: authError } = await sb.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  const supabase = await supabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-    // Check if user is already a member
-    const { data: existingMember } = await sb
-      .from('room_members')
-      .select('*')
-      .eq('room_id', roomId)
-      .eq('user_id', user.id)
-      .single()
+  const { roomId: roomSlugOrId } = await req.json();
+  const roomId = await resolveRoomId(roomSlugOrId);
+  if (!roomId) return NextResponse.json({ error: 'room_not_found' }, { status: 404 });
 
-    if (existingMember) {
-      return NextResponse.json({ message: 'Already a member' })
-    }
+  const joined = await ensureMembership(roomId);
+  if (!joined.ok) return NextResponse.json({ error: joined.reason }, { status: 400 });
 
-    // Add user to room
-    const { error: insertError } = await sb
-      .from('room_members')
-      .insert({
-        room_id: roomId,
-        user_id: user.id,
-        joined_at: new Date().toISOString()
-      })
-
-    if (insertError) {
-      console.error('Error joining room:', insertError)
-      return NextResponse.json({ error: 'Failed to join room' }, { status: 500 })
-    }
-
-    return NextResponse.json({ message: 'Successfully joined room' })
-  } catch (error) {
-    console.error('Unexpected error in /api/rooms/join:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  return NextResponse.json({ ok: true, roomId });
 }

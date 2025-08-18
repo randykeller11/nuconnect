@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase/server';
+import { resolveRoomId } from '@/lib/rooms/resolve';
+import { ensureMembership } from '@/lib/rooms/membership';
 import { scoreMatch, whySimple } from '@/lib/matching/score';
 import { explainMatchLLM } from '@/lib/ai/openrouter';
 
@@ -8,7 +10,13 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  const { roomId } = await req.json();
+  const { roomId: roomSlugOrId } = await req.json();
+  const roomId = await resolveRoomId(roomSlugOrId);
+  if (!roomId) return NextResponse.json({ error: 'room_not_found' }, { status: 404 });
+
+  // Ensure membership (idempotent)
+  const joined = await ensureMembership(roomId);
+  if (!joined.ok) return NextResponse.json({ error: 'join_failed' }, { status: 400 });
 
   // Upsert session
   await supabase
@@ -22,67 +30,57 @@ export async function POST(req: Request) {
       onConflict: 'room_id,user_id'
     });
 
-  // Get room members excluding current user
-  const { data: roomMembers, error: roomMembersError } = await supabase
+  // Fetch other members
+  const { data: roomMembers, error } = await supabase
     .from('room_members')
     .select('user_id')
     .eq('room_id', roomId)
     .neq('user_id', user.id);
 
-  console.log('Room members query:', { roomMembers, error: roomMembersError, roomId, userId: user.id });
+  if (error) {
+    console.error('room_members query error', { error, roomId, userId: user.id });
+    return NextResponse.json({ error: 'members_query_failed' }, { status: 500 });
+  }
 
-  const candidateIds = (roomMembers || []).map(m => m.user_id);
-  console.log('Candidate IDs:', candidateIds);
+  const candidateIds = (roomMembers ?? []).map(r => r.user_id);
+  console.log('match-start candidates', { roomId, userId: user.id, count: candidateIds.length });
 
   if (candidateIds.length === 0) {
-    console.log('No room members found - returning 0 queued');
-    return NextResponse.json({ queued: 0 });
+    return NextResponse.json({ queued: 0, candidates: [] });
   }
 
   // Get existing interactions to exclude
-  const { data: existingInteractions, error: interactionsError } = await supabase
+  const { data: existingInteractions } = await supabase
     .from('match_interactions')
     .select('target_user_id')
     .eq('room_id', roomId)
     .eq('user_id', user.id);
 
-  console.log('Existing interactions:', { existingInteractions, error: interactionsError });
-
   const interactedIds = new Set((existingInteractions || []).map(i => i.target_user_id));
   const newCandidateIds = candidateIds.filter(id => !interactedIds.has(id));
 
-  console.log('Filtered candidate IDs:', { interactedIds: Array.from(interactedIds), newCandidateIds });
-
   if (newCandidateIds.length === 0) {
-    console.log('No new candidates after filtering - returning 0 queued');
     return NextResponse.json({ queued: 0 });
   }
 
   // Get current user profile
-  const { data: myProfile, error: myProfileError } = await supabase
+  const { data: myProfile } = await supabase
     .from('profiles')
     .select('*')
     .eq('user_id', user.id)
     .single();
 
-  console.log('My profile:', { myProfile, error: myProfileError });
-
   // Get candidate profiles
-  const { data: candidateProfiles, error: candidateProfilesError } = await supabase
+  const { data: candidateProfiles } = await supabase
     .from('profiles')
     .select('user_id, role, industries, skills, interests, headline, networking_goals, linkedin_url, profile_photo_url')
     .in('user_id', newCandidateIds);
 
-  console.log('Candidate profiles:', { candidateProfiles, error: candidateProfilesError, count: candidateProfiles?.length });
-
   // Score and queue candidates
-  console.log('Building queue for candidates:', newCandidateIds.length);
   const queueItems = await Promise.all(
     (candidateProfiles || []).map(async (candidate) => {
       const score = scoreMatch(myProfile, candidate);
       let rationale = whySimple(myProfile, candidate, score);
-      
-      console.log(`Scoring candidate ${candidate.user_id}: ${score}`);
       
       // Try OpenRouter for better rationale
       try {
@@ -126,7 +124,6 @@ export async function POST(req: Request) {
   );
 
   // Bulk upsert to queue
-  console.log('Upserting queue items:', queueItems.length);
   if (queueItems.length > 0) {
     const { error: upsertError } = await supabase
       .from('match_queue')
@@ -139,6 +136,5 @@ export async function POST(req: Request) {
     }
   }
 
-  console.log('Final queued count:', queueItems.length);
   return NextResponse.json({ queued: queueItems.length });
 }
