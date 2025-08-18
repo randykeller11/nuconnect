@@ -92,13 +92,31 @@ export default function Deck({ roomId }: DeckProps) {
             setShowRevealModal(true)
           }
         } else {
-          // Show toast or notification
-          alert('Connection request sent! We\'ll notify you if they connect back.')
+          // Show toast and move to next card
+          // TODO: Replace with proper toast component
+          const toastDiv = document.createElement('div')
+          toastDiv.className = 'fixed top-4 right-4 bg-inkwell text-white px-4 py-2 rounded-lg shadow-lg z-50'
+          toastDiv.textContent = 'Connection request sent! We\'ll notify you if they connect back.'
+          document.body.appendChild(toastDiv)
+          
+          setTimeout(() => {
+            document.body.removeChild(toastDiv)
+          }, 3000)
+          
           handleSkip()
         }
       }
     } catch (error) {
       console.error('Failed to connect:', error)
+      // Show error toast
+      const toastDiv = document.createElement('div')
+      toastDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50'
+      toastDiv.textContent = 'Failed to send connection request. Please try again.'
+      document.body.appendChild(toastDiv)
+      
+      setTimeout(() => {
+        document.body.removeChild(toastDiv)
+      }, 3000)
     } finally {
       setConnecting(false)
     }
