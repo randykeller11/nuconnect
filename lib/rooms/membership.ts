@@ -46,29 +46,24 @@ export async function ensureMembership(roomId: string) {
 
   console.log('room_members upsert success', { roomId, userId: user.id, data });
 
-  // Update room member count as recommended in logs.md
+  // Update room member count - use direct query since RPC doesn't exist
   try {
-    // Try RPC first, fallback to direct update if RPC doesn't exist
-    let updateError;
-    try {
-      const { error: rpcError } = await supabase
-        .rpc('refresh_room_member_count', { p_room_id: roomId });
-      updateError = rpcError;
-    } catch (rpcNotFound) {
-      // Fallback to direct SQL update
-      const { error: directError } = await supabase
-        .from('rooms')
-        .update({ 
-          member_count: supabase.raw('(SELECT COUNT(*) FROM room_members WHERE room_id = rooms.id)')
-        })
-        .eq('id', roomId);
-      updateError = directError;
-    }
+    // Get current member count
+    const { count: memberCount } = await supabase
+      .from('room_members')
+      .select('*', { count: 'exact', head: true })
+      .eq('room_id', roomId);
+
+    // Update the room's member_count field
+    const { error: updateError } = await supabase
+      .from('rooms')
+      .update({ member_count: memberCount || 0 })
+      .eq('id', roomId);
 
     if (updateError) {
       console.error('Failed to update room member count', { roomId, error: updateError });
     } else {
-      console.log('Room member count updated', { roomId });
+      console.log('Room member count updated', { roomId, newCount: memberCount });
     }
   } catch (countError) {
     console.error('Error updating room member count', { roomId, error: countError });
