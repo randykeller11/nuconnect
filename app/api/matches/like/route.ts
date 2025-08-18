@@ -86,7 +86,7 @@ export async function POST(req: Request) {
       overlaps,
       roomContext: {
         room: roomContext?.data?.name,
-        event: Array.isArray(roomContext?.data?.events) ? roomContext?.data?.events[0]?.name : roomContext?.data?.events?.name
+        event: Array.isArray(roomContext?.data?.events) ? roomContext?.data?.events[0]?.name : (roomContext?.data?.events as any)?.name
       }
     });
 

@@ -50,10 +50,10 @@ async function generateDemoMatches(supabase: any, userId: string) {
       const { data: profiles } = await supabase
         .from('profiles')
         .select('*')
-        .in('user_id', [userId, ...otherMembers.map(m => m.user_id)])
+        .in('user_id', [userId, ...otherMembers.map((m: any) => m.user_id)])
 
-      const userProfile = profiles?.find(p => p.user_id === userId)
-      const otherProfiles = profiles?.filter(p => p.user_id !== userId)
+      const userProfile = profiles?.find((p: any) => p.user_id === userId)
+      const otherProfiles = profiles?.filter((p: any) => p.user_id !== userId)
 
       if (!userProfile || !otherProfiles?.length) continue
 

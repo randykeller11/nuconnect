@@ -68,8 +68,8 @@ export default async function ConnectionsPage() {
       if (otherProfile) {
         connections.push({
           ...match,
-          room_name: Array.isArray(match.rooms) ? match.rooms[0]?.name : match.rooms?.name,
-          event_name: Array.isArray(match.rooms) ? match.rooms[0]?.events?.name : match.rooms?.events?.name,
+          room_name: Array.isArray(match.rooms) ? match.rooms[0]?.name : (match.rooms as any)?.name,
+          event_name: Array.isArray(match.rooms) ? match.rooms[0]?.events?.name : (match.rooms as any)?.events?.name,
           other_profile: otherProfile
         })
       }

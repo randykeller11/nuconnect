@@ -48,7 +48,7 @@ export default function EventRoomsClient({ room, isMember }: EventRoomsClientPro
           errorData = { error: `HTTP ${res.status}: ${res.statusText}` }
         }
         console.error('Failed to join room:', errorData)
-        const errorMessage = errorData.error || 'Failed to join room. Please try again.'
+        const errorMessage = (errorData as any).error || 'Failed to join room. Please try again.'
         toast.error(errorMessage)
       }
     } catch (error) {
