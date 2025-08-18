@@ -19,17 +19,37 @@ export async function ensureMembership(roomId: string) {
     return { ok: false, reason: 'room_not_found' as const, error: roomError };
   }
 
-  // Try to upsert membership
+  // Check if already a member first to avoid RLS policy issues
+  const { data: existingMember } = await supabase
+    .from('room_members')
+    .select('user_id')
+    .eq('room_id', roomId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (existingMember) {
+    console.log('User already a member', { roomId, userId: user.id });
+    return { ok: true as const };
+  }
+
+  // Try to insert new membership (avoid upsert due to RLS policy recursion)
   const { data, error } = await supabase
     .from('room_members')
-    .upsert(
-      { room_id: roomId, user_id: user.id, joined_at: new Date().toISOString() },
-      { onConflict: 'room_id,user_id' }
-    )
+    .insert({ 
+      room_id: roomId, 
+      user_id: user.id, 
+      joined_at: new Date().toISOString() 
+    })
     .select();
 
   if (error) {
-    console.error('room_members upsert failed', { 
+    // If it's a duplicate key error, that's actually success
+    if (error.code === '23505') {
+      console.log('Duplicate membership insert (success)', { roomId, userId: user.id });
+      return { ok: true as const };
+    }
+    
+    console.error('room_members insert failed', { 
       roomId, 
       userId: user.id, 
       error: error.message,
@@ -40,6 +60,6 @@ export async function ensureMembership(roomId: string) {
     return { ok: false, reason: 'insert_failed' as const, error };
   }
 
-  console.log('room_members upsert success', { roomId, userId: user.id, data });
+  console.log('room_members insert success', { roomId, userId: user.id, data });
   return { ok: true as const };
 }
