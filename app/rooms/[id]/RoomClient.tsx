@@ -37,8 +37,9 @@ export default function RoomClient({ room, isMember }: RoomClientProps) {
       if (res.ok) {
         router.refresh()
       } else {
-        console.error('Failed to join room')
-        toast.error('Failed to join room. Please try again.')
+        const errorData = await res.json()
+        console.error('Failed to join room:', errorData)
+        toast.error(`Failed to join room: ${errorData.error || 'Please try again.'}`)
       }
     } catch (error) {
       console.error('Failed to join room:', error)
