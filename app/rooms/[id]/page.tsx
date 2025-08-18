@@ -150,13 +150,12 @@ export default async function RoomPage({ params }: RoomPageProps) {
             </CardHeader>
           </Card>
 
-          {/* Room Content */}
-          <RoomClient room={room} isMember={isMember} />
 
-          {/* Sidebar Content */}
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              {/* Main content area - can be expanded later */}
+          {/* Desktop Layout with Better Spacing */}
+          <div className="grid lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3">
+              {/* Room Content */}
+              <RoomClient room={room} isMember={isMember} />
             </div>
             
             <div className="space-y-4">

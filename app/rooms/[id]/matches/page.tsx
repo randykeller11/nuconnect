@@ -1,9 +1,9 @@
 import { supabaseServer } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import MatchDeck from '@/components/match/MatchDeck'
 
 interface MatchesPageProps {
   params: Promise<{ id: string }>
@@ -56,32 +56,8 @@ export default async function MatchesPage({ params }: MatchesPageProps) {
             <h1 className="text-2xl font-bold text-gray-800">Matches in {room.name}</h1>
           </div>
 
-          {/* Coming Soon Card */}
-          <Card className="bg-white rounded-2xl shadow-md border">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold text-gray-800">
-                Matching Feature Coming Soon
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-lunar/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🔍</span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Anonymous Matching
-                </h3>
-                <p className="text-lunar mb-4">
-                  We're building an intelligent matching system that will help you discover 
-                  meaningful connections based on shared interests, complementary skills, 
-                  and aligned networking goals.
-                </p>
-                <p className="text-sm text-lunar">
-                  Check back soon for this exciting feature!
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Match Deck */}
+          <MatchDeck matches={[]} roomId={id} />
         </div>
       </div>
     </div>
