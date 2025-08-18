@@ -88,7 +88,7 @@ export async function POST(req: Request) {
 
   // Filter by minimum score and sort
   const filteredResults = results
-    .filter(match => match.score > 20)
+    .filter(match => match.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 20)
 
