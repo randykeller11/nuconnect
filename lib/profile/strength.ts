@@ -10,6 +10,13 @@ export interface ProfileStrengthResult {
   }
 }
 
+// Legacy interface for compatibility
+export interface ProfileStrength {
+  score: number
+  maxScore: number
+  suggestions: string[]
+}
+
 export function calculateProfileStrength(profile: any): ProfileStrengthResult {
   let score = 0
   const breakdown = {
