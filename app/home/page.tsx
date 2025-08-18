@@ -1,10 +1,8 @@
 import { supabaseServer } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import WelcomeHero from '@/components/dashboard/WelcomeHero'
-import MatchPreview from '@/components/dashboard/MatchPreview'
-import RoomsList from '@/components/dashboard/RoomsList'
 import ProfileStrengthCard from '@/components/dashboard/ProfileStrengthCard'
-import DashboardClient from './DashboardClient'
+import EventsCard from '@/components/dashboard/EventsCard'
 
 export default async function HomePage() {
   const supabase = await supabaseServer()
@@ -25,13 +23,33 @@ export default async function HomePage() {
     redirect('/onboarding')
   }
 
-  // Fetch active rooms
-  const { data: rooms } = await supabase
-    .from('rooms')
+  // Fetch events with rooms
+  const { data: events } = await supabase
+    .from('events')
     .select('*')
-    .eq('is_public', true)
-    .order('member_count', { ascending: false })
+    .order('starts_at', { ascending: true })
     .limit(3)
+
+  let eventsWithRooms = []
+  if (events?.length) {
+    const { data: rooms } = await supabase
+      .from('rooms')
+      .select('*')
+      .in('event_id', events.map(e => e.id))
+
+    const roomsByEvent = new Map<string, any[]>()
+    rooms?.forEach(r => {
+      if (!r.event_id) return
+      const arr = roomsByEvent.get(r.event_id) ?? []
+      arr.push(r)
+      roomsByEvent.set(r.event_id, arr)
+    })
+
+    eventsWithRooms = events.map(e => ({
+      ...e,
+      rooms: (roomsByEvent.get(e.id) ?? []).sort((a, b) => b.member_count - a.member_count)
+    }))
+  }
 
   // Calculate profile strength
   const strength = {
@@ -63,26 +81,20 @@ export default async function HomePage() {
 
   strength.suggestions = suggestions.length ? suggestions : ['Your profile looks great!']
 
-  // Preview matches (empty for now - will be populated when user joins rooms)
-  const previewMatches: any[] = []
-
   return (
     <div className="min-h-screen bg-aulait">
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-6">
           <WelcomeHero 
             name={profile.first_name || profile.name || 'Friend'} 
-            ctaHref="/rooms" 
+            ctaHref="/events" 
           />
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <MatchPreview 
-              items={previewMatches} 
-            />
-            <DashboardClient rooms={rooms || []} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ProfileStrengthCard 
               strength={strength} 
             />
+            <EventsCard events={eventsWithRooms} />
           </div>
 
           {/* Focus & Intent Section */}
