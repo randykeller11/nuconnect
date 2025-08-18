@@ -35,14 +35,21 @@ export async function POST(req: Request) {
     candidates = others || []
   }
 
-  // Check for existing contact shares to filter out already connected users
-  const { data: existingShares } = await supabase
-    .from('contact_shares')
-    .select('to_user_id')
-    .eq('from_user_id', user.id)
-    .in('to_user_id', othersIds)
+  // Check for existing matches to filter out already connected users
+  const { data: existingMatches } = await supabase
+    .from('matches')
+    .select('profile_a, profile_b')
+    .eq('room_id', roomId)
+    .or(`profile_a.eq.${user.id},profile_b.eq.${user.id}`)
 
-  const connectedUserIds = new Set(existingShares?.map(s => s.to_user_id) || [])
+  const connectedUserIds = new Set()
+  existingMatches?.forEach(match => {
+    if (match.profile_a === user.id) {
+      connectedUserIds.add(match.profile_b)
+    } else if (match.profile_b === user.id) {
+      connectedUserIds.add(match.profile_a)
+    }
+  })
 
   // Filter out already connected users
   candidates = candidates.filter(p => !connectedUserIds.has(p.user_id))

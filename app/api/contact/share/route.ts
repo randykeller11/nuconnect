@@ -8,56 +8,57 @@ export async function POST(req: Request) {
 
   const { toUserId, roomId } = await req.json()
 
-  // Check if we already sent a request to this user
-  const { data: existingShare } = await supabase
-    .from('contact_shares')
+  // Create or update match record
+  const { data: existingMatch } = await supabase
+    .from('matches')
     .select('*')
-    .eq('from_user_id', user.id)
-    .eq('to_user_id', toUserId)
+    .eq('room_id', roomId)
+    .or(`and(profile_a.eq.${user.id},profile_b.eq.${toUserId}),and(profile_a.eq.${toUserId},profile_b.eq.${user.id})`)
     .maybeSingle()
 
-  if (existingShare) {
-    return NextResponse.json({ 
-      message: 'Already sent', 
-      mutual: existingShare.status === 'mutual' 
-    })
+  let matchId
+  if (existingMatch) {
+    matchId = existingMatch.id
+  } else {
+    const { data: newMatch } = await supabase
+      .from('matches')
+      .insert({
+        room_id: roomId,
+        profile_a: user.id,
+        profile_b: toUserId,
+        is_mutual: false
+      })
+      .select('id')
+      .single()
+    matchId = newMatch?.id
   }
 
-  // Check if they already sent us a request
-  const { data: reverseShare } = await supabase
-    .from('contact_shares')
-    .select('*')
-    .eq('from_user_id', toUserId)
-    .eq('to_user_id', user.id)
-    .maybeSingle()
-
-  const isMutual = !!reverseShare
-
-  // Insert our share request
-  const { error: insertError } = await supabase
-    .from('contact_shares')
-    .insert({
-      from_user_id: user.id,
-      to_user_id: toUserId,
-      room_id: roomId,
-      status: isMutual ? 'mutual' : 'sent'
+  // Record contact share
+  await supabase
+    .from('contacts')
+    .upsert({
+      match_id: matchId,
+      profile_id: user.id,
     })
 
-  if (insertError) {
-    console.error('Error inserting contact share:', insertError)
-    return NextResponse.json({ error: 'Failed to share contact' }, { status: 500 })
-  }
+  // Check if mutual
+  const { data: contacts } = await supabase
+    .from('contacts')
+    .select('profile_id')
+    .eq('match_id', matchId)
 
-  // If mutual, update the reverse share to mutual as well
-  if (isMutual && reverseShare) {
+  const profileIds = new Set(contacts?.map(c => c.profile_id) || [])
+  const isMutual = profileIds.has(user.id) && profileIds.has(toUserId)
+
+  if (isMutual) {
+    // Update match as mutual
     await supabase
-      .from('contact_shares')
-      .update({ status: 'mutual' })
-      .eq('id', reverseShare.id)
+      .from('matches')
+      .update({ is_mutual: true })
+      .eq('id', matchId)
+    
+    return NextResponse.json({ mutual: true, message: "It's a match! Contact info exchanged." })
   }
 
-  return NextResponse.json({ 
-    message: isMutual ? "It's a match! Contact info exchanged." : 'Contact info shared. We\'ll notify you if they share back.',
-    mutual: isMutual 
-  })
+  return NextResponse.json({ mutual: false, message: 'Contact info shared. We\'ll notify you if they share back.' })
 }
