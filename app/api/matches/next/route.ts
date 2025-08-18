@@ -20,19 +20,7 @@ export async function POST(req: Request) {
   // Get next candidate from queue
   let query = supabase
     .from('match_queue')
-    .select(`
-      candidate_user_id,
-      score,
-      rationale,
-      profiles!match_queue_candidate_user_id_fkey (
-        role,
-        industries,
-        skills,
-        interests,
-        networking_goals,
-        profile_photo_url
-      )
-    `)
+    .select('candidate_user_id, score, rationale')
     .eq('room_id', roomId)
     .eq('for_user_id', user.id)
     .order('score', { ascending: false })
@@ -54,7 +42,13 @@ export async function POST(req: Request) {
   }
 
   const item = queueItems[0];
-  const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
+
+  // Fetch the profile separately
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role, industries, skills, interests, networking_goals, profile_photo_url')
+    .eq('user_id', item.candidate_user_id)
+    .single();
 
   // Return anonymized candidate
   const candidate = {
