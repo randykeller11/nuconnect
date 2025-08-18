@@ -44,16 +44,28 @@ export default async function MatchesPage({ params }: MatchesPageProps) {
   return (
     <div className="min-h-screen bg-neutral-50">
       <div className="container mx-auto px-4 py-8">
-        <div className="space-y-6">
+        <div className="max-w-2xl mx-auto">
           {/* Back Navigation */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mb-8">
             <Link href={`/rooms/${id}`}>
               <Button variant="ghost" size="sm" className="text-lunar hover:text-inkwell">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Room
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold text-gray-800">Matches in {room.name}</h1>
+          </div>
+
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              Discover Connections
+            </h1>
+            <p className="text-lunar">
+              Swipe through potential matches in {room.name}
+            </p>
+            <div className="text-xs text-lunar/70 mt-2">
+              Use ← to skip, → to connect, or click the buttons
+            </div>
           </div>
 
           {/* Anonymous Match Deck */}

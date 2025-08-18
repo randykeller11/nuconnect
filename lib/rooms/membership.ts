@@ -48,12 +48,22 @@ export async function ensureMembership(roomId: string) {
 
   // Update room member count as recommended in logs.md
   try {
-    const { error: updateError } = await supabase
-      .from('rooms')
-      .update({ 
-        member_count: supabase.raw('(SELECT COUNT(*) FROM room_members WHERE room_id = rooms.id)')
-      })
-      .eq('id', roomId);
+    // Try RPC first, fallback to direct update if RPC doesn't exist
+    let updateError;
+    try {
+      const { error: rpcError } = await supabase
+        .rpc('refresh_room_member_count', { p_room_id: roomId });
+      updateError = rpcError;
+    } catch (rpcNotFound) {
+      // Fallback to direct SQL update
+      const { error: directError } = await supabase
+        .from('rooms')
+        .update({ 
+          member_count: supabase.raw('(SELECT COUNT(*) FROM room_members WHERE room_id = rooms.id)')
+        })
+        .eq('id', roomId);
+      updateError = directError;
+    }
 
     if (updateError) {
       console.error('Failed to update room member count', { roomId, error: updateError });
