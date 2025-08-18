@@ -56,16 +56,14 @@ export default function EventsCard({ events }: EventsCardProps) {
   }
 
   return (
-    <Card className="bg-white rounded-2xl shadow-md border">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xl font-semibold text-gray-800">Upcoming Events</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 pt-0">
+    <div className="space-y-3">
         {events.length === 0 ? (
-          <p className="text-lunar text-center py-4">No upcoming events</p>
+          <div className="bg-white rounded-2xl p-6 shadow-md border text-center">
+            <p className="text-lunar">No upcoming events</p>
+          </div>
         ) : (
           events.map((event) => (
-            <div key={event.id} className="border rounded-lg p-4 space-y-2">
+            <div key={event.id} className="bg-white rounded-2xl p-4 shadow-md border space-y-3">
               <div className="space-y-1">
                 <h3 className="font-semibold text-gray-800">{event.name}</h3>
                 
@@ -132,7 +130,6 @@ export default function EventsCard({ events }: EventsCardProps) {
             </div>
           ))
         )}
-      </CardContent>
-    </Card>
+    </div>
   )
 }

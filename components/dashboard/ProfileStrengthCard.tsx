@@ -22,23 +22,20 @@ export default function ProfileStrengthCard({ strength }: ProfileStrengthCardPro
 
   return (
     <Card className="bg-white shadow-md border rounded-2xl">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl font-semibold text-gray-800">Profile Strength</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0 pb-4">
-        <div className="mb-2">
-          <div className="flex items-center justify-between mb-1">
+      <CardContent className="p-4">
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-lunar">Completeness</span>
-            <span className="text-sm font-medium text-inkwell">{percentage}%</span>
+            <span className="text-lg font-bold text-inkwell">{percentage}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-3">
             <div 
-              className="bg-gradient-to-r from-inkwell to-lunar h-2 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-inkwell to-lunar h-3 rounded-full transition-all duration-300"
               style={{ width: `${percentage}%` }}
             />
           </div>
         </div>
-        <p className="text-sm text-lunar mb-2">{suggestion}</p>
+        <p className="text-xs text-lunar mb-3">{suggestion}</p>
         <PrimaryButton onClick={() => router.push('/profile/edit')} size="sm" className="w-full">
           Improve Profile
         </PrimaryButton>

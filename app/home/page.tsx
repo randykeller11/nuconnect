@@ -83,75 +83,102 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="container mx-auto px-4 py-6">
-        <div className="space-y-6">
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-8">
           <WelcomeHero 
             name={profile.first_name || profile.name || 'Friend'} 
             ctaHref="/events"
             profilePhotoUrl={profile.profile_photo_url}
           />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ProfileStrengthCard 
-              strength={strength} 
-            />
-            <EventsCard events={eventsWithRooms.slice(0, 3)} />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Focus & Intent Section */}
-            <div className="bg-white rounded-lg p-4 shadow-md border">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">Focus & Intent</h3>
-              <div className="space-y-2">
-                {profile.industries?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-lunar mb-1">Industries</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {profile.industries.slice(0, 4).map((industry: string) => (
-                        <span key={industry} className="px-2 py-1 bg-inkwell/10 text-inkwell rounded-full text-xs">
-                          {industry}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {profile.skills?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-lunar mb-1">Skills</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {profile.skills.slice(0, 4).map((skill: string) => (
-                        <span key={skill} className="px-2 py-1 bg-lunar/10 text-lunar rounded-full text-xs">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {profile.networking_goals?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-lunar mb-1">Networking Goals</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {profile.networking_goals.slice(0, 3).map((goal: string) => (
-                        <span key={goal} className="px-2 py-1 bg-creme/50 text-inkwell rounded-full text-xs">
-                          {goal}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+          {/* 3-Column Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Column 1: Upcoming Events */}
+            <div className="lg:col-span-2">
+              <div className="mb-3">
+                <h2 className="text-xl font-semibold text-gray-800">Upcoming Events</h2>
+              </div>
+              <div className="bg-neutral-50 rounded-lg p-4">
+                <EventsCard events={eventsWithRooms.slice(0, 3)} />
               </div>
             </div>
 
-            {/* Value Proposition */}
-            <div className="bg-white rounded-lg p-4 shadow-md border">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">Why NuConnect?</h3>
-              <p className="text-lunar text-sm leading-relaxed">
-                Build meaningful professional relationships through intelligent matching 
-                based on shared interests, complementary skills, and aligned networking goals. Join focused 
-                rooms, discover quality connections, and grow your network with purpose.
-              </p>
+            {/* Column 2: Profile Strength & Actions */}
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800 mb-3">Profile Strength</h2>
+                <ProfileStrengthCard strength={strength} />
+              </div>
+              
+              {/* Quick Actions Card */}
+              <div className="bg-white rounded-2xl p-4 shadow-md border">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Quick Actions</h3>
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => window.location.assign('/events')}
+                    className="w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
+                  >
+                    Browse All Events →
+                  </button>
+                  <button 
+                    onClick={() => window.location.assign('/profile/edit')}
+                    className="w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
+                  >
+                    Edit Profile →
+                  </button>
+                  <button 
+                    onClick={() => window.location.assign('/connections')}
+                    className="w-full text-left px-3 py-2 text-sm text-inkwell hover:bg-inkwell/5 rounded-lg transition-colors"
+                  >
+                    View Connections →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Compact Focus & Intent Section */}
+          <div className="bg-white rounded-2xl p-6 shadow-md border">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Professional Focus</h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              {profile.industries?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-lunar mb-2">Industries</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {profile.industries.slice(0, 4).map((industry: string) => (
+                      <span key={industry} className="px-2 py-1 bg-inkwell/10 text-inkwell rounded-full text-xs">
+                        {industry}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {profile.skills?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-lunar mb-2">Skills</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {profile.skills.slice(0, 4).map((skill: string) => (
+                      <span key={skill} className="px-2 py-1 bg-lunar/10 text-lunar rounded-full text-xs">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {profile.networking_goals?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-lunar mb-2">Networking Goals</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {profile.networking_goals.slice(0, 3).map((goal: string) => (
+                      <span key={goal} className="px-2 py-1 bg-creme/50 text-inkwell rounded-full text-xs">
+                        {goal}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
