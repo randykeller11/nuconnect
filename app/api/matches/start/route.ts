@@ -23,44 +23,57 @@ export async function POST(req: Request) {
     });
 
   // Get room members excluding current user
-  const { data: roomMembers } = await supabase
+  const { data: roomMembers, error: roomMembersError } = await supabase
     .from('room_members')
     .select('user_id')
     .eq('room_id', roomId)
     .neq('user_id', user.id);
 
+  console.log('Room members query:', { roomMembers, error: roomMembersError, roomId, userId: user.id });
+
   const candidateIds = (roomMembers || []).map(m => m.user_id);
+  console.log('Candidate IDs:', candidateIds);
 
   if (candidateIds.length === 0) {
+    console.log('No room members found - returning 0 queued');
     return NextResponse.json({ queued: 0 });
   }
 
   // Get existing interactions to exclude
-  const { data: existingInteractions } = await supabase
+  const { data: existingInteractions, error: interactionsError } = await supabase
     .from('match_interactions')
     .select('target_user_id')
     .eq('room_id', roomId)
     .eq('user_id', user.id);
 
+  console.log('Existing interactions:', { existingInteractions, error: interactionsError });
+
   const interactedIds = new Set((existingInteractions || []).map(i => i.target_user_id));
   const newCandidateIds = candidateIds.filter(id => !interactedIds.has(id));
 
+  console.log('Filtered candidate IDs:', { interactedIds: Array.from(interactedIds), newCandidateIds });
+
   if (newCandidateIds.length === 0) {
+    console.log('No new candidates after filtering - returning 0 queued');
     return NextResponse.json({ queued: 0 });
   }
 
   // Get current user profile
-  const { data: myProfile } = await supabase
+  const { data: myProfile, error: myProfileError } = await supabase
     .from('profiles')
     .select('*')
     .eq('user_id', user.id)
     .single();
 
+  console.log('My profile:', { myProfile, error: myProfileError });
+
   // Get candidate profiles
-  const { data: candidateProfiles } = await supabase
+  const { data: candidateProfiles, error: candidateProfilesError } = await supabase
     .from('profiles')
     .select('user_id, role, industries, skills, interests, headline, networking_goals, linkedin_url, profile_photo_url')
     .in('user_id', newCandidateIds);
+
+  console.log('Candidate profiles:', { candidateProfiles, error: candidateProfilesError, count: candidateProfiles?.length });
 
   // Score and queue candidates
   console.log('Building queue for candidates:', newCandidateIds.length);
