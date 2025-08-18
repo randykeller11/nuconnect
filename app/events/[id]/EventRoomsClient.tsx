@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface Room {
   id: string
@@ -40,9 +41,11 @@ export default function EventRoomsClient({ room, isMember }: EventRoomsClientPro
         router.push(`/rooms/${room.id}`)
       } else {
         console.error('Failed to join room')
+        toast.error('Failed to join room. Please try again.')
       }
     } catch (error) {
       console.error('Failed to join room:', error)
+      toast.error('Failed to join room. Please try again.')
     } finally {
       setIsJoining(false)
     }

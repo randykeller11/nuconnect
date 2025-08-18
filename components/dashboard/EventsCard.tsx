@@ -6,6 +6,7 @@ import { Calendar, MapPin, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 
 interface EventWithRooms {
   id: string
@@ -103,6 +104,7 @@ export default function EventsCard({ events }: EventsCardProps) {
         }
       } catch (error) {
         console.error('Failed to join room:', error)
+        toast.error('Failed to join room. Please try again.')
       }
     }
   }

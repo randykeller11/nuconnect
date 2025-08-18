@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface Room {
   id: string
@@ -37,9 +38,11 @@ export default function RoomClient({ room, isMember }: RoomClientProps) {
         router.refresh()
       } else {
         console.error('Failed to join room')
+        toast.error('Failed to join room. Please try again.')
       }
     } catch (error) {
       console.error('Failed to join room:', error)
+      toast.error('Failed to join room. Please try again.')
     } finally {
       setIsJoining(false)
     }
@@ -59,6 +62,7 @@ export default function RoomClient({ room, isMember }: RoomClientProps) {
       }
     } catch (error) {
       console.error('Failed to start matching:', error)
+      toast.error('Failed to start matching. Please try again.')
     }
   }
 

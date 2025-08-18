@@ -136,14 +136,8 @@ export default function Deck({ roomId }: DeckProps) {
           setShowRevealModal(true)
         } else {
           // Show toast and move to next card
-          const toastDiv = document.createElement('div')
-          toastDiv.className = 'fixed top-4 right-4 bg-inkwell text-white px-4 py-2 rounded-lg shadow-lg z-50'
-          toastDiv.textContent = 'Request sent! We\'ll reveal when it\'s mutual.'
-          document.body.appendChild(toastDiv)
-          
-          setTimeout(() => {
-            document.body.removeChild(toastDiv)
-          }, 3000)
+          const { toast } = await import('sonner')
+          toast.success('Request sent! We\'ll reveal when it\'s mutual.')
           
           await fetchNextCandidate()
           await fetchStatus()
@@ -152,14 +146,8 @@ export default function Deck({ roomId }: DeckProps) {
     } catch (error) {
       console.error('Failed to connect:', error)
       // Show error toast
-      const toastDiv = document.createElement('div')
-      toastDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      toastDiv.textContent = 'Failed to send request. Please try again.'
-      document.body.appendChild(toastDiv)
-      
-      setTimeout(() => {
-        document.body.removeChild(toastDiv)
-      }, 3000)
+      const { toast } = await import('sonner')
+      toast.error('Failed to send request. Please try again.')
     } finally {
       setConnecting(false)
     }
