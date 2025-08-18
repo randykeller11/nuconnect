@@ -64,8 +64,19 @@ export default function Deck({ roomId }: DeckProps) {
   const handleSkip = useCallback(() => {
     if (currentIndex < cards.length - 1) {
       setCurrentIndex(currentIndex + 1)
+    } else {
+      // All matches completed - show toast and redirect
+      const toastDiv = document.createElement('div')
+      toastDiv.className = 'fixed top-4 right-4 bg-inkwell text-white px-4 py-2 rounded-lg shadow-lg z-50'
+      toastDiv.textContent = "You've seen all potential matches! Redirecting back to room..."
+      document.body.appendChild(toastDiv)
+      
+      setTimeout(() => {
+        document.body.removeChild(toastDiv)
+        window.location.href = `/rooms/${roomId}`
+      }, 2000)
     }
-  }, [currentIndex, cards.length])
+  }, [currentIndex, cards.length, roomId])
 
   const handleConnect = useCallback(async () => {
     if (!cards[currentIndex]) return
@@ -167,18 +178,9 @@ export default function Deck({ roomId }: DeckProps) {
     )
   }
 
+  // Auto-redirect when all matches are done (this shouldn't render due to handleSkip logic)
   if (currentIndex >= cards.length) {
-    return (
-      <Card className="bg-white rounded-2xl shadow-md border max-w-md mx-auto">
-        <CardContent className="p-8 text-center">
-          <div className="w-16 h-16 bg-inkwell/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">✨</span>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">All Done!</h3>
-          <p className="text-lunar">You've seen all available matches in this room. Check back later for new members!</p>
-        </CardContent>
-      </Card>
-    )
+    return null
   }
 
   const currentCard = cards[currentIndex]
