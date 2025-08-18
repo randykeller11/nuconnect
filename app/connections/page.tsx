@@ -69,7 +69,9 @@ export default async function ConnectionsPage() {
         connections.push({
           ...match,
           room_name: Array.isArray(match.rooms) ? match.rooms[0]?.name : (match.rooms as any)?.name,
-          event_name: Array.isArray(match.rooms) ? match.rooms[0]?.events?.name : (match.rooms as any)?.events?.name,
+          event_name: Array.isArray(match.rooms) 
+            ? (Array.isArray(match.rooms[0]?.events) ? match.rooms[0]?.events[0]?.name : (match.rooms[0]?.events as any)?.name)
+            : (Array.isArray((match.rooms as any)?.events) ? (match.rooms as any)?.events[0]?.name : (match.rooms as any)?.events?.name),
           other_profile: otherProfile
         })
       }
