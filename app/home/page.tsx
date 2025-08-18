@@ -87,7 +87,8 @@ export default async function HomePage() {
         <div className="space-y-6">
           <WelcomeHero 
             name={profile.first_name || profile.name || 'Friend'} 
-            ctaHref="/events" 
+            ctaHref="/events"
+            profilePhotoUrl={profile.profile_photo_url}
           />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
