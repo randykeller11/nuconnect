@@ -19,37 +19,21 @@ export async function ensureMembership(roomId: string) {
     return { ok: false, reason: 'room_not_found' as const, error: roomError };
   }
 
-  // Check if already a member first to avoid RLS policy issues
-  const { data: existingMember } = await supabase
-    .from('room_members')
-    .select('user_id')
-    .eq('room_id', roomId)
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if (existingMember) {
-    console.log('User already a member', { roomId, userId: user.id });
-    return { ok: true as const };
-  }
-
-  // Try to insert new membership (avoid upsert due to RLS policy recursion)
+  // Use upsert for idempotent behavior as recommended in logs.md
   const { data, error } = await supabase
     .from('room_members')
-    .insert({ 
+    .upsert({ 
       room_id: roomId, 
-      user_id: user.id, 
-      joined_at: new Date().toISOString() 
+      user_id: user.id,
+      joined_at: new Date().toISOString()
+    }, { 
+      onConflict: 'room_id,user_id' 
     })
-    .select();
+    .select('room_id, user_id')
+    .single();
 
   if (error) {
-    // If it's a duplicate key error, that's actually success
-    if (error.code === '23505') {
-      console.log('Duplicate membership insert (success)', { roomId, userId: user.id });
-      return { ok: true as const };
-    }
-    
-    console.error('room_members insert failed', { 
+    console.error('room_members upsert failed', { 
       roomId, 
       userId: user.id, 
       error: error.message,
@@ -60,6 +44,25 @@ export async function ensureMembership(roomId: string) {
     return { ok: false, reason: 'insert_failed' as const, error };
   }
 
-  console.log('room_members insert success', { roomId, userId: user.id, data });
+  console.log('room_members upsert success', { roomId, userId: user.id, data });
+
+  // Update room member count as recommended in logs.md
+  try {
+    const { error: updateError } = await supabase
+      .from('rooms')
+      .update({ 
+        member_count: supabase.raw('(SELECT COUNT(*) FROM room_members WHERE room_id = rooms.id)')
+      })
+      .eq('id', roomId);
+
+    if (updateError) {
+      console.error('Failed to update room member count', { roomId, error: updateError });
+    } else {
+      console.log('Room member count updated', { roomId });
+    }
+  } catch (countError) {
+    console.error('Error updating room member count', { roomId, error: countError });
+  }
+
   return { ok: true as const };
 }

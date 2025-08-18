@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       onConflict: 'room_id,user_id'
     });
 
-  // Fetch other members
+  // Fetch other members with enhanced logging as recommended in logs.md
   const { data: roomMembers, error } = await supabase
     .from('room_members')
     .select('user_id')
@@ -45,8 +45,21 @@ export async function POST(req: Request) {
   const candidateIds = (roomMembers ?? []).map(r => r.user_id);
   console.log('match-start candidates', { roomId, userId: user.id, count: candidateIds.length });
 
+  // Enhanced logging for debugging as recommended in logs.md
   if (candidateIds.length === 0) {
-    return NextResponse.json({ queued: 0, candidates: [] });
+    console.log('No candidates found - running sanity checks');
+    console.log(`SQL sanity check needed: SELECT * FROM room_members WHERE room_id = '${roomId}';`);
+    console.log(`SQL sanity check needed: SELECT * FROM room_members WHERE user_id = '${user.id}';`);
+    
+    // Quick sanity check - count total members in room
+    const { count: totalMembers } = await supabase
+      .from('room_members')
+      .select('*', { count: 'exact', head: true })
+      .eq('room_id', roomId);
+    
+    console.log('Total members in room:', { roomId, totalMembers });
+    
+    return NextResponse.json({ queued: 0, candidates: [], debug: { totalMembers } });
   }
 
   // Get existing interactions to exclude
