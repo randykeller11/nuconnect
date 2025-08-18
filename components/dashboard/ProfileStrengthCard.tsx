@@ -36,7 +36,7 @@ export default function ProfileStrengthCard({ strength }: ProfileStrengthCardPro
           </div>
         </div>
         <p className="text-xs text-lunar mb-3">{suggestion}</p>
-        <PrimaryButton onClick={() => router.push('/profile/edit')} size="sm" className="w-full">
+        <PrimaryButton onClick={() => router.push('/profile/edit')} className="w-full">
           Improve Profile
         </PrimaryButton>
       </CardContent>

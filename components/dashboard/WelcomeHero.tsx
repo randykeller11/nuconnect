@@ -32,7 +32,7 @@ export default function WelcomeHero({ name, ctaHref, profilePhotoUrl }: WelcomeH
         <PrimaryButton 
           onClick={() => window.location.assign(ctaHref)}
           className="bg-aulait text-inkwell hover:bg-aulait/90 flex-shrink-0"
-          size="sm"
+          size="default"
         >
           Browse Events
         </PrimaryButton>
